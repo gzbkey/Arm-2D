@@ -86,6 +86,9 @@ ARM_PRIVATE(
     /* place your private member here, following two are examples */
     int64_t lTimestamp[1];
     bool bUserAllocated;
+    uint16_t hwScaling;
+
+    spin_zoom_widget_t tTransform;
 
 )
     /* place your public member here */

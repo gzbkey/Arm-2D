@@ -61,14 +61,18 @@
 #if __GLCD_CFG_COLOUR_DEPTH__ == 8
 
 #   define c_tileCMSISLogo          c_tileCMSISLogoGRAY8
+#   define c_tileSolidSquare        c_tileSolidSquareGRAY8
 
 #elif __GLCD_CFG_COLOUR_DEPTH__ == 16
 
 #   define c_tileCMSISLogo          c_tileCMSISLogoRGB565
+#   define c_tileSolidSquare        c_tileSolidSquareRGB565
 
 #elif __GLCD_CFG_COLOUR_DEPTH__ == 32
 
 #   define c_tileCMSISLogo          c_tileCMSISLogoCCCA8888
+#   define c_tileSolidSquare        c_tileSolidSquareCCCA8888
+
 #else
 #   error Unsupported colour depth!
 #endif
@@ -84,6 +88,9 @@ extern const arm_2d_tile_t c_tileCMSISLogo;
 extern const arm_2d_tile_t c_tileCMSISLogoMask;
 extern const arm_2d_tile_t c_tileCMSISLogoA2Mask;
 extern const arm_2d_tile_t c_tileCMSISLogoA4Mask;
+
+extern const arm_2d_tile_t c_tileSolidSquareMask;
+extern const arm_2d_tile_t c_tileSolidSquare;
 /*============================ PROTOTYPES ====================================*/
 /*============================ LOCAL VARIABLES ===============================*/
 
@@ -118,6 +125,8 @@ static void __on_scene_transform_inspection_load(arm_2d_scene_t *ptScene)
     user_scene_transform_inspection_t *ptThis = (user_scene_transform_inspection_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+    spin_zoom_widget_on_load(&this.tTransform);
+
 }
 
 static void __after_scene_transform_inspection_switching(arm_2d_scene_t *ptScene)
@@ -133,7 +142,7 @@ static void __on_scene_transform_inspection_depose(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     /*--------------------- insert your depose code begin --------------------*/
-    
+    spin_zoom_widget_depose(&this.tTransform);
 
     /*---------------------- insert your depose code end  --------------------*/
 
@@ -171,13 +180,20 @@ static void __on_scene_transform_inspection_frame_start(arm_2d_scene_t *ptScene)
     user_scene_transform_inspection_t *ptThis = (user_scene_transform_inspection_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+    int32_t nResult = 999;
+    //arm_2d_helper_time_cos_slider(800, 1000, 10000, 0, &nResult, &this.lTimestamp[0]);
+
+    this.hwScaling = nResult;
+
+    spin_zoom_widget_on_frame_start(&this.tTransform, 0, (float)nResult / 1000.f);
+
 }
 
 static void __on_scene_transform_inspection_frame_complete(arm_2d_scene_t *ptScene)
 {
     user_scene_transform_inspection_t *ptThis = (user_scene_transform_inspection_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
-
+    spin_zoom_widget_on_frame_complete(&this.tTransform);
 }
 
 static void __before_scene_transform_inspection_switching_out(arm_2d_scene_t *ptScene)
@@ -199,47 +215,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_transform_inspection_handler)
     arm_2d_canvas(ptTile, __top_canvas) {
     /*-----------------------draw the scene begin-----------------------*/
         
-        /* following code is just a demo, you can remove them */
-
-        arm_2d_align_centre(__top_canvas, 200, 100 ) {
-            draw_round_corner_box(  ptTile, 
-                                    &__centre_region, 
-                                    GLCD_COLOR_WHITE, 
-                                    255);
-            
-            ARM_2D_OP_WAIT_ASYNC();
-            
-            draw_round_corner_border(   ptTile, 
-                                        &__centre_region, 
-                                        GLCD_COLOR_BLACK, 
-                                        (arm_2d_border_opacity_t)
-                                            {32, 32, 255-64, 255-64},
-                                        (arm_2d_corner_opacity_t)
-                                            {0, 128, 128, 128});
-                                    
-        }
-
-
-    #if 0
-        /* draw the cmsis logo in the centre of the screen */
-        arm_2d_align_centre(__top_canvas, c_tileCMSISLogo.tRegion.tSize) {
-            arm_2d_tile_copy_with_src_mask( &c_tileCMSISLogo,
-                                            &c_tileCMSISLogoMask,
-                                            ptTile,
-                                            &__centre_region,
-                                            ARM_2D_CP_MODE_COPY);
-        }
-    #else
-        /* draw the cmsis logo using mask in the centre of the screen */
-        arm_2d_align_centre(__top_canvas, c_tileCMSISLogo.tRegion.tSize) {
-            arm_2d_fill_colour_with_a4_mask_and_opacity(   
-                                                ptTile, 
-                                                &__centre_region, 
-                                                &c_tileCMSISLogoA4Mask, 
-                                                (__arm_2d_color_t){GLCD_COLOR_BLACK},
-                                                128);
-        }
-    #endif
+        spin_zoom_widget_show(&this.tTransform, ptTile, &__top_canvas, NULL, 255);
 
         /* draw text at the top-left corner */
 
@@ -248,7 +224,14 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_transform_inspection_handler)
         arm_lcd_text_set_draw_region(NULL);
         arm_lcd_text_set_colour(GLCD_COLOR_RED, GLCD_COLOR_WHITE);
         arm_lcd_text_location(0,0);
-        arm_lcd_puts("Scene transform_inspection");
+        arm_lcd_text_reset_display_region_tracking();
+        arm_lcd_printf("Scene transform_inspection [%d]", this.hwScaling);
+        
+        arm_2d_helper_dirty_region_update_item( 
+                    &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+                    (arm_2d_tile_t *)ptTile,
+                    &__top_canvas,
+                    arm_lcd_text_get_last_display_region());
 
     /*-----------------------draw the scene end  -----------------------*/
     }
@@ -301,7 +284,7 @@ user_scene_transform_inspection_t *__arm_2d_scene_transform_inspection_init(   a
         .use_as__arm_2d_scene_t = {
 
             /* the canvas colour */
-            .tCanvas = {GLCD_COLOR_WHITE}, 
+            .tCanvas = {GLCD_COLOR_ORANGE}, 
 
             /* Please uncommon the callbacks if you need them
              */
@@ -325,7 +308,35 @@ user_scene_transform_inspection_t *__arm_2d_scene_transform_inspection_init(   a
     };
 
     /* ------------   initialize members of user_scene_transform_inspection_t begin ---------------*/
+    // initialize hour pointer
+    do {
+        spin_zoom_widget_cfg_t tCFG = {
+            .Indicator = {
+                .LowerLimit = {
+                    .fAngleInDegree = 0.0f,
+                    .nValue = 0,
+                },
+                .UpperLimit = {
+                    .fAngleInDegree = 360.0f,
+                    .nValue = 3600ul,
+                },
+            },
+            .ptTransformMode = &SPIN_ZOOM_MODE_TILE_WITH_MASK,
+            .bUseFloatPointInCentre = true,
+            .Source = {
+                .ptSource = &c_tileSolidSquare,
+                .ptMask = &c_tileSolidSquareMask,
+                .tCentreFloat = (arm_2d_point_float_t){
+                    .fX = (float)(c_tileSolidSquare.tRegion.tSize.iWidth - 1) / 2.0f,
+                    .fY = (float)(c_tileSolidSquare.tRegion.tSize.iHeight - 1) / 2.0f,
+                },
+                .tColourToFill = GLCD_COLOR_WHITE,
+            },
+            //.ptScene = (arm_2d_scene_t *)ptThis,
+        };
+        spin_zoom_widget_init(&this.tTransform, &tCFG);
 
+    } while(0);
 
     /* ------------   initialize members of user_scene_transform_inspection_t end   ---------------*/
 
