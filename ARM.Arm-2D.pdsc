@@ -157,7 +157,13 @@
         </condition>
 
         <condition id="Arm-2D-Demos">
-            <description>The dependency of the scene</description>
+            <description>The dependency of the demos</description>
+            <require condition="Arm-2D-Helper"/>
+            <require Cclass="Acceleration" Cgroup="Arm-2D Helper" Csub="Display Adapter" />
+        </condition>
+
+        <condition id="Arm-2D-Render-Test">
+            <description>The dependency of the render tests</description>
             <require condition="Arm-2D-Helper"/>
             <require Cclass="Acceleration" Cgroup="Arm-2D Helper" Csub="Display Adapter" />
         </condition>
@@ -348,6 +354,8 @@
           <files>
             <file category="include"     name="Helper/Include/" />
             <file category="include"     name="examples/demos/" />
+            <file category="include"     name="examples/render_tests/" />
+
             <file category="sourceC"     name="Helper/Source/arm_2d_helper.c" />
             <file category="sourceC"     name="Helper/Source/arm_2d_helper_pfb.c" />
             <file category="sourceC"     name="Helper/Source/arm_2d_helper_scene.c" />
@@ -851,28 +859,6 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Font Rendering" Cversion="0.9.0" condition="Arm-2D-Demos">
-          <description>A demo for the font rendering test.</description>
-          <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_font.c" attr="config" version="0.9.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_font.h" attr="config" version="0.9.0" />
-          </files>
-          <RTE_Components_h>
-#define RTE_Acceleration_Arm_2D_Demos_Font
-          </RTE_Components_h>
-        </component>
-
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Tile Paving" Cversion="2.1.0" condition="Arm-2D-Demos">
-          <description>A demo for the tile filling rendering test.</description>
-          <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_pave.c" attr="config" version="2.1.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_pave.h" attr="config" version="2.1.0" />
-          </files>
-          <RTE_Components_h>
-#define RTE_Acceleration_Arm_2D_Demos_Pave
-          </RTE_Components_h>
-        </component>
-
         <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Filters" Cversion="1.2.2" condition="Arm-2D-Demos">
           <description>A demo for filter operations.</description>
           <files>
@@ -1166,6 +1152,39 @@
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Demos_QOI_Animation
+          </RTE_Components_h>
+        </component>
+
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Font Rendering" Cversion="0.9.0" condition="Arm-2D-Render-Test">
+          <description>A demo for the font rendering test.</description>
+          <files>
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_font.c" attr="config" version="0.9.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_font.h" attr="config" version="0.9.0" />
+          </files>
+          <RTE_Components_h>
+#define RTE_Acceleration_Arm_2D_Render_Tests_Font
+          </RTE_Components_h>
+        </component>
+
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Tile Paving" Cversion="2.1.0" condition="Arm-2D-Render-Test">
+          <description>A demo for the tile filling rendering test.</description>
+          <files>
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_pave.c" attr="config" version="2.1.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_pave.h" attr="config" version="2.1.0" />
+          </files>
+          <RTE_Components_h>
+#define RTE_Acceleration_Arm_2D_Render_Tests_Pave
+          </RTE_Components_h>
+        </component>
+
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Transform Inspection" Cversion="0.5.0" condition="Arm-2D-Render-Test">
+          <description>A demo for the tile filling rendering test.</description>
+          <files>
+            <file category="sourceC"     name="examples/render_tests/arm_2d_transform_inspection.c" attr="config" version="0.5.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_transform_inspection.h" attr="config" version="0.5.0" />
+          </files>
+          <RTE_Components_h>
+#define RTE_Acceleration_Arm_2D_Render_Tests_Transform_Inspection
           </RTE_Components_h>
         </component>
 

@@ -38,6 +38,7 @@
 #include "arm_2d_scene_knob.h"
 
 #include "arm_2d_demos.h"
+#include "arm_2d_render_tests.h"
 
 #if defined(__clang__)
 #   pragma clang diagnostic push
