@@ -5440,22 +5440,9 @@ bool __arm_2d_helper_pfb_is_region_active0( const arm_2d_tile_t *ptTarget,
 {
     const arm_2d_tile_t *ptScreen = NULL;
 
-    bool bResult = false;
-    if (bConsiderDryRun) {
-
-        /* NOTE: 
-         * we only want to get the root without do region validation 
-         */
-        __arm_2d_tile_get_virtual_screen_or_root_only(
-                                                    ptTarget, 
-                                                    (const arm_2d_tile_t **)&ptScreen, 
-                                                    false );
-
-    } else {
-        bResult = arm_2d_helper_pfb_is_region_being_drawing(ptTarget, 
+    bool bResult = arm_2d_helper_pfb_is_region_being_drawing(ptTarget, 
                                                             ptRegion, 
                                                             &ptScreen);
-    }
     
     do {
         if (bResult) {

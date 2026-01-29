@@ -228,7 +228,7 @@ void scene_radars_loader(void)
 {
     arm_2d_scene_player_set_switching_mode( &DISP0_ADAPTER,
                                             ARM_2D_SCENE_SWITCH_MODE_SLIDE_LEFT);
-    arm_2d_scene_player_set_switching_period(&DISP0_ADAPTER, 300);
+    arm_2d_scene_player_set_switching_period(&DISP0_ADAPTER, 500);
 
     arm_2d_scene_radars_init(&DISP0_ADAPTER);
 }
@@ -638,7 +638,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_qoi_animation_loader
         //scene_histogram_loader,
         //scene_qoi_loader,
-        //scene_radars_loader,
+        scene_radars_loader,
         //scene_audiomark_loader
         //scene_watch_face_01_loader
         //scene_fitness_loader,
@@ -664,7 +664,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_balls_loader,
         //scene_iir_blur_loader,
         //scene_progress_status_loader,
-        scene_matrix_loader,
+        //scene_matrix_loader,
         //scene_tjpgd_loader,
         //scene_rickrolling_loader,
         //scene_fan_loader,

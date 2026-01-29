@@ -21,8 +21,8 @@
  * Title:        arm-2d_tile.c
  * Description:  Basic Tile operations
  *
- * $Date:        22. Dec 2025
- * $Revision:    V.1.8.4
+ * $Date:        29. Jan 2026
+ * $Revision:    V.1.8.5
  *
  * Target Processor:  Cortex-M cores
  *
@@ -630,13 +630,8 @@ const arm_2d_tile_t *__arm_2d_tile_get_virtual_screen_or_root(
             tParentRegion.tLocation = ptTile->tRegion.tLocation;
         }
 
-        /*! make sure the output region is valid */
-        if (!arm_2d_region_intersect(   &tParentRegion,
-                                        &tValidRegion,
-                                        &tValidRegion)) {
-            /* out of range */
-            return NULL;
-        }
+
+        bool bFindVirtualScreen = false;
 
         if (ptTile->tInfo.bVirtualScreen) {
             if (NULL != ppVirtualScreen) {
@@ -645,10 +640,20 @@ const arm_2d_tile_t *__arm_2d_tile_get_virtual_screen_or_root(
                     *ppVirtualScreen = (arm_2d_tile_t *)ptTile;
                 }
             }
-            
-            if (bQuitWhenFindVirtualScreen) {
-                break;
-            }
+
+            bFindVirtualScreen = true;
+        }
+
+        /*! make sure the output region is valid */
+        if (!arm_2d_region_intersect(   &tParentRegion,
+                                        &tValidRegion,
+                                        &tValidRegion)) {
+            /* out of range */
+            return NULL;
+        }
+
+        if (bFindVirtualScreen && bQuitWhenFindVirtualScreen) {
+            break;
         }
 
         if (arm_2d_is_root_tile(ptTile)) {
