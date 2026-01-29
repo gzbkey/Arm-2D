@@ -549,7 +549,7 @@
           </Pre_Include_Global_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Controls" Cversion="2.15.5" condition="Arm-2D-Controls">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Controls" Cversion="2.15.6" condition="Arm-2D-Controls">
           <description>A set of example controls, e.g. round-corner-box, spinning-wheels etc</description>
           <files>
             <!-- example control source files -->
@@ -649,6 +649,8 @@
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_MeterPanel.c" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_QuarterSector.c" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_ThreeQuarterRing.c" />
+            <file category="sourceC"     name="examples/common/asset/arm_2d_asset_SolidSquare.c" />
+
             <!--
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_knob_circle_quater.c" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_radial_line_cover.c" />
@@ -982,7 +984,6 @@
             
             <file category="sourceC"     name="examples/demos/roll_scale_marker.c"  attr="config" version="1.1.0" />
             <file category="sourceC"     name="examples/demos/solid_line.c"         attr="config" version="1.0.0" />
-            <file category="sourceC"     name="examples/demos/solid_square.c"       attr="config" version="2.0.0" />
             <file category="sourceC"     name="examples/demos/pitch_scale_marker.c" attr="config" version="1.0.0" />
           </files>
           <RTE_Components_h>
@@ -1177,11 +1178,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Transform Inspection" Cversion="0.5.0" condition="Arm-2D-Render-Test">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Transform Inspection" Cversion="1.0.0" condition="Arm-2D-Render-Test">
           <description>A demo for the tile filling rendering test.</description>
           <files>
-            <file category="sourceC"     name="examples/render_tests/arm_2d_transform_inspection.c" attr="config" version="0.5.0" />
-            <file category="header"      name="examples/render_tests/arm_2d_transform_inspection.h" attr="config" version="0.5.0" />
+            <file category="sourceC"     name="examples/render_tests/arm_2d_transform_inspection.c" attr="config" version="1.0.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_transform_inspection.h" attr="config" version="1.0.0" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Render_Tests_Transform_Inspection

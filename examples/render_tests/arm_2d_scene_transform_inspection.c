@@ -180,12 +180,15 @@ static void __on_scene_transform_inspection_frame_start(arm_2d_scene_t *ptScene)
     user_scene_transform_inspection_t *ptThis = (user_scene_transform_inspection_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
-    int32_t nResult = 999;
-    //arm_2d_helper_time_cos_slider(800, 1000, 10000, 0, &nResult, &this.lTimestamp[0]);
+    int32_t nResult = 0;
+
+    if (arm_2d_helper_time_liner_slider(0, 3600, 30000, &nResult, &this.lTimestamp[0])) {
+        this.lTimestamp[0] = 0;
+    }
 
     this.hwScaling = nResult;
 
-    spin_zoom_widget_on_frame_start(&this.tTransform, 0, (float)nResult / 1000.f);
+    spin_zoom_widget_on_frame_start(&this.tTransform, nResult, 1.0f);
 
 }
 
@@ -302,7 +305,7 @@ user_scene_transform_inspection_t *__arm_2d_scene_transform_inspection_init(   a
             .fnOnFrameCPL   = &__on_scene_transform_inspection_frame_complete,
             .fnDepose       = &__on_scene_transform_inspection_depose,
 
-            .bUseDirtyRegionHelper = false,
+            .bUseDirtyRegionHelper = true,
         },
         .bUserAllocated = bUserAllocated,
     };
@@ -332,7 +335,7 @@ user_scene_transform_inspection_t *__arm_2d_scene_transform_inspection_init(   a
                 },
                 .tColourToFill = GLCD_COLOR_WHITE,
             },
-            //.ptScene = (arm_2d_scene_t *)ptThis,
+            .ptScene = (arm_2d_scene_t *)ptThis,
         };
         spin_zoom_widget_init(&this.tTransform, &tCFG);
 
