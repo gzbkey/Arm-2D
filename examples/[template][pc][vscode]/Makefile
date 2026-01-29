@@ -158,7 +158,7 @@ ifeq ($(OS),Windows_NT)
 	LDFLAG  +=  -flto
 else
 	# For other platforms, we are allowed to set the optimisation level
-	CCFLAG  +=  -O1
+	CCFLAG  +=  -O0
 	#CCFLAG  +=  -flto
 	#LDFLAG  +=  -flto
 endif

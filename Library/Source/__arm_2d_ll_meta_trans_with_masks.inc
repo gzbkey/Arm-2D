@@ -213,23 +213,18 @@ void __MTWM_FUNC(get_pixel_colour_mask)(arm_2d_point_fx_t  *ptFxPoint,
 #endif
 
     uint32_t wTotalAlpha = 0;
-    uint16_t hwTempAlpha;
 
-    hwTempAlpha = (chPixelAlpha0 == 255) * (hwAlpha0 << 8) 
+    wTotalAlpha += (chPixelAlpha0 == 255) * (hwAlpha0 << 8) 
                     + (!(chPixelAlpha0 == 255) * chPixelAlpha0 * hwAlpha0);
-    wTotalAlpha += hwTempAlpha;
-    
-    hwTempAlpha = (chPixelAlpha1 == 255) * (hwAlpha1 << 8) 
+
+    wTotalAlpha += (chPixelAlpha1 == 255) * (hwAlpha1 << 8) 
                     + (!(chPixelAlpha1 == 255) * chPixelAlpha1 * hwAlpha1);
-    wTotalAlpha += hwTempAlpha;
 
-    hwTempAlpha = (chPixelAlpha2 == 255) * (hwAlpha2 << 8) 
+    wTotalAlpha += (chPixelAlpha2 == 255) * (hwAlpha2 << 8) 
                     + (!(chPixelAlpha2 == 255) * chPixelAlpha2 * hwAlpha2);
-    wTotalAlpha += hwTempAlpha;
 
-    hwTempAlpha = (chPixelAlpha3 == 255) * (hwAlpha3 << 8) 
+    wTotalAlpha += (chPixelAlpha3 == 255) * ((uint32_t)hwAlpha3 << 8) 
                     + (!(chPixelAlpha3 == 255) * chPixelAlpha3 * hwAlpha3);
-    wTotalAlpha += hwTempAlpha;
 
     wTotalAlpha >>= 8;
     if (0 == wTotalAlpha) {
