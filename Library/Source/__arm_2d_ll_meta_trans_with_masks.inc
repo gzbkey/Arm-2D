@@ -313,7 +313,7 @@ void __MTWM_FUNC(get_pixel_colour_mask)(arm_2d_point_fx_t  *ptFxPoint,
         #endif
 
         if (hwPixelAlpha >= 255) {
-            pTarget = uPixelResult;
+            *pTarget = uPixelResult;
         } else if (hwPixelAlpha > 0) {
             __API_MTWM_PIXEL_BLENDING( &uPixelResult, pTarget, hwPixelAlpha);
         }
