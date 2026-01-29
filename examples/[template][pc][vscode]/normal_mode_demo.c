@@ -423,210 +423,64 @@ static demo_scene_t const c_SceneLoaders[] = {
 #if 1   /* Looping playlist */
 
 #if defined(__DISP0_CFG_COLOR_SOLUTION__) && __DISP0_CFG_COLOR_SOLUTION__ == 1
-    {
-        13000,
-        scene_mono_loading_loader,
-    },
-    {
-        5000,
-        scene_mono_histogram_loader,
-    },
-    {
-        5000,
-        scene_mono_clock_loader,
-    },
-    {
-        7000,
-        scene_mono_list_loader,
-    },
-    {
-        15000,
-        scene_mono_tracking_list_loader,
-    },
-    {
-        12000,
-        scene_mono_icon_menu_loader,
-    }
+    { 13000,    scene_mono_loading_loader, },
+    { 5000,     scene_mono_histogram_loader, },
+    { 5000,     scene_mono_clock_loader, },
+    { 7000,     scene_mono_list_loader, },
+    { 15000,    scene_mono_tracking_list_loader, },
+    { 12000,    scene_mono_icon_menu_loader, }
 #else
-    {
-        3000,
-        scene_basics_loader,
-    },
-    {
-        10000,
-        scene_progress_status_loader,
-    },
-    {
-        20000,
-        scene_matrix_loader,
-    },
-    {
-        13000,
-        scene_fan_loader,
-    },
-    {
-        10000,
-        scene_console_window_loader,
-    },
-    {
-        20000,
-        scene_text_reader_loader,
-    },
-    {
-        30000,
-        scene_music_player_loader,
-    },
-    {
-        15000,
-        scene_meter_loader,
-    },
-    {   15000,
-        scene_ring_indicator_loader,
-    },
-    {
-        30000,
-        scene_watch_face_01_loader,
-    },
-    {
-        30000,
-        scene_watch_loader,
-    },
-    {
-        20000,
-        scene_compass_loader,
-    },
-    {
-        10000,
-        scene_knob_loader,
-    },
-    {
-        5000,
-        scene_qrcode_loader,
-    },
-    {
-        5000,
-        scene_pave_loader,
-    },
+    { 3000,     scene_basics_loader, },
+    { 10000,    scene_progress_status_loader, },
+    { 20000,    scene_matrix_loader, },
+    { 13000,    scene_fan_loader, },
+    { 10000,    scene_console_window_loader, },
+    { 20000,    scene_text_reader_loader, },
+    { 30000,    scene_music_player_loader, },
+    { 15000,    scene_meter_loader, },
+    { 15000,    scene_ring_indicator_loader, },
+    { 30000,    scene_watch_face_01_loader, },
+    { 30000,    scene_watch_loader, },
+    { 20000,    scene_compass_loader, },
+    { 10000,    scene_knob_loader, },
+    { 5000,     scene_qrcode_loader, },
+    { 5000,     scene_pave_loader, },
 #if defined(RTE_Acceleration_Arm_2D_Extra_TJpgDec_Loader)
-    {
-        5000,
-        scene_tjpgd_loader,
-    },
-    {
-        8000,
-        scene_rickrolling_loader,
-    },
+    { 5000,     scene_tjpgd_loader, },
+    { 8000,     scene_rickrolling_loader, },
 #endif
 #if defined(RTE_Acceleration_Arm_2D_Extra_QOI_Loader)
-    {
-        5000,
-        scene_qoi_loader,
-    },
-    {
-        5000,
-        scene_qoi_animation_loader,
-    },
+    { 5000,     scene_qoi_loader, },
+    { 5000,     scene_qoi_animation_loader, },
 #endif
-    {
-        10000,
-        scene_alarm_clock_loader,
-    },
-    {
-        5000,
-        scene_atom_loader,
-    },
-    {
-        10000,
-        scene_histogram_loader,
-    },
-    {
-        120000,
-        scene_waveform_loader,
-    },
-    {
-        20000,
-        scene_iir_blur_loader,
-    },
-    {
-        30000,
-        scene_bubble_charging_loader,
-    },
-    {
-        29000,
-        scene_gas_gauge_loader,
-    },
-    {
-        12000,
-        scene_listview_loader,
-    },
-    {
-        12000,
-        scene_menu_loader,
-    },
-    {
-        10000,
-        scene_ruler_loader,
-    },
-    {
-        10000,
-        scene_hollow_out_list_loader,
-    },
-    {
-        20000,
-        scene_panel_loader,
-    },
-    {
-        20000,
-        scene_fitness_loader,
-    },
-    {
-        40000,
-        scene_shaped_panel_loader,
-    },
-    {
-        15000,
-        scene_transform_loader,
-    },
-    {
-        15000,
-        scene_filters_loader,
-    },
+    { 10000,    scene_alarm_clock_loader, },
+    { 5000,     scene_atom_loader, },
+    { 10000,    scene_histogram_loader, },
+    { 120000,   scene_waveform_loader, },
+    { 20000,    scene_iir_blur_loader, },
+    { 30000,    scene_bubble_charging_loader, },
+    { 29000,    scene_gas_gauge_loader, },
+    { 12000,    scene_listview_loader, },
+    { 12000,    scene_menu_loader, },
+    { 10000,    scene_ruler_loader, },
+    { 10000,    scene_hollow_out_list_loader, },
+    { 20000,    scene_panel_loader, },
+    { 20000,    scene_fitness_loader, },
+    { 40000,    scene_shaped_panel_loader, },
+    { 15000,    scene_transform_loader, },
+    { 15000,    scene_filters_loader, },
 #if __GLCD_CFG_COLOUR_DEPTH__ == 16
-    {
-        28000,
-        scene_user_defined_opcode_loader,
-    },
-    {
-        20000,
-        scene_space_badge_loader,
-    },
+    { 28000,    scene_user_defined_opcode_loader, },
+    { 20000,    scene_space_badge_loader, },
 #endif
-    {
-        43000,
-        scene_radars_loader,
-    },
-    {
-        20000,
-        scene_blink_loader,
-    },
-    {
-        10000,
-        scene_audiomark_loader,
-    },
-    {
-        10000,
-        scene_flight_attitude_instrument_loader,
-    },
+    { 43000,    scene_radars_loader, },
+    { 20000,    scene_blink_loader, },
+    { 10000,    scene_audiomark_loader, },
+    { 10000,    scene_flight_attitude_instrument_loader, },
     
 #if __DISP0_CFG_VIRTUAL_RESOURCE_HELPER__
-    {
-        3000,
-        scene_virtual_resource_loader,
-    },
-    {
-        5000,
-        scene_animate_background_loader,
-    },
+    { 3000,     scene_virtual_resource_loader, },
+    { 5000,     scene_animate_background_loader, },
 #endif
 
 #endif
@@ -634,7 +488,7 @@ static demo_scene_t const c_SceneLoaders[] = {
 #else    /* debug list */
     {
         .fnLoader = 
-        scene_transform_inspection_loader,
+        //scene_transform_inspection_loader,
         //scene_qoi_animation_loader
         //scene_histogram_loader,
         //scene_qoi_loader,
@@ -646,15 +500,11 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_mask_generation_loader,
         //scene_virtual_resource_loader,
         //scene_ring_indicator_loader,
-        //scene_radars_loader,
-        //scene_fitness_loader,
         //scene_gas_gauge_loader
         //scene_shaped_panel_loader,
-        //scene_radars_loader,
         //scene_flight_attitude_instrument_loader,
         //scene_blink_loader,
         //scene_rickrolling_loader,
-        //scene_histogram_loader,
         //scene_space_badge_loader,
         //scene_pave_loader,
         //scene_qrcode_loader,
@@ -665,8 +515,6 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_iir_blur_loader,
         //scene_progress_status_loader,
         //scene_matrix_loader,
-        //scene_tjpgd_loader,
-        //scene_rickrolling_loader,
         //scene_fan_loader,
         //scene_transform_loader,
         //scene_tjpgd_loader,
@@ -676,11 +524,9 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_listview_loader,
         //scene_mono_tracking_list_loader
         //scene_mono_list_loader,
-        //scene_gas_gauge_loader,
         //scene_meter_loader,
         //scene_compass_loader,
         //scene_basics_loader,
-        //scene_fitness_loader,
         //scene_user_defined_opcode_loader,
         //scene_knob_loader,
         //scene_panel_loader,
