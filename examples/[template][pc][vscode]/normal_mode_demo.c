@@ -518,6 +518,10 @@ static demo_scene_t const c_SceneLoaders[] = {
         5000,
         scene_qoi_loader,
     },
+    {
+        5000,
+        scene_qoi_animation_loader,
+    },
 #endif
     {
         10000,
@@ -626,7 +630,7 @@ static demo_scene_t const c_SceneLoaders[] = {
 #else    /* debug list */
     {
         .fnLoader = 
-        scene_transform_inspection_loader,
+        //scene_transform_inspection_loader,
         //scene_qoi_animation_loader
         //scene_histogram_loader,
         //scene_qoi_loader,
@@ -637,7 +641,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_waveform_loader,
         //scene_mask_generation_loader,
         //scene_virtual_resource_loader,
-        //scene_ring_indicator_loader,
+        scene_ring_indicator_loader,
         //scene_radars_loader,
         //scene_fitness_loader,
         //scene_gas_gauge_loader

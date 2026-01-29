@@ -542,9 +542,8 @@ user_scene_ring_indicator_t *__arm_2d_scene_ring_indicator_init(
 #endif
 
     do {
-        int16_t iRadius = (float)c_tileWhiteDotMiddleMask.tRegion.tSize.iWidth 
-                        - (float)INDICATION_IMAGE.tRegion.tSize.iWidth / 2.0f
-                        - 4;
+        int16_t iRadius = (float)(c_tileWhiteDotMiddleMask.tRegion.tSize.iWidth - 2)
+                        - (float)INDICATION_IMAGE.tRegion.tSize.iWidth / 2.0f;
 
         spin_zoom_widget_cfg_t tCFG = {
             .Indicator = {
