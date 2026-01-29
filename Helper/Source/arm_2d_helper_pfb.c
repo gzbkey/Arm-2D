@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper_pfb.c"
  * Description:  the pfb helper service source code
  *
- * $Date:        19. Dec 2025
- * $Revision:    V.2.4.5
+ * $Date:        29. Jan 2026
+ * $Revision:    V.2.4.6
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -3082,7 +3082,7 @@ ARM_PT_BEGIN(this.Adapter.chPT)
                     this.tCFG.Dependency.Navigation.evtOnDrawing.pTarget,
                     this.Adapter.ptFrameBuffer,
                     this.Adapter.bIsNewFrame);
-            arm_2d_op_wait_async(NULL);
+            ARM_2D_OP_WAIT_ASYNC();
             
             this.Statistics.nTotalCycle += 
                 __arm_2d_helper_perf_counter_stop(
@@ -5419,12 +5419,13 @@ bool arm_2d_helper_pfb_is_region_being_drawing(
             break;
         }
 
-        if (NULL != __arm_2d_tile_get_virtual_screen_or_root(   
+        /* NOTE: 
+         * we only want to get the root without do region validation 
+         */
+        if (NULL != __arm_2d_tile_get_virtual_screen_or_root_only(
                                                     ptTarget, 
-                                                    NULL, 
-                                                    NULL, 
                                                     (const arm_2d_tile_t **)ppVirtualScreen, 
-                                                    false)) {
+                                                    false )) {
             bResult = true;
         }
     } while(0);

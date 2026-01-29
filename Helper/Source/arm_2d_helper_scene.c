@@ -1267,7 +1267,8 @@ void __draw_scene_default(arm_2d_scene_player_t *ptThis,
 
         ARM_2D_INVOKE( ptScene->fnScene, ptScene, ptTile, bIsNewFrame);
     }
-    arm_2d_op_wait_async(NULL);
+
+    ARM_2D_OP_WAIT_ASYNC();
 }
 
 IMPL_PFB_ON_DRAW(__pfb_draw_scene_mode_erase)

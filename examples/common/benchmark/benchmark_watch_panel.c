@@ -385,7 +385,7 @@ void benchmark_watch_panel_draw(const arm_2d_tile_t *ptTile, bool bIsNewFrame)
                                             &__watch_bg,
                                             &c_tileCircleBackgroundMask,
                                             &(s_ptRefreshLayers->tRegion));
-                arm_2d_op_wait_async(NULL);
+                ARM_2D_OP_WAIT_ASYNC();
             }
         }
 
@@ -397,7 +397,7 @@ void benchmark_watch_panel_draw(const arm_2d_tile_t *ptTile, bool bIsNewFrame)
                                         &__centre_region,
                                         64,    //!< 25% opacity
                                         (__arm_2d_color_t){GLCD_COLOR_BLACK});
-            arm_2d_op_wait_async(NULL);
+            ARM_2D_OP_WAIT_ASYNC();
         }
 #else
         arm_2d_fill_colour(ptTile, NULL, GLCD_COLOR_BLACK);
