@@ -24,6 +24,7 @@ PACK_DIRS="
   examples/porting
   examples/common
   examples/demos
+  examples/render_tests
   examples/[template][pc][vscode]
   Acceleration
   Helper
