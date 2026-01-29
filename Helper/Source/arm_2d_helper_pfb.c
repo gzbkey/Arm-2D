@@ -3082,7 +3082,7 @@ ARM_PT_BEGIN(this.Adapter.chPT)
                     this.tCFG.Dependency.Navigation.evtOnDrawing.pTarget,
                     this.Adapter.ptFrameBuffer,
                     this.Adapter.bIsNewFrame);
-            arm_2d_op_wait_async(NULL);
+            ARM_2D_OP_WAIT_ASYNC();
             
             this.Statistics.nTotalCycle += 
                 __arm_2d_helper_perf_counter_stop(

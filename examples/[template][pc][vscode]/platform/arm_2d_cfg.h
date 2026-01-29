@@ -272,24 +272,27 @@ extern "C" {
 
 // <<< end of configuration section >>>
 
-#define MATRIX_LETTER_TRAIN_USE_BLUR                1
-#define ARM_2D_SCENE_METER_USE_JPG                  1
-#define ARM_2D_SCENE_HISTOGRAM_USE_JPG              0
-#define ARM_2D_SCENE_HISTOGRAM_USE_QOI              1
 #define VT_SCALING_RATIO                            1
+
+#define MATRIX_LETTER_TRAIN_USE_BLUR                1
+
+#define ARM_2D_SCENE_HISTOGRAM_USE_JPG              1
+#define ARM_2D_SCENE_HISTOGRAM_USE_ZJPGD            1
+#define ARM_2D_SCENE_HISTOGRAM_USE_QOI              0
+
 #define ARM_2D_DEMO_USE_CRT_SCREEN                  1
 #define ARM_2D_DEMO_JPGD_USE_FILE                   0
+
 #define ARM_2D_SCENE_METER_USE_JPG                  1
 #define ARM_2D_SCENE_METER_USE_ZJPGD                1
 #define ARM_2D_SCENE_METER_USE_QOI                  1
 #define ARM_2D_SCENE_METER_SHOW_FPS                 0
 
-#define ARM_2D_DEMO_RADAR_DEBUG                     1
-//#define ARM_2D_DEMO_QOI_USE_FILE                    1
-
-#define ARM_2D_DEMO_RADAR_SHOW_ANIMATION            1
-#define ARM_2D_DEMO_RADAR_USE_QOI_FOR_ANIMATION     1
-//#define ARM_2D_DEMO_RADAR_USE_JPG_FOR_ANIMATION     1
+#define ARM_2D_DEMO_RADAR_DEBUG                         1
+#define ARM_2D_DEMO_RADAR_SHOW_ANIMATION                1
+#define ARM_2D_DEMO_RADAR_USE_QOI_FOR_ANIMATION         0
+#define ARM_2D_DEMO_RADAR_USE_ZHRGB565_FOR_ANIMATION    1
+#define ARM_2D_DEMO_RADAR_USE_JPG_FOR_ANIMATION         0
 
 //#define ARM_2D_DEMO_USE_ZJPGD                       0
 

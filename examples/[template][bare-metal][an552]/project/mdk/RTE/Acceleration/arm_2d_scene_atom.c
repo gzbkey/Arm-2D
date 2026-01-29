@@ -426,7 +426,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_atom_handler)
 
     /*-----------------------draw the foreground end  -----------------------*/
     }
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
 
     return arm_fsm_rt_cpl;
 }

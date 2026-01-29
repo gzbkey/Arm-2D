@@ -194,7 +194,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene2_background_handler)
 
 
     /*-----------------------draw back ground end  -----------------------*/
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
 
     return arm_fsm_rt_cpl;
 }
@@ -366,7 +366,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene2_handler)
         arm_lcd_printf("scene 2");
     }
     /*-----------------------draw the foreground end  -----------------------*/
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
 
     return arm_fsm_rt_cpl;
 }
@@ -388,7 +388,7 @@ IMPL_PFB_ON_DRAW(__arm_2d_number_list_draw_cover)
         }
     }
 
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
     
     return arm_fsm_rt_cpl;
 }

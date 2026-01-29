@@ -128,7 +128,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_handler)
         busy_wheel2_show(ptTile, bIsNewFrame);
     }
 
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
 
     return arm_fsm_rt_cpl;
 }
@@ -162,7 +162,7 @@ IMPL_PFB_ON_DRAW(__disp_adapter0_draw_navigation)
                     }, 
                     (__arm_2d_color_t){__RGB(64,64,64)}, 
                     255 - 32);
-        arm_2d_op_wait_async(NULL);
+        ARM_2D_OP_WAIT_ASYNC();
         arm_lcd_text_set_colour(GLCD_COLOR_GREEN, GLCD_COLOR_WHITE);
         arm_lcd_text_location((__DISP0_CFG_SCEEN_HEIGHT__ + 7) / 8 - 2,
                               0);
@@ -203,7 +203,7 @@ IMPL_PFB_ON_DRAW(__disp_adapter0_draw_navigation)
                     );
 #endif
 
-    arm_2d_op_wait_async(NULL);
+    ARM_2D_OP_WAIT_ASYNC();
 
     return arm_fsm_rt_cpl;
 }

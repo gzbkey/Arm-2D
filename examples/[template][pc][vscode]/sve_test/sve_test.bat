@@ -1,0 +1,1 @@
+clang -march=armv8-a+sve2 -o sve_test.s sve_test.c -S -O3 -ffast-math -msve-vector-bits=128
