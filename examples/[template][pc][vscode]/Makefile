@@ -146,7 +146,7 @@ CCFLAG  +=  -Wno-macro-redefined
 LDFLAG  +=  -lpthread
 
 # debug
-CC_DEF  += __ARM_2D_DEBUG__
+# CC_DEF  += __ARM_2D_DEBUG__
 
 # develop SVE2
 # CCFLAG  += -march=armv8-a+sve2 -fno-vectorize -fno-slp-vectorize -msve-vector-bits=128
