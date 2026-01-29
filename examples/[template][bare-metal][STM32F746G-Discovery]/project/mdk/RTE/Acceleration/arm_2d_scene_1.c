@@ -180,7 +180,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene1_background_handler)
 
 
     /*-----------------------draw back ground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -271,7 +271,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene1_handler)
     }
 
     /*-----------------------draw the foreground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

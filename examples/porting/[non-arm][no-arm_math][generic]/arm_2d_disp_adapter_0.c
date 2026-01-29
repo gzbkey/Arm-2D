@@ -171,7 +171,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_handler)
         busy_wheel2_show(ptTile, bIsNewFrame);
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

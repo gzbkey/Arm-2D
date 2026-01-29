@@ -99,7 +99,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                                                     (__arm_2d_color_t){tColour},
                                                     chOpacity);
                                                         
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         } while(0);
 
         do {
@@ -116,7 +116,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                                                         (__arm_2d_color_t){tColour},
                                                         chOpacity);
 
-                ARM_2D_OP_WAIT_ASYNC();
+                arm_2d_op_wait_async(NULL);
             }
         } while(0);
 
@@ -131,7 +131,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                 (__arm_2d_color_t){tColour},
                 hwFillAlpha);
             
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
 
         /* center bar */
@@ -145,7 +145,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                 (__arm_2d_color_t){tColour},
                 hwFillAlpha);
             
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
 
         do {
@@ -162,7 +162,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                                                         (__arm_2d_color_t){tColour},
                                                         chOpacity);
 
-                ARM_2D_OP_WAIT_ASYNC();
+                arm_2d_op_wait_async(NULL);
             }
         } while(0);
 
@@ -180,7 +180,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                                                         (__arm_2d_color_t){tColour},
                                                         chOpacity);
 
-                ARM_2D_OP_WAIT_ASYNC();
+                arm_2d_op_wait_async(NULL);
             }
         } while(0);
 
@@ -195,7 +195,7 @@ void __draw_round_corner_box( const arm_2d_tile_t *ptTarget,
                 (__arm_2d_color_t){tColour},
                 hwFillAlpha);
             
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
     }
 }

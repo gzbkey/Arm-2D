@@ -210,7 +210,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_benchmark_generic_cover_handler)
 
     /*-----------------------draw the foreground end  -----------------------*/
     }
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

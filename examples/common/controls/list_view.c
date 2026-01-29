@@ -84,7 +84,7 @@ IMPL_ON_DRAW_EVT(__arm_2d_list_view_draw_background)
                             this.tListViewCFG.chOpacity);
     }
     
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
     
     return arm_fsm_rt_cpl;
 }

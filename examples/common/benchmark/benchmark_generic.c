@@ -371,7 +371,7 @@ static void show_icon_with_background(  const arm_2d_tile_t *ptTile,
                                     &__centre_region,
                                     GLCD_COLOR_BLACK,
                                     32);    
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
 
 
@@ -381,7 +381,7 @@ static void show_icon_with_background(  const arm_2d_tile_t *ptTile,
                                     &__centre_region, 
                                     &c_tileSoftwareMask, 
                                     (__arm_2d_color_t){GLCD_COLOR_DARK_GREY});
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
     }
 }
@@ -402,7 +402,7 @@ static void show_icon_without_background(   const arm_2d_tile_t *ptTile,
                                     (__arm_2d_color_t){GLCD_COLOR_DARK_GREY},
                                     128);
         
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             __centre_region.tLocation.iX -= 2;
             __centre_region.tLocation.iY -= 2;
@@ -411,7 +411,7 @@ static void show_icon_without_background(   const arm_2d_tile_t *ptTile,
                                             &__centre_region, 
                                             &c_tileSoftwareA4Mask, 
                                             (__arm_2d_color_t){GLCD_COLOR_WHITE});
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
         }
     }
 }
@@ -876,7 +876,7 @@ static void __draw_layers(  const arm_2d_tile_t *ptTile,
     //                                    GLCD_COLOR_BLACK,
     //                                    128,
     //                                    bIsNewFrame);    
-    //            ARM_2D_OP_WAIT_ASYNC();
+    //            arm_2d_op_wait_async(NULL);
     //        }
             //! show busy wheel
             spinning_wheel2_show(   &tTempPanel, 

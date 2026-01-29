@@ -416,7 +416,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_listview_background_handler)
 
 
     /*-----------------------draw back ground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -443,7 +443,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_listview_handler)
     arm_lcd_printf("Scene Listview");
 
     /*-----------------------draw the foreground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

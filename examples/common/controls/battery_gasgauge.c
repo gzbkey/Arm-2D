@@ -245,7 +245,7 @@ void battery_gasgauge_nixie_tube_show(  battery_nixie_tube_t *ptThis,
                                             (__arm_2d_color_t){GLCD_COLOR_NIXIE_TUBE},
                                             chOpacity);
                     
-                    ARM_2D_OP_WAIT_ASYNC();
+                    arm_2d_op_wait_async(NULL);
                     __centre_region.tLocation.iY += 16;
                     
                 }
@@ -280,7 +280,7 @@ void battery_gasgauge_nixie_tube_show(  battery_nixie_tube_t *ptThis,
                                             (__arm_2d_color_t){GLCD_COLOR_NIXIE_TUBE},
                                             chOpacity);
                     
-                    ARM_2D_OP_WAIT_ASYNC();
+                    arm_2d_op_wait_async(NULL);
                     __centre_region.tLocation.iY += 12;
 
                 }

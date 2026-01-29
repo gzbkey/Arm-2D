@@ -183,7 +183,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_WHITE, 
                                     255);
             
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             draw_round_corner_border(   ptTile, 
                                         &__centre_region, 
@@ -228,7 +228,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
 
     /*-----------------------draw the foreground end  -----------------------*/
     }
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

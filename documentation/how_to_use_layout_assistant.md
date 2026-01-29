@@ -135,7 +135,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         /* place your drawing code here */
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
     return arm_fsm_rt_cpl;
 }
 ```
@@ -175,7 +175,7 @@ void control_template_show( user_control_template_t *ptThis,
 
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 }
 
 ```
@@ -353,7 +353,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
 
     }
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -474,7 +474,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             arm_2d_layout(__centre_region) {
                 __item_line_horizontal(28,28) {
@@ -493,7 +493,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -527,7 +527,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             arm_2d_container(ptTile, __panel, &__centre_region) {
             
@@ -549,7 +549,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -605,7 +605,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             arm_2d_container(ptTile, __panel, &__centre_region) {
             
@@ -627,7 +627,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -690,7 +690,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             
             arm_2d_layout(__centre_region) {
@@ -710,7 +710,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -777,7 +777,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             arm_2d_layout(__centre_region) {
                 __item_horizontal(28,28,2,2,2,2) {
@@ -814,7 +814,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -875,7 +875,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
                                     GLCD_COLOR_RED, 
                                     128);
                 
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             arm_2d_layout(__centre_region) {
                 __item_vertical(28,28,2,2,2,2) {
@@ -912,7 +912,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene0_handler)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

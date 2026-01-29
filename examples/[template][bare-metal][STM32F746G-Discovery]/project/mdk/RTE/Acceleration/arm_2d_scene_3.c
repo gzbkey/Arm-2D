@@ -410,7 +410,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene3_background_handler)
 
 
     /*-----------------------draw back ground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -440,7 +440,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene3_handler)
     arm_lcd_printf("scene 3");
 
     /*-----------------------draw the foreground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

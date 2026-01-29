@@ -226,6 +226,10 @@ void scene_transform_loader(void)
 
 void scene_radars_loader(void) 
 {
+    arm_2d_scene_player_set_switching_mode( &DISP0_ADAPTER,
+                                            ARM_2D_SCENE_SWITCH_MODE_SLIDE_LEFT);
+    arm_2d_scene_player_set_switching_period(&DISP0_ADAPTER, 300);
+
     arm_2d_scene_radars_init(&DISP0_ADAPTER);
 }
 
@@ -416,7 +420,7 @@ typedef struct demo_scene_t {
 
 static demo_scene_t const c_SceneLoaders[] = {
 
-#if 1   /* Looping playlist */
+#if 0   /* Looping playlist */
 
 #if defined(__DISP0_CFG_COLOR_SOLUTION__) && __DISP0_CFG_COLOR_SOLUTION__ == 1
     {
@@ -641,7 +645,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_waveform_loader,
         //scene_mask_generation_loader,
         //scene_virtual_resource_loader,
-        scene_ring_indicator_loader,
+        //scene_ring_indicator_loader,
         //scene_radars_loader,
         //scene_fitness_loader,
         //scene_gas_gauge_loader
@@ -660,7 +664,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_balls_loader,
         //scene_iir_blur_loader,
         //scene_progress_status_loader,
-        //scene_matrix_loader,
+        scene_matrix_loader,
         //scene_tjpgd_loader,
         //scene_rickrolling_loader,
         //scene_fan_loader,

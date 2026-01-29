@@ -165,7 +165,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_background_handler)
 
 
     /*-----------------------draw back ground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -212,7 +212,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_handler)
                                                         this.tStatus,
                                                         bIsNewFrame);
                     
-                    ARM_2D_OP_WAIT_ASYNC();
+                    arm_2d_op_wait_async(NULL);
 
                     
                     arm_2d_size_t tTextSize = arm_lcd_get_string_line_box("00", &ARM_2D_FONT_A4_DIGITS_ONLY);
@@ -226,7 +226,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_handler)
                         arm_lcd_text_location(0,0);
                         arm_lcd_printf("%02d", this.hwGasgauge / 10);
                         
-                        ARM_2D_OP_WAIT_ASYNC();
+                        arm_2d_op_wait_async(NULL);
                     }
                 }
                 
@@ -238,7 +238,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_handler)
                                                     this.tStatus,
                                                     bIsNewFrame);
                     
-                    ARM_2D_OP_WAIT_ASYNC();
+                    arm_2d_op_wait_async(NULL);
                     
                     arm_2d_size_t tTextSize = arm_lcd_get_string_line_box("00", &ARM_2D_FONT_A4_DIGITS_ONLY);
                     
@@ -253,7 +253,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_handler)
                         arm_lcd_printf("%02d", this.hwGasgauge / 10);
                         arm_lcd_text_set_opacity(255);
 
-                        ARM_2D_OP_WAIT_ASYNC();
+                        arm_2d_op_wait_async(NULL);
                     }
                 }
                 
@@ -271,7 +271,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene4_handler)
     arm_lcd_puts("Scene 4");
 
     /*-----------------------draw the foreground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }

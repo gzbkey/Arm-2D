@@ -352,7 +352,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_panel_handler)
         arm_lcd_printf("Scene Panel");
     }
     /*-----------------------draw the foreground end  -----------------------*/
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
 
     return arm_fsm_rt_cpl;
 }
@@ -374,7 +374,7 @@ IMPL_PFB_ON_DRAW(__arm_2d_number_list_draw_cover)
         }
     }
 
-    ARM_2D_OP_WAIT_ASYNC();
+    arm_2d_op_wait_async(NULL);
     
     return arm_fsm_rt_cpl;
 }

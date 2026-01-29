@@ -3082,7 +3082,7 @@ ARM_PT_BEGIN(this.Adapter.chPT)
                     this.tCFG.Dependency.Navigation.evtOnDrawing.pTarget,
                     this.Adapter.ptFrameBuffer,
                     this.Adapter.bIsNewFrame);
-            ARM_2D_OP_WAIT_ASYNC();
+            arm_2d_op_wait_async(NULL);
             
             this.Statistics.nTotalCycle += 
                 __arm_2d_helper_perf_counter_stop(
@@ -5419,13 +5419,13 @@ bool arm_2d_helper_pfb_is_region_being_drawing(
             break;
         }
 
-        /* NOTE: 
-         * we only want to get the root without do region validation 
-         */
-        if (NULL != __arm_2d_tile_get_virtual_screen_or_root_only(
+
+        if (NULL != __arm_2d_tile_get_virtual_screen_or_root(   
                                                     ptTarget, 
+                                                    NULL, 
+                                                    NULL, 
                                                     (const arm_2d_tile_t **)ppVirtualScreen, 
-                                                    false )) {
+                                                    false)) {
             bResult = true;
         }
     } while(0);
@@ -5440,10 +5440,23 @@ bool __arm_2d_helper_pfb_is_region_active0( const arm_2d_tile_t *ptTarget,
 {
     const arm_2d_tile_t *ptScreen = NULL;
 
-    bool bResult = arm_2d_helper_pfb_is_region_being_drawing(   ptTarget, 
-                                                                ptRegion, 
-                                                                &ptScreen);
+    bool bResult = false;
+    if (bConsiderDryRun) {
 
+        /* NOTE: 
+         * we only want to get the root without do region validation 
+         */
+        __arm_2d_tile_get_virtual_screen_or_root_only(
+                                                    ptTarget, 
+                                                    (const arm_2d_tile_t **)&ptScreen, 
+                                                    false );
+
+    } else {
+        bResult = arm_2d_helper_pfb_is_region_being_drawing(ptTarget, 
+                                                            ptRegion, 
+                                                            &ptScreen);
+    }
+    
     do {
         if (bResult) {
             break;
