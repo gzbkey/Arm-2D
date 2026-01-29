@@ -47,8 +47,6 @@
 #include "arm_2d_scene_iir_blur.h"
 #include "arm_2d_scene_balls.h"
 #include "arm_2d_scene_music_player.h"
-#include "arm_2d_scene_font.h"
-#include "arm_2d_scene_pave.h"
 #include "arm_2d_scene_qrcode.h"
 #include "arm_2d_scene_space_badge.h"
 #include "arm_2d_scene_radars.h"
@@ -59,7 +57,6 @@
 #include "arm_2d_scene_waveform.h"
 #include "arm_2d_scene_zhrgb565.h"
 #include "arm_2d_scene_qoi_animation.h"
-#include "arm_2d_scene_transform_inspection.h"
 
 #if defined(RTE_Acceleration_Arm_2D_Demos_Mask_Generator)
 #   include "arm_2d_scene_mask_generation.h"
