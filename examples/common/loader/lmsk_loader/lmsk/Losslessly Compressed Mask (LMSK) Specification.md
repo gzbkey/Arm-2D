@@ -38,11 +38,12 @@ typedef struct arm_cm_header_t {
     int16_t iWidth;
     int16_t iHeight;
   
-    uint8_t u3AlphaMSBCount  : 3;   /* MSB alpha bits = u3AlphaBits + 1 */
-    uint8_t bRaw             : 1;   /* whether the alpha is compressed or not */
-    uint8_t 								 : 4;
+    uint8_t u3AlphaMSBCount     : 3;  /* MSB alpha bits = u3AlphaBits + 1 */
+    uint8_t bRaw                : 1;  /* whether the alpha is compressed or not */
+    uint8_t u2TagSetBits        : 2;  /* must be 0x00 for now */
+    uint8_t                     : 2;  /* must be 0x00 for now, reserved for the future */
     uint8_t chFloorCount;
-    uint32_t								 : 32;  /* reserved */
+    uint32_t                    : 32; /* reserved */
 } arm_cm_header_t;
 ```
 - `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_bits = value + 1). All delta operations apply only to these significant high bits.
@@ -52,11 +53,11 @@ typedef struct arm_cm_header_t {
 
 
 ### Floor Table and Line Index
-The **Floor Table** defines base address partitions for line data. For a line number `L` where `L >= floor_table[i]` (and `L < floor_table[i+1]` if exists), the base address for that line is `(i + 1) * 65536` bytes.
+The **Floor Table** defines base address partitions for line data. For a line number `L` where `L >= floor_table[i]` (and `L < floor_table[i+1]` if exists), the base address for that line is `(i + 1) * (1 << (16 - u2TagSetBits))` bytes or `(i + 1) * 65536` for the current version.
 
 The **Line Index Table** stores **byte offsets** for each line relative to its **base address**. The address in the **data section** is calculated as:
 ```
-base_address = (floor_index + 1) * 65536
+base_address = (floor_index + 1) * (1 << (16 - u2TagSetBits))
 line_offset  = line_index_table[row]
 line_pos     = base_address + line_offset
 ```
@@ -134,3 +135,16 @@ Per-line decoder state:
      - If `...00`: consume 8 bits, parse **REPEAT** or **special tags**, i.e. **ALPHA_TAG** and **GRADIENT_TAG**
      - If `...10`: consume 8 bits, execute **DELTA_LARGE**.
 4. Truncate immediately when line width is reached; discard remaining bits for that line.
+
+
+
+## 4 Tag Sets Scheme Reserved for Future
+
+There is a bitfield `u2TagSetBits` defined in the `arm_cm_header_t`. It determines how many **MSB** bits in each line index are used as **TAG_SET**.  Here:
+
+* When `u2TagSetBits` are `0`, the **TAG_SET** of each line is seen as `0`.  In this version of the spec, the `u2TagSetBits` should always be `0`.
+* **TAG_SETs** are read in little-endian. 
+  * `0` is the TAG set defined in this spec.
+  * Other values are reserved for the future.
+* The floor advance is calculated as `1 << (16 - u2TagSetBits)`.
+* Each line can have a different **TAG_SET** value in the future. In this version of the spec, all lines have the default **TAG_SET** value `0`.
