@@ -96,14 +96,11 @@ def png_to_lmsk(png_path, lmsk_path, target_size=None):
                 img_rgba = img.convert('RGBA')
                 pixel_data = img_rgba.tobytes()
                 output_data = pixel_data[3::4]
-                
-            print(f"Extracted alpha channel data: {len(output_data)} bytes")
             
         else:
             # No alpha channel: convert to Gray8 grayscale format
             img_gray = img.convert('L')  # 'L' mode is 8-bit grayscale
             output_data = img_gray.tobytes()
-            print(f"Converted to Gray8 grayscale data: {len(output_data)} bytes")
         
         # Write binary file
         with open(lmsk_path, 'wb') as f:
