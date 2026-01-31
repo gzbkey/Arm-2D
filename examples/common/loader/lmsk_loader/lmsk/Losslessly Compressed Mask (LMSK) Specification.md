@@ -70,9 +70,7 @@ line_pos     = base_address + line_offset
 
 ## 3 Data Stream Specification
 
-The data stream (a.k.a **data section**) is organised by scanlines. Each line begins with **1 byte of raw alpha value** (the absolute value of the first pixel in the line), followed by a bitstream of instructions.
-
-The decoder maintains a 32-bit sliding window as a bit buffer, consuming bits LSB first.
+The data stream (a.k.a **data section**) is organised by scanlines. Each line begins with **1 byte of raw alpha value** (the absolute value of the first pixel in the line), followed by a bitstream of Tags.
 
 ### 3.1 Tags
 
