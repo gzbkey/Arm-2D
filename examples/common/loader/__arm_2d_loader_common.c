@@ -1052,7 +1052,9 @@ size_t __arm_loader_io_cache_read_internal( arm_loader_io_cache_t *ptThis,
     size_t iSizeToRead = this.use_as__arm_loader_io_rom_t.tSize 
                        - this.use_as__arm_loader_io_rom_t.tPostion;
     iSizeToRead = MIN(iSizeToRead, tSize);
-    assert(iSizeToRead != 0);
+    if (0 == iSizeToRead) {
+        return iSizeToRead;
+    }
 
     uintptr_t wAddress = this.use_as__arm_loader_io_rom_t.tPostion;
     //this.dwMemoryAccess++;
@@ -1118,6 +1120,8 @@ size_t __arm_loader_io_cache_read(  uintptr_t pTarget,
                                                                     tDataToRead);
         if (tActualRead == tDataToRead) {
             break;
+        } else if (0 == tActualRead) {
+            return tSize - tDataToRead;
         }
         pchBuffer += tActualRead;
         tDataToRead -= tActualRead;
