@@ -823,13 +823,13 @@ arm_io_cacheline_t *__arm_loader_io_search_cacheline(arm_loader_io_cache_t *ptTh
 {
     assert(NULL != ptThis);
 
-    wAddress >>= 5;
+    wAddress >>= 6;
 
     if (NULL != this.ptRecent) {
 
-        if (wAddress == this.ptRecent->u27Address) {
+        if (wAddress == this.ptRecent->u26Address) {
             /* cache hit */
-            this.ptRecent->u4LiftCount = 0xF;
+            this.ptRecent->u4LifeCount = 0xF;
             return this.ptRecent;
         }
     }
@@ -840,16 +840,16 @@ arm_io_cacheline_t *__arm_loader_io_search_cacheline(arm_loader_io_cache_t *ptTh
         arm_io_cacheline_t **pptItem = &(_->ptHead);
 
         while(NULL != (*pptItem)) {
-            if (wAddress == (*pptItem)->u27Address) {
+            if (wAddress == (*pptItem)->u26Address) {
                 /* cache hit */
-                (*pptItem)->u4LiftCount = 0xF; /* reset life count */
+                (*pptItem)->u4LifeCount = 0xF; /* reset life count */
                 return (*pptItem);
             }
 
             if (this.bFinishedLoading && NULL != this.ptLoading) {
-                assert(this.ptLoading->u27Address != ((*pptItem)->u27Address));
+                assert(this.ptLoading->u26Address != ((*pptItem)->u26Address));
 
-                if (this.ptLoading->u27Address < ((*pptItem)->u27Address)) {
+                if (this.ptLoading->u26Address < ((*pptItem)->u26Address)) {
                     arm_irq_safe {
                         this.ptLoading->ptNext = (*pptItem);
                         (*pptItem) = this.ptLoading;
@@ -859,13 +859,13 @@ arm_io_cacheline_t *__arm_loader_io_search_cacheline(arm_loader_io_cache_t *ptTh
                 }
             }
 
-            if ((wAddress < (*pptItem)->u27Address) 
+            if ((wAddress < (*pptItem)->u26Address) 
              && (this.ptLoading == NULL)) {
                 return NULL;
             }
 
-            if ((*pptItem)->u4LiftCount) {
-                (*pptItem)->u4LiftCount--;
+            if ((*pptItem)->u4LifeCount) {
+                (*pptItem)->u4LifeCount--;
 
                 arm_irq_safe {
                     pptItem = &((*pptItem)->ptNext);
@@ -889,9 +889,9 @@ arm_io_cacheline_t *__arm_loader_io_search_cacheline(arm_loader_io_cache_t *ptTh
                 this.ptLoading = NULL;
             }
 
-            if (wAddress == (*pptItem)->u27Address) {
+            if (wAddress == (*pptItem)->u26Address) {
                 /* cache hit */
-                (*pptItem)->u4LiftCount = 0xF; /* reset life count */
+                (*pptItem)->u4LifeCount = 0xF; /* reset life count */
                 return (*pptItem);
             }
         }
@@ -920,7 +920,7 @@ void arm_loader_io_cache_report_load_complete(arm_loader_io_cache_t *ptThis)
 
     arm_io_cacheline_t *ptItem = this.ptLoading;
 
-    ptItem->u4LiftCount = 0xF;
+    ptItem->u4LifeCount = 0xF;
     ptItem->bHasPrefetchNext = false;
 
     arm_irq_safe {
@@ -954,7 +954,7 @@ void __arm_loader_io_cache_preload(arm_loader_io_cache_t *ptThis, uintptr_t wAdd
 
     arm_io_cacheline_t *ptVictim = NULL;
 
-    wAddress >>= 5;
+    wAddress >>= 6;
 
     /* find a victim */
     if (NULL != this.ptFree) {
@@ -972,14 +972,14 @@ void __arm_loader_io_cache_preload(arm_loader_io_cache_t *ptThis, uintptr_t wAdd
             arm_io_cacheline_t **pptItem = &_->ptHead;
 
             while(NULL != *pptItem) {
-                if ((*pptItem)->u27Address == wAddress) {
+                if ((*pptItem)->u26Address == wAddress) {
                     return ;
                 }
-                if (0 == (*pptItem)->u4LiftCount) {
+                if (0 == (*pptItem)->u4LifeCount) {
                     chMinLifeCount = 0;
                     pptVictim = pptItem;
-                } else if ((*pptItem)->u4LiftCount <= chMinLifeCount) {
-                    chMinLifeCount = (*pptItem)->u4LiftCount;
+                } else if ((*pptItem)->u4LifeCount <= chMinLifeCount) {
+                    chMinLifeCount = (*pptItem)->u4LifeCount;
                     pptVictim = pptItem;
                 }
 
@@ -1002,13 +1002,13 @@ label_finish_searching:
         }
     }
 
-    ptVictim->u27Address = wAddress;
+    ptVictim->u26Address = wAddress;
     ptVictim->ptNext = NULL;
 
     this.bFinishedLoading = false;
     this.ptLoading = ptVictim;
 
-    wAddress = (wAddress << 5) + this.use_as__arm_loader_io_rom_t.nAddress;
+    wAddress = (wAddress << 6) + this.use_as__arm_loader_io_rom_t.nAddress;
 
     __arm_loader_io_cache_request_load_memory(  ptThis, 
                                                 wAddress, 
@@ -1081,11 +1081,11 @@ size_t __arm_loader_io_cache_read_internal( arm_loader_io_cache_t *ptThis,
 
         if (!ptHit->bHasPrefetchNext && this.bAllowsPrefetch) {
             ptHit->bHasPrefetchNext = true;
-            uintptr_t nNextAddress = (ptHit->u27Address + 1) << 5;
+            uintptr_t nNextAddress = (ptHit->u26Address + 1) << 6;
             __arm_loader_io_cache_preload(ptThis, nNextAddress);
         }
 
-        uintptr_t wOffset = wAddress - (ptHit->u27Address << 5);
+        uintptr_t wOffset = wAddress - (ptHit->u26Address << 6);
         size_t wDataAvailable = sizeof(ptHit->wWords) - wOffset;
 
         iSizeToRead = MIN(iSizeToRead, wDataAvailable);

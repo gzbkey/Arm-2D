@@ -91,11 +91,12 @@ typedef struct arm_io_cacheline_t {
 ARM_PRIVATE(
     struct arm_io_cacheline_t *ptNext;
 
-    uint32_t u4LiftCount        : 4;
+    uint32_t u4LifeCount        : 4;
     uint32_t bHasPrefetchNext   : 1;
-    uint32_t u27Address         : 27;
+    uint32_t                    : 1;
+    uint32_t u26Address         : 26;
 
-    uint32_t wWords[32 / sizeof(uint32_t)];
+    uint32_t wWords[64 / sizeof(uint32_t)];
 )
 }arm_io_cacheline_t;
 

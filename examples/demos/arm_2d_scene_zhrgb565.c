@@ -284,7 +284,7 @@ user_scene_zhrgb565_t *__arm_2d_scene_zhrgb565_init(   arm_2d_scene_player_t *pt
 
     #if __ARM_2D_ZHRGB565_USE_LOADER_IO__
         
-    #if 0
+    #if 1
         arm_loader_io_cache_init(   &this.LoaderIO.tCache, 
                                     (uintptr_t)c_zhrgbDogeDance, 
                                     sizeof(c_zhrgbDogeDance),
@@ -301,7 +301,7 @@ user_scene_zhrgb565_t *__arm_2d_scene_zhrgb565_init(   arm_2d_scene_player_t *pt
         
         #if __ARM_2D_ZHRGB565_USE_LOADER_IO__
             .ImageIO = {
-            #if 0
+            #if 1
                 .ptIO = &ARM_LOADER_IO_CACHE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tCache,
             #else
