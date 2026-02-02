@@ -1100,11 +1100,13 @@ user_scene_radars_t *__arm_2d_scene_radars_init(
                     .ptIO = &ARM_LOADER_IO_FILE,
                     .pTarget = (uintptr_t)&this.tAnimation[FILM_IDX_TOP_LEFT].LoaderIO.tFile,
                 },
-            #else
+            #elif __ARM_QOI_USE_LOADER_IO__
                 .ImageIO = {
                     .ptIO = &ARM_LOADER_IO_ROM,
                     .pTarget = (uintptr_t)&this.tAnimation[FILM_IDX_TOP_LEFT].LoaderIO.tROM,
                 },
+            #else
+                .pchQOISource = c_qoiGirlDance,
             #endif
             };
 
@@ -1151,11 +1153,13 @@ user_scene_radars_t *__arm_2d_scene_radars_init(
                     .ptIO = &ARM_LOADER_IO_FILE,
                     .pTarget = (uintptr_t)&this.tAnimation[FILM_IDX_BOTTOM_RIGHT].LoaderIO.tFile,
                 },
-            #else
+            #elif __ARM_QOI_USE_LOADER_IO__
                 .ImageIO = {
                     .ptIO = &ARM_LOADER_IO_ROM,
                     .pTarget = (uintptr_t)&this.tAnimation[FILM_IDX_BOTTOM_RIGHT].LoaderIO.tROM,
                 },
+            #else
+                .pchQOISource = c_qoiDogeDance,
             #endif
             };
 

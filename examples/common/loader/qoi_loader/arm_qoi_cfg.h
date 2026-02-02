@@ -23,7 +23,7 @@
 // <i> This feature is enabled by default. If the compressed image is accessible inside the 4G memory space, please disable this option.
 // <i> When this feature is disabled, the ARM_QOI_IO_BUFFER_SIZE is ignored. 
 #ifndef __ARM_QOI_USE_LOADER_IO__
-#   define __ARM_QOI_USE_LOADER_IO__    1
+#   define __ARM_QOI_USE_LOADER_IO__    0
 #endif
 
 //</h>
