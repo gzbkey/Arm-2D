@@ -133,10 +133,12 @@ void ring_indication_init( ring_indication_t *ptThis,
     this.Foreground.ptMask = ptCFG->Foreground.ptMask;
     this.Background.ptMask = ptCFG->Background.ptMask;
 
-    int16_t iRadius = (this.Foreground.ptTile->tRegion.tSize.iWidth + 1) >> 1;
+    int16_t iMaxDiameter = MAX( this.Foreground.ptTile->tRegion.tSize.iWidth,
+                                this.Foreground.ptTile->tRegion.tSize.iHeight);
+    int16_t iRadius = (iMaxDiameter + 1) >> 1;
     int16_t iSectorMaskRadius = ptCFG->QuarterSector.ptMask->tRegion.tSize.iWidth - 2;
 
-    this.iDiameter = this.Foreground.ptTile->tRegion.tSize.iWidth;
+    this.iDiameter = iMaxDiameter;
 
     this.fSectorScale = ((float)iRadius / (float)iSectorMaskRadius) + 0.05;
 
