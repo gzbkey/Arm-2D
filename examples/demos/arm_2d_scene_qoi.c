@@ -346,11 +346,13 @@ user_scene_qoi_t *__arm_2d_scene_qoi_init(   arm_2d_scene_player_t *ptDispAdapte
                 .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_LOADER_IO_ROM,
                 .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
+        #else
+            .pchQOISource = c_qoiMeterPanel,
         #endif
         };
 

@@ -218,10 +218,16 @@ typedef struct arm_qoi_cfg_t {
     uint8_t bInvertColour   : 1;
 
     struct {
+#if __ARM_QOI_USE_LOADER_IO__
         __arm_qoi_io_seek_t     *fnSeek;
         __arm_qoi_io_read_t     *fnRead;
+#endif
         __arm_qoi_ctx_report_t  *fnReport;
     } IO;
+
+#if !__ARM_QOI_USE_LOADER_IO__
+    const uint8_t *pchQOISource;
+#endif
 } arm_qoi_cfg_t;
 
 struct arm_qoi_dec_t{

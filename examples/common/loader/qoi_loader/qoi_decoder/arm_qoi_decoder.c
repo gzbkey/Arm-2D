@@ -69,6 +69,36 @@ __STATIC_INLINE uint_fast8_t __arm_qoi_get_hash_index(uint32_t wPixelValue)
            & ((1 << 6) - 1));                       /* mod 64 */
 }
 
+
+__STATIC_FORCEINLINE
+arm_2d_err_t __arm_qoi_seek(arm_qoi_dec_t *ptThis, uintptr_t nPosition)
+{
+#if __ARM_QOI_USE_LOADER_IO__
+    if (!this.tCFG.IO.fnSeek(this.tCFG.pTarget, nPosition, SEEK_SET)) {
+        return ARM_2D_ERR_IO_ERROR;
+    }
+#else
+    this.ptWorking->tPosition = nPosition;
+#endif
+    return ARM_2D_ERR_NONE;
+}
+
+__STATIC_FORCEINLINE
+size_t __arm_qoi_read(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer, size_t tSize)
+{
+#if __ARM_QOI_USE_LOADER_IO__
+    return this.tCFG.IO.fnRead(this.tCFG.pTarget, pchBuffer, tSize );
+#else
+    memcpy( pchBuffer, 
+            &this.tCFG.pchQOISource[this.ptWorking->tPosition],
+            tSize);
+    this.ptWorking->tPosition += tSize;
+
+    return tSize;
+#endif
+}
+
+
 static
 arm_2d_err_t __arm_qoi_reset_context(   arm_qoi_dec_t *ptThis, 
                                         arm_qoi_dec_ctx_t *ptContext, 
@@ -76,9 +106,12 @@ arm_2d_err_t __arm_qoi_reset_context(   arm_qoi_dec_t *ptThis,
 {
     assert(NULL != ptThis);
     assert(NULL != ptContext);
+#if __ARM_QOI_USE_LOADER_IO__
     assert(NULL != this.tCFG.IO.fnRead);
     assert(NULL != this.tCFG.IO.fnSeek);
-
+#else
+    assert(NULL != this.tCFG.pchQOISource);
+#endif
     /* initialize the working memory */
     memset(ptContext, 0, sizeof(arm_qoi_dec_ctx_t));
 
@@ -99,6 +132,7 @@ arm_2d_err_t __arm_qoi_reset_context(   arm_qoi_dec_t *ptThis,
 
     struct __arm_qoi_header tQOIHeader;
 
+#if 0
     /* move to the head */
     if (!this.tCFG.IO.fnSeek(this.tCFG.pTarget, 0, SEEK_SET)) {
         return ARM_2D_ERR_IO_ERROR;
@@ -107,6 +141,14 @@ arm_2d_err_t __arm_qoi_reset_context(   arm_qoi_dec_t *ptThis,
     if (14 > this.tCFG.IO.fnRead(this.tCFG.pTarget, (uint8_t *)&tQOIHeader, 14 )) {
         return ARM_2D_ERR_IO_ERROR;
     }
+#else
+    if (ARM_2D_ERR_NONE != __arm_qoi_seek(ptThis, 0)) {
+        return ARM_2D_ERR_IO_ERROR;
+    }
+    if (__arm_qoi_read(ptThis, (uint8_t *)&tQOIHeader, 14) < 14) {
+        return ARM_2D_ERR_IO_ERROR;
+    }
+#endif
 
     if (0 != memcmp("qoif", tQOIHeader.chMagic, 4)) {
         return ARM_2D_ERR_IO_ERROR;
@@ -152,11 +194,15 @@ arm_2d_err_t arm_qoi_decoder_init(arm_qoi_dec_t *ptThis, arm_qoi_cfg_t *ptCFG)
     /* get the context address */
     pnAddress -= sizeof(arm_qoi_dec_ctx_t);
 
+
     if ((pnAddress < (uintptr_t)this.tCFG.pchWorkingMemory) || NULL == this.tCFG.pchWorkingMemory) {
         return ARM_2D_ERR_INVALID_PARAM;
-    } else if (NULL == this.tCFG.IO.fnRead || NULL == this.tCFG.IO.fnSeek) {
+    } 
+#if __ARM_QOI_USE_LOADER_IO__
+    else if (NULL == this.tCFG.IO.fnRead || NULL == this.tCFG.IO.fnSeek) {
         return ARM_2D_ERR_MISSING_PARAM;
     }
+#endif
 
     if (this.tCFG.chOutputColourFormat > __ARM_QOI_DEC_FORMAT_VALID) {
         return ARM_2D_ERR_NOT_SUPPORT;
@@ -215,14 +261,21 @@ arm_2d_err_t arm_qoi_dec_resume_context(arm_qoi_dec_t *ptThis,
 
     *this.ptWorking = *ptContextOut;
     
+#if 0
     /* resume read position */
     if (!this.tCFG.IO.fnSeek(this.tCFG.pTarget, 
                              this.ptWorking->tPosition, 
                              SEEK_SET)) {
         return ARM_2D_ERR_IO_ERROR;
     }
+#else
+    if (ARM_2D_ERR_NONE != __arm_qoi_seek(ptThis, this.ptWorking->tPosition)) {
+        return ARM_2D_ERR_IO_ERROR;
+    }
+#endif
 
-#if ARM_QOI_IO_BUFF_SIZE > 0
+
+#if __ARM_QOI_USE_LOADER_IO__ && ARM_QOI_IO_BUFF_SIZE > 0
     if (this.ptWorking->hwSize > 0) {
         /* refill the buffer */
         if (this.ptWorking->hwTail
@@ -241,6 +294,7 @@ ARM_NONNULL(1,2)
 __STATIC_INLINE
 size_t __arm_qoi_dec_io_read(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer, size_t tSize)
 {
+#if __ARM_QOI_USE_LOADER_IO__
     //assert(NULL != ptThis);
     //assert(NULL != pchBuffer);
     //assert(0 != tSize);
@@ -290,6 +344,9 @@ size_t __arm_qoi_dec_io_read(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer, size_t t
 
     return tSize;
 #endif
+#else
+    return __arm_qoi_read(ptThis, pchBuffer, tSize);
+#endif
 }
 
 
@@ -297,6 +354,7 @@ ARM_NONNULL(1,2)
 __STATIC_INLINE
 size_t __arm_qoi_dec_io_try_to_read_word(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer)
 {
+#if __ARM_QOI_USE_LOADER_IO__
     //assert(NULL != ptThis);
     //assert(NULL != pchBuffer);
     //assert(0 != tSize);
@@ -360,12 +418,19 @@ size_t __arm_qoi_dec_io_try_to_read_word(arm_qoi_dec_t *ptThis, uint8_t *pchBuff
 
     return tSize;
 #endif
+#else
+    *(uint32_t *)pchBuffer = *(uint32_t *)&this.tCFG.pchQOISource[this.ptWorking->tPosition];
+    this.ptWorking->tPosition += 4;
+
+    return 4;
+#endif
 }
 
 ARM_NONNULL(1,2) 
 __STATIC_INLINE
 bool __arm_qoi_dec_io_read_byte(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer)
 {
+#if __ARM_QOI_USE_LOADER_IO__
     //assert(NULL != ptThis);
     //assert(NULL != pchBuffer);
     //assert(0 != tSize);
@@ -408,6 +473,12 @@ bool __arm_qoi_dec_io_read_byte(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer)
 
     return true;
 #endif
+#else
+    *pchBuffer = this.tCFG.pchQOISource[this.ptWorking->tPosition++];
+
+    return true;
+#endif
+    
 }
 
 
@@ -415,6 +486,7 @@ ARM_NONNULL(1,2)
 __STATIC_INLINE
 bool __arm_qoi_read_data(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer, size_t tSize)
 {
+#if __ARM_QOI_USE_LOADER_IO__
     //assert(NULL != ptThis);
     //assert(NULL != pchBuffer);
     //assert(0 != tSize);
@@ -433,6 +505,10 @@ bool __arm_qoi_read_data(arm_qoi_dec_t *ptThis, uint8_t *pchBuffer, size_t tSize
         pchBuffer += tActualRead;
     } while(tSize);
 
+    return true;
+#endif
+#else
+    __arm_qoi_read(ptThis, pchBuffer, tSize);
     return true;
 #endif
 }

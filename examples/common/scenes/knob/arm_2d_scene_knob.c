@@ -661,11 +661,13 @@ user_scene_knob_t *__arm_2d_scene_knob_init(   arm_2d_scene_player_t *ptDispAdap
                 .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
             },
-        #else
+        #elif  __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_LOADER_IO_BINARY,
                 .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
+        #else
+            .pchQOISource = c_qoiRadialLineCover,
         #endif
         };
 

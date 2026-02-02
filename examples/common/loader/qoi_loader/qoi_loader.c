@@ -126,9 +126,16 @@ arm_2d_err_t arm_qoi_loader_init( arm_qoi_loader_t *ptThis,
     } else if ( (!ptCFG->bUseHeapForVRES)
              && (NULL == ptCFG->ptScene)) {
         return ARM_2D_ERR_MISSING_PARAM;
+#if __ARM_QOI_USE_LOADER_IO__
     } else if (NULL == ptCFG->ImageIO.ptIO) {
         return ARM_2D_ERR_MISSING_PARAM;
     }
+#else
+    } else if (NULL == ptCFG->pchQOISource) {
+        return ARM_2D_ERR_MISSING_PARAM;
+    }
+#endif
+
 
     memset(ptThis, 0, sizeof(arm_qoi_loader_t));
 
@@ -224,14 +231,16 @@ arm_2d_err_t arm_qoi_loader_init( arm_qoi_loader_t *ptThis,
         
         __arm_qoi_decode_prepare(ptThis);
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         /* free scratch memory */
         __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
         this.Decoder.pWorkMemory = NULL;
-        
+    
+
         if (this.bErrorDetected) {
             return ARM_2D_ERR_IO_ERROR;
         }
@@ -240,20 +249,21 @@ arm_2d_err_t arm_qoi_loader_init( arm_qoi_loader_t *ptThis,
     return ARM_2D_ERR_NONE;
 }
 
+#if __ARM_QOI_USE_LOADER_IO__
 static
 bool __arm_qoi_loader_io_seek(  uintptr_t pTarget, 
                                 int32_t offset, 
                                 int32_t whence)
 {
     //assert(NULL != pTarget);
-
     arm_qoi_loader_t *ptThis = (arm_qoi_loader_t *)pTarget;
-
+    
     return ARM_2D_INVOKE(this.tCFG.ImageIO.ptIO->fnSeek, 
                 ARM_2D_PARAM(   this.tCFG.ImageIO.pTarget, 
                                 ptThis, 
                                 offset, 
                                 whence));
+    
 }
 
 static
@@ -265,19 +275,16 @@ size_t __arm_qoi_loader_io_read (   uintptr_t pTarget,
 
     size_t tResult = tLength;
     if (NULL != pchBuffer) {
-
-        /* record previous read */
-        //this.Decoder.PreviousRead.nPostion = this.Decoder.nPosition;
-        //this.Decoder.PreviousRead.pBuffer = (uintptr_t)pchBuffer;
-        //this.Decoder.PreviousRead.tSize = nLength;
-
         tResult = ARM_2D_INVOKE(this.tCFG.ImageIO.ptIO->fnRead, 
-                    ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis, pchBuffer, tLength));
-        //this.Decoder.nPosition += nResult;
+                    ARM_2D_PARAM(   this.tCFG.ImageIO.pTarget, 
+                                    ptThis, 
+                                    pchBuffer, 
+                                    tLength));
     }
 
     return tResult;
 }
+#endif
 
 static
 void __arm_qoi_loader_ctx_report_evt_handler(   uintptr_t pTarget,
@@ -388,18 +395,20 @@ bool __arm_qoi_decode_prepare(arm_qoi_loader_t *ptThis)
 
     /* allocate memory */
     do {
+    
         this.Decoder.pWorkMemory = (void*)__arm_2d_allocate_scratch_memory(__WORKING_MEMORY_SIZE__, 4, ARM_2D_MEM_TYPE_FAST);
         if (NULL == this.Decoder.pWorkMemory) {
             this.bErrorDetected = true;
             break;
         } 
-
+    #if __ARM_QOI_USE_LOADER_IO__
         /* open low level IO */
         if (!ARM_2D_INVOKE(this.tCFG.ImageIO.ptIO->fnOpen,
                 ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis))) {
             this.bErrorDetected = true;
             break;    
         }
+    #endif
         bool bPreBlendBGColour = false;
 
         if (this.Decoder.tQOIDec.chChannels == 3) {
@@ -411,19 +420,27 @@ bool __arm_qoi_decode_prepare(arm_qoi_loader_t *ptThis)
         }
 
         arm_qoi_cfg_t tCFG = {
+
             .pchWorkingMemory = this.Decoder.pWorkMemory,
             .hwSize = __WORKING_MEMORY_SIZE__,
+
             .chOutputColourFormat = this.Decoder.u3QOIOutputColourFormat,
             .bInvertColour = this.tCFG.bInvertColour,
             .bBlendWithBG = bPreBlendBGColour,
-            
+        
+        
             .IO = {
+            #if __ARM_QOI_USE_LOADER_IO__
                 .fnRead     = &__arm_qoi_loader_io_read,
                 .fnSeek     = &__arm_qoi_loader_io_seek,
+            #endif
                 .fnReport   =   (this.tCFG.u2WorkMode == ARM_QOI_MODE_PARTIAL_DECODED)
                             ?   &__arm_qoi_loader_ctx_report_evt_handler
                             :   NULL,
             },
+        #if !__ARM_QOI_USE_LOADER_IO__
+            .pchQOISource = this.tCFG.pchQOISource,
+        #endif
             .pTarget = (uintptr_t)ptThis,
         };
 
@@ -446,14 +463,16 @@ bool __arm_qoi_decode_prepare(arm_qoi_loader_t *ptThis)
 
     if (this.bErrorDetected) {
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         if (NULL != this.Decoder.pWorkMemory) {
             __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
             this.Decoder.pWorkMemory = NULL;
         }
+    
 
         return false;
     }
@@ -511,26 +530,30 @@ void __arm_qoi_decode_fully(arm_qoi_loader_t *ptThis,
         this.ImageBuffer.pchBuffer = NULL;
         this.iTargetStrideInByte = 0;
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         /* free scratch memory */
         __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
         this.Decoder.pWorkMemory = NULL;
-        
+    
+
     } while(0);
 
     if (this.bErrorDetected) {
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         if (NULL != this.Decoder.pWorkMemory) {
             __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
             this.Decoder.pWorkMemory = NULL;
         }
+
         if (NULL != this.ImageBuffer.pchBuffer) {
             __arm_2d_free_scratch_memory(this.tCFG.u2ScratchMemType, this.ImageBuffer.pchBuffer);
             this.ImageBuffer.pchBuffer = NULL;
@@ -582,14 +605,16 @@ void __arm_qoi_decode_partial(arm_qoi_loader_t *ptThis,
 
     if (this.bErrorDetected) {
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         if (NULL != this.Decoder.pWorkMemory) {
             __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
             this.Decoder.pWorkMemory = NULL;
         }
+
         if (NULL != this.ImageBuffer.pchBuffer) {
             __arm_2d_free_scratch_memory(this.tCFG.u2ScratchMemType, this.ImageBuffer.pchBuffer);
             this.ImageBuffer.pchBuffer = NULL;
@@ -623,13 +648,16 @@ void arm_qoi_loader_on_load( arm_qoi_loader_t *ptThis)
         }
 
         if (ARM_QOI_MODE_PARTIAL_DECODED != this.tCFG.u2WorkMode) {
+
+        #if __ARM_QOI_USE_LOADER_IO__
             /* close low level IO */
             ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
                 ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+        #endif
             /* free scratch memory */
             __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
             this.Decoder.pWorkMemory = NULL;
+    
         } else if (!this.bErrorDetected) {
             this.bFullFrame = true;
         }
@@ -639,14 +667,16 @@ void arm_qoi_loader_on_load( arm_qoi_loader_t *ptThis)
 
     if (this.bErrorDetected) {
 
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
-
+    #endif
         if (NULL != this.Decoder.pWorkMemory) {
             __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
             this.Decoder.pWorkMemory = NULL;
         }
+    
         if (NULL != this.ImageBuffer.pchBuffer) {
             __arm_2d_free_scratch_memory(this.tCFG.u2ScratchMemType, this.ImageBuffer.pchBuffer);
             this.ImageBuffer.pchBuffer = NULL;
@@ -665,9 +695,12 @@ void arm_qoi_loader_depose( arm_qoi_loader_t *ptThis)
     }
 
     if (ARM_QOI_MODE_PARTIAL_DECODED == this.tCFG.u2WorkMode) {
+    
+    #if __ARM_QOI_USE_LOADER_IO__
         /* close low level IO */
         ARM_2D_INVOKE_RT_VOID(this.tCFG.ImageIO.ptIO->fnClose,
             ARM_2D_PARAM(this.tCFG.ImageIO.pTarget, ptThis));
+    #endif
 
         this.ImageBuffer.pchBuffer = NULL;
     } else if (ARM_QOI_MODE_PARTIAL_DECODED_TINY == this.tCFG.u2WorkMode) {
@@ -678,6 +711,7 @@ void arm_qoi_loader_depose( arm_qoi_loader_t *ptThis)
         __arm_2d_free_scratch_memory(ARM_2D_MEM_TYPE_FAST, this.Decoder.pWorkMemory);
         this.Decoder.pWorkMemory = NULL;
     }
+
     if (NULL != this.ImageBuffer.pchBuffer) {
         __arm_2d_free_scratch_memory(this.tCFG.u2ScratchMemType, this.ImageBuffer.pchBuffer);
         this.ImageBuffer.pchBuffer = NULL;

@@ -494,11 +494,13 @@ user_scene_ring_indicator_t *__arm_2d_scene_ring_indicator_init(
                 .ptIO = &ARM_QOI_IO_FILE_LOADER,
                 .pTarget = (uintptr_t)&this.QOI[QOI_IDX_BACKGROUND_RING].LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_QOI_IO_BINARY_LOADER,
                 .pTarget = (uintptr_t)&this.QOI[QOI_IDX_BACKGROUND_RING].LoaderIO.tBinary,
             },
+        #else
+            .pchQOISource = c_qoiThreeQuarterRing,
         #endif
         };
 
@@ -529,11 +531,13 @@ user_scene_ring_indicator_t *__arm_2d_scene_ring_indicator_init(
                 .ptIO = &ARM_QOI_IO_FILE_LOADER,
                 .pTarget = (uintptr_t)&this.QOI[QOI_IDX_FOREGROUND].LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_QOI_IO_BINARY_LOADER,
                 .pTarget = (uintptr_t)&this.QOI[QOI_IDX_FOREGROUND].LoaderIO.tBinary,
             },
+        #else
+            .pchQOISource = c_qoiRingIndicator,
         #endif
         };
 

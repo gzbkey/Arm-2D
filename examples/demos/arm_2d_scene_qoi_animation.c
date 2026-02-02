@@ -308,6 +308,7 @@ user_scene_qoi_animation_t *__arm_2d_scene_qoi_animation_init(   arm_2d_scene_pl
             //.bForceDisablePreBlendwithBG = true,
             //.tBackgroundColour.wColour = this.use_as__arm_2d_scene_t.tCanvas.wColour,
 
+        #if __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
             #if 0
                 .ptIO = &ARM_LOADER_IO_CACHE,
@@ -317,6 +318,9 @@ user_scene_qoi_animation_t *__arm_2d_scene_qoi_animation_init(   arm_2d_scene_pl
                 .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             #endif
             },
+        #else
+            .pchQOISource = c_qoiDogeDance,
+        #endif
         };
 
         arm_qoi_loader_init(&this.tAnimation, &tCFG);

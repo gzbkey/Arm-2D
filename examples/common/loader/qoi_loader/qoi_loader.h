@@ -159,11 +159,14 @@ typedef struct arm_qoi_loader_cfg_t {
 
     arm_2d_color_info_t tColourInfo;
     COLOUR_TYPE_T tBackgroundColour;                        //!< this option is only valid when the output colour format is gray8, rgb565 or cccn888
-
+#if __ARM_QOI_USE_LOADER_IO__
     struct {
         const arm_loader_io_t *ptIO;
         uintptr_t pTarget;
     } ImageIO;
+#else
+    const uint8_t *pchQOISource;
+#endif
 
     arm_2d_scene_t *ptScene;
 } arm_qoi_loader_cfg_t;

@@ -384,8 +384,8 @@
             <file category="sourceC"     name="Helper/Source/console_box.c" />
 
             <!-- scene template -->
-            <file category="sourceC"     name="examples/common/scenes/meter/arm_2d_scene_meter.c"   attr="template"  select="Scene Template: Meter"   version="5.3.1" />
-            <file category="header"      name="examples/common/scenes/meter/arm_2d_scene_meter.h"   attr="template"  select="Scene Template: Meter"   version="5.3.1" />
+            <file category="sourceC"     name="examples/common/scenes/meter/arm_2d_scene_meter.c"   attr="template"  select="Scene Template: Meter"   version="5.3.2" />
+            <file category="header"      name="examples/common/scenes/meter/arm_2d_scene_meter.h"   attr="template"  select="Scene Template: Meter"   version="5.3.2" />
             
             <file category="sourceC"     name="examples/common/scenes/watch/arm_2d_scene_watch.c"   attr="template"  select="Scene Template: Watch"   version="2.3.2" />
             <file category="header"      name="examples/common/scenes/watch/arm_2d_scene_watch.h"   attr="template"  select="Scene Template: Watch"   version="2.3.2" />
@@ -409,8 +409,8 @@
             <file category="sourceC"     name="examples/common/scenes/animate_background/arm_2d_scene_animate_background_vres.c"  attr="template"  select="Scene Template: Animate Background"   version="1.2.0" />
             <file category="header"      name="examples/common/scenes/animate_background/arm_2d_scene_animate_background.h"       attr="template"  select="Scene Template: Animate Background"   version="1.2.0" />
           
-            <file category="sourceC"     name="examples/common/scenes/knob/arm_2d_scene_knob.c"                attr="template"  select="Scene Template: Knob"   version="2.3.0" />
-            <file category="header"      name="examples/common/scenes/knob/arm_2d_scene_knob.h"                attr="template"  select="Scene Template: Knob"   version="2.3.0" />
+            <file category="sourceC"     name="examples/common/scenes/knob/arm_2d_scene_knob.c"                attr="template"  select="Scene Template: Knob"   version="2.3.1" />
+            <file category="header"      name="examples/common/scenes/knob/arm_2d_scene_knob.h"                attr="template"  select="Scene Template: Knob"   version="2.3.1" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_wedge_pattern.c"             attr="template"  select="Scene Template: Knob"   version="2.2.0" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_radial_line_pattern.c"       attr="template"  select="Scene Template: Knob"   version="2.2.0" />
             <file category="sourceC"     name="examples/common/asset/arm_2d_asset_radial_line_cover.c"         attr="template"  select="Scene Template: Knob"   version="2.2.0" />
@@ -511,7 +511,7 @@
 
             <file category="sourceC"     name="examples/common/loader/qoi_loader/qoi_loader.c" />
             <file category="sourceC"     name="examples/common/loader/qoi_loader/qoi_decoder/arm_qoi_decoder.c" />
-            <file category="header"      name="examples/common/loader/qoi_loader/arm_qoi_cfg.h"           attr="config" version="1.2.0"/>
+            <file category="header"      name="examples/common/loader/qoi_loader/arm_qoi_cfg.h"           attr="config" version="1.2.1"/>
 
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565_loader.c" />
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565/zhRGB565_Decoder/zhRGB565_Decoder.c" />
@@ -794,11 +794,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Progress and Status" Cversion="2.5.0" condition="Arm-2D-Demos">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Progress and Status" Cversion="2.5.1" condition="Arm-2D-Demos">
           <description>A demo for progress indication and gif </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_progress_status.c" attr="config" version="2.5.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_progress_status.h" attr="config" version="2.5.0" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_progress_status.c" attr="config" version="2.5.1" />
+            <file category="header"      name="examples/demos/arm_2d_scene_progress_status.h" attr="config" version="2.5.1" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Demos_Progress_Status
@@ -935,11 +935,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Ring Indicator" Cversion="1.1.1" condition="Arm-2D-Demos">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Ring Indicator" Cversion="1.1.2" condition="Arm-2D-Demos">
           <description>An example for a ring indicator with a complex foreground. </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_ring_indicator.c" attr="config" version="1.1.1" />
-            <file category="header"      name="examples/demos/arm_2d_scene_ring_indicator.h" attr="config" version="1.1.1" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_ring_indicator.c" attr="config" version="1.1.2" />
+            <file category="header"      name="examples/demos/arm_2d_scene_ring_indicator.h" attr="config" version="1.1.2" />
 
             <file category="sourceC"     name="examples/demos/ring_indicator.c" attr="config" version="1.0.0" />
           </files>
@@ -962,11 +962,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Blink" Cversion="2.4.1" condition="Arm-2D-Demos">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Blink" Cversion="2.4.2" condition="Arm-2D-Demos">
           <description>An blinking eye. </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_blink.c" attr="config" version="2.4.1" />
-            <file category="header"      name="examples/demos/arm_2d_scene_blink.h" attr="config" version="2.4.1" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_blink.c" attr="config" version="2.4.2" />
+            <file category="header"      name="examples/demos/arm_2d_scene_blink.h" attr="config" version="2.4.2" />
             
             <file category="sourceC"     name="examples/demos/Eyeball.c" attr="config" version="2.1.0" />
             <file category="sourceC"     name="examples/demos/LeftEye.c" attr="config" version="2.4.0" />
@@ -1110,11 +1110,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Loading Lossless image with QOI" Cversion="1.3.0" condition="Arm-2D-Demo-QOI-Loader">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Loading Lossless image with QOI" Cversion="1.3.1" condition="Arm-2D-Demo-QOI-Loader">
           <description>A demo for loading lossless compression images (*.QOI) </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_qoi.c" attr="config" version="1.3.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_qoi.h" attr="config" version="1.3.0" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_qoi.c" attr="config" version="1.3.1" />
+            <file category="header"      name="examples/demos/arm_2d_scene_qoi.h" attr="config" version="1.3.1" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Demos_QOI
@@ -1145,11 +1145,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Showing Animation with QOI" Cversion="1.0.0" condition="Arm-2D-Demo-QOI-Loader">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Showing Animation with QOI" Cversion="1.0.1" condition="Arm-2D-Demo-QOI-Loader">
           <description>A demo for showing gif-like animation with QOI Loader.</description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_qoi_animation.c" attr="config" version="1.0.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_qoi_animation.h" attr="config" version="1.0.0" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_qoi_animation.c" attr="config" version="1.0.1" />
+            <file category="header"      name="examples/demos/arm_2d_scene_qoi_animation.h" attr="config" version="1.0.1" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Demos_QOI_Animation
