@@ -40,7 +40,7 @@ typedef struct arm_cm_header_t {
   
     uint8_t u3AlphaMSBCount     : 3;  /* MSB alpha bits = u3AlphaBits + 1 */
     uint8_t bRaw                : 1;  /* whether the alpha is compressed or not */
-    uint8_t u2TagSetBits        : 2;  /* must be 0x00 for now */
+    uint8_t u2TagSetBits        : 2;  /* must be 0x00 for now, reservef for the future */
     uint8_t                     : 2;  /* must be 0x00 for now, reserved for the future */
     uint8_t chFloorCount;
     uint32_t                    : 32; /* reserved */
