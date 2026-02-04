@@ -28,7 +28,7 @@
 
 ```c
 /* 16byte header */
-typedef struct arm_cm_header_t {
+typedef struct arm_lmsk_header_t {
     uint8_t chName[5];						  /* "LMSK": Losslessly compressed MaSK */
     struct {
         uint8_t u4Major : 4;        /* 0x01 for now */
@@ -44,7 +44,7 @@ typedef struct arm_cm_header_t {
     uint8_t                     : 2;  /* must be 0x00 for now, reserved for the future */
     uint8_t chFloorCount;
     uint32_t                    : 32; /* reserved */
-} arm_cm_header_t;
+} arm_lmsk_header_t;
 ```
 - `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_bits = value + 1). All delta operations apply only to these significant high bits.
 - `bRaw`: 

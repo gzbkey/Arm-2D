@@ -22,8 +22,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 
 #ifdef   __cplusplus
 extern "C" {
@@ -615,6 +613,7 @@ struct arm_2d_tile_t {
 typedef struct system_cfg_t {
     struct {
         char *pchInputPicturePath;
+        char *pchOutputFilePath;
 
         uint32_t bValid                 : 1;
         uint32_t                        : 31;

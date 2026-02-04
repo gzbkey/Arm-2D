@@ -20,6 +20,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include "lmsk_gen.h"
+#include "lmsk_encoder.h"
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 
 #if defined(__clang__)
@@ -193,6 +197,23 @@ arm_2d_err_t process_args(int argc, char* argv[])
             continue;
         }
 
+        if (0 == strncmp(argv[n], "-o", 2)) {
+            n++;
+            if (n >= argc) {
+                bInputIsValid = false;
+                break;
+            }
+
+            if (!file_exists(argv[n], "a")) {
+                printf("ERROR: Cannot find the input picture from \"%s\".", argv[n]);
+                bInputIsValid = false;
+                break;
+            }
+
+            SYSTEM_CFG.Input.pchOutputFilePath = argv[n];
+            continue;
+        }
+
         if (    (0 == strncmp(argv[n], "--help", 6)) 
             ||  (0 == strncmp(argv[n], "-h", 2))) {
             bInputIsValid = false;
@@ -204,6 +225,10 @@ arm_2d_err_t process_args(int argc, char* argv[])
     if (!SYSTEM_CFG.Input.bValid) {
         return ARM_2D_ERR_INVALID_PARAM;
     } else if ((NULL == SYSTEM_CFG.Input.pchInputPicturePath)) {
+        SYSTEM_CFG.Input.bValid = false;
+        return ARM_2D_ERR_MISSING_PARAM;
+    } else if ((NULL == SYSTEM_CFG.Input.pchOutputFilePath)) {
+        SYSTEM_CFG.Input.bValid = false;
         return ARM_2D_ERR_MISSING_PARAM;
     }
 
@@ -226,6 +251,7 @@ static void print_help(void)
     printf("\r\noptions:\r\n");
     printf("\t-h, --help            show this help message and exit\r\n");
     printf("\t-p <picture path>     Input picture (*.bmp, *.png etc)\r\n");
+    printf("\t-o <output file path> The file path for the compressed mask image  (*.lmsk)\r\n");
     printf("\r\n");
 }
 
