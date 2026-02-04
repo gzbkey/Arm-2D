@@ -311,7 +311,6 @@ def main(argv):
     parser.add_argument('--a4', action='store_true', help="Generate 4bit alpha-mask")
     parser.add_argument('--a8', action='store_true', help="Generate 8bit alpha-mask")
     parser.add_argument('--border', action='store_true', help="Add a 1pix border")
-    parser.add_argument('--zhRGB565', action='store_true', help="Generate compressed zhRGB565 format using RLE+DIFF encoding for better gradient compression")
 
     args = parser.parse_args()
 
@@ -349,9 +348,6 @@ def main(argv):
         args.format = ''
 
     if args.a8:
-        args.format = ''
-
-    if args.zhRGB565:
         args.format = ''
 
     try:
@@ -616,7 +612,7 @@ def main(argv):
             typStr='uint16_t'
 
         # zhRGB565 compressed format
-        if args.zhRGB565 or (args.format == 'zhRGB565') or (args.format == 'all'):
+        if (args.format == 'zhRGB565') or (args.format == 'all'):
             if not ZHRGB565_AVAILABLE:
                 print("Warning: zhRGB565 compression library not available, skipping zhRGB565 format", file=sys.stderr)
             else:
