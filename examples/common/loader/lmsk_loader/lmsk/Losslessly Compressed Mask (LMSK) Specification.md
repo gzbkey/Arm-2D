@@ -49,11 +49,19 @@ typedef struct arm_lmsk_header_t {
 ```
 - `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_bits = value + 1).  Unless otherwise specified,  all operations apply only to these significant high bits.
 - `bRaw`: 
-  - `0` - The data section contains compressed data. The Floor Table and Line Index Table are valid.
-  - `1`- The data section **ONLY** contains the raw alpha pixels. The Floor Table and the Line Index Table are removed. Hence, `chFloorCount` should always be `0`, and the decoder should ignore `chFloorCount` and `u3AlphaMSBCount`.
+  - `0` - The data section contains compressed data. The Palette, Floor Table and Line Index Table are valid.
+  - `1`- The data section **ONLY** contains the raw alpha pixels. The Palette, Floor Table and the Line Index Table are removed. Hence, `chFloorCount` should always be `0`, and the decoder should ignore `chFloorCount` and `u3AlphaMSBCount`.
 
+### Palette Table
+
+The compressed file has a 64-slot palette right after the header. The encoder can place a dedicated **INDEX** tag to use the palette. How the palette is generated is fully determined by the encoder. Some commonly used strategies are:
+
+* Places frequently used alphas. 
+* Replaces the **ALPHA_TAG**.
+* Stores patterns that are frequently used. 
 
 ### Floor Table and Line Index
+
 The **Floor Table** defines base address partitions for line data. For a line number `L` where `L >= floor_table[i]` (and `L < floor_table[i+1]` if exists), the base address for that line is `(i + 1) * (1 << (16 - u2TagSetBits))` bytes or `(i + 1) * 65536` for the current version.
 
 The **Line Index Table** stores **byte offsets** for each line relative to its **base address**. The address in the **data section** is calculated as:
@@ -78,14 +86,14 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 | Tag Bits (LSB) |    Size    | Name            | Description                                                  |
 | :------------- | :--------: | :-------------- | :----------------------------------------------------------- |
-| `00`           | **8 bits** | **Index**       | An index for a constant Palette.                             |
-| `01`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF8): **GRADIENT_TAG**<br>• `63` (0xFC): **ALPHA_TAG** |
+| `00`           | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
+| `01`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
 | `10`           | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
 | `11`           | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
 
 ##### Special Tags Details
 
-* **ALPHA_TAG (0xFC)**  
+* **ALPHA_TAG (0xFD)**  
 
   Followed by **1 byte** of raw alpha value, setting the current pixel directly. 
 
@@ -95,7 +103,7 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
   
 
-* **GRADIENT_TAG (0xF8)**  
+* **GRADIENT_TAG (0xF9)**  
 
   Followed by **3 bytes**: `uint8_t to_alpha`, `uint16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count` pixels:
 
@@ -128,7 +136,7 @@ previous_alpha = to_alpha;
 >
 > The **DO / WHILE** implements a loop structure. If you want to repeat the exact same string of pixels, you have to explicitly specify the pixel alpha at the start of an iteration; otherwise, for each iteration, the start alpha (a.k.a the alpha at the end of the previous iteration) might be different, leading to a totally different string of pixels. 
 >
-> Please implement **REPEAT_START/STOP** as a feature, not a **BUG**. 
+> Please implement **DO / WHILE** as a feature, not a **BUG**. 
 
 
 
@@ -139,9 +147,10 @@ Per-line decoder state:
 3. Loop until `width` pixels are output:
    i)  Read a tag
    ii) Inspect the lowest 2 bits:
-     - If `...01`: consume 4 bits, execute **DELTA_SMALL**.
-     - If `...00`: consume 8 bits, parse **REPEAT** or **special tags**, i.e. **ALPHA_TAG** and **GRADIENT_TAG**
-     - If `...10`: consume 8 bits, execute **DELTA_LARGE**.
+     - If `...00`: consume 4 bits, execute **INDEX**.
+     - If `...10`: consume 4 bits, execute **DELTA_SMALL**.
+     - If `...01`: consume 8 bits, parse **REPEAT** or **special tags**, i.e. **ALPHA_TAG** and **GRADIENT_TAG**
+     - If `...11`: consume 8 bits, execute **DELTA_LARGE**.
 4. Truncate immediately when line width is reached; discard remaining bits for that line.
 
 
