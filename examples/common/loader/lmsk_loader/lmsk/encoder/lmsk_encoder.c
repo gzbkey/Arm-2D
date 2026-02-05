@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <stddef.h>
 
 #ifdef   __cplusplus
 extern "C" {
@@ -29,12 +30,23 @@ extern "C" {
 #undef this
 #define this (*ptThis)
 
+#define CRC32_POLYNOMIAL  0xEDB88320u  /* 反转多项式 */
+#define CRC32_INITIAL     0xFFFFFFFFu
+#define CRC32_XOROUT      0xFFFFFFFFu
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
+/*============================ LOCAL VARIABLES ===============================*/
+static uint32_t s_wCRC32Table[256];
+static bool s_bCRCTableInitialized = 0;
+
 /*============================ PROTOTYPES ====================================*/
 static
 void __arm_lmsk_free_output_lines(__arm_lmsk_output_t *ptThis);
+
+static
+uint32_t crc32_calculate(const void *data, size_t length);
 
 /*============================ IMPLEMENTATION ================================*/
 
@@ -67,16 +79,183 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_init( arm_lmsk_encoder_t *ptThis,
     return NULL;
 }
 
+static
+__arm_lmsk_line_out_t *__arm_lmsk_find_existing_line(arm_lmsk_encoder_t *ptThis, uint8_t *pchSourceLine)
+{
+    assert(NULL != ptThis);
+    assert(NULL != pchSourceLine);
+
+    int16_t iWidth = this.Mask.iWidth;
+    uint32_t wCRC32New = crc32_calculate(pchSourceLine, iWidth);
+
+    /* search existing output */
+    __arm_lmsk_line_out_t *ptLine = this.tOutput.Lines.ptTail;
+    while(NULL != ptLine) {
+
+        if (ptLine->wCRC == wCRC32New) {
+            if (0 == memcmp(ptLine->pchSourceLine, pchSourceLine, iWidth)) {
+                /* double confirm */
+                return ptLine;
+            }
+        }
+
+        ptLine = ptLine->ptPrev;
+    }
+
+    return NULL;
+}
+
+static inline 
+void __arm_lmsk_encoder_append(arm_lmsk_encoder_t *ptThis, __arm_lmsk_line_out_t *ptLine)
+{
+    assert(NULL != ptThis);
+    assert(NULL != ptLine);
+
+    ptLine->ptNext = NULL;
+    ptLine->ptPrev = NULL;
+
+    if (NULL == this.tOutput.Lines.ptHead) {
+        this.tOutput.Lines.ptHead = ptLine;
+    }
+
+    if (NULL == this.tOutput.Lines.ptTail) {
+        this.tOutput.Lines.ptTail = ptLine;
+    } else {
+        this.tOutput.Lines.ptTail->ptNext = ptLine;
+        ptLine->ptPrev = this.tOutput.Lines.ptTail;
+        this.tOutput.Lines.ptTail = ptLine;
+    }
+}
+
+size_t __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis, int16_t iY, __arm_lmsk_line_out_t *ptLine)
+{
+    assert(NULL != ptThis);
+    assert(NULL != ptLine);
+
+    (void)iY;
+
+    int16_t iWidth = this.Mask.iWidth;
+
+    ptLine->pchBuffer = (uint8_t *)malloc(iWidth);
+    assert(NULL != ptLine->pchBuffer);
+
+    /* let's add encoding algorithm later */
+    do {
+        memcpy(ptLine->pchBuffer, ptLine->pchSourceLine, iWidth);
+        ptLine->tSize = iWidth;
+    } while(0);
+
+    /* append */
+    __arm_lmsk_encoder_append(ptThis, ptLine);
+
+    return ptLine->tSize;
+}
+
+static 
+size_t __arm_lmsk_encoder_line_process(arm_lmsk_encoder_t *ptThis, int16_t iY, uint8_t *pchSourceLine)
+{
+    assert(NULL != ptThis);
+    assert(NULL != pchSourceLine);
+
+    __arm_lmsk_line_out_t *ptOutputLine = __arm_lmsk_find_existing_line(ptThis, pchSourceLine);
+    if (NULL != ptOutputLine) {
+        /* find an existing one */
+        uint32_t wFloorSize = 1 << (16 - this.tOutput.tHeader.u2TagSetBits);
+
+        if ((this.wPosition - ptOutputLine->wPosition) >= wFloorSize) {
+            /* too far away, we have to duplicate one  */
+
+            __arm_lmsk_line_out_t *ptNewLine = (__arm_lmsk_line_out_t *)malloc(sizeof(__arm_lmsk_line_out_t));
+            assert(NULL != ptNewLine);
+
+            *ptNewLine = *ptOutputLine;
+            ptNewLine->wPosition = this.wPosition;
+            
+            /* append new line */
+            __arm_lmsk_encoder_append(ptThis, ptNewLine);
+
+            /* update line index */
+            this.tOutput.tLineIndexTable.pwReferences[iY] = ptNewLine->wPosition;
+
+            return ptNewLine->tSize;
+
+        } 
+
+        this.tOutput.tLineIndexTable.pwReferences[iY] = ptOutputLine->wPosition;
+        return 0;   /* there is no new line added */
+    }
+
+    /* it is a new line */
+    ptOutputLine = (__arm_lmsk_line_out_t *)malloc(sizeof(__arm_lmsk_line_out_t));
+    assert(NULL != ptOutputLine);
+
+    memset(ptOutputLine, 0, sizeof(__arm_lmsk_line_out_t));
+
+    ptOutputLine->pchSourceLine = pchSourceLine;
+    ptOutputLine->wPosition = this.wPosition;
+    
+    ptOutputLine->wCRC = crc32_calculate(pchSourceLine, this.Mask.iWidth);
+
+    /*
+     *
+     *  typedef struct __arm_lmsk_line_out_t {
+     *      struct __arm_lmsk_line_out_t *ptNext;
+     *      struct __arm_lmsk_line_out_t *ptPrev;
+     *      uint8_t *pchBuffer;
+     *      uint8_t *pchSourceLine;
+     *      size_t tSize;
+     *      uint32_t wPosition;
+     *      uint32_t wCRC;
+     *  } __arm_lmsk_line_out_t;
+     */
+
+    return __arm_lmsk_encode_line(ptThis, iY, ptOutputLine);
+}
 
 __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlphaBits)
 {
     if (NULL == ptThis || chAlphaBits == 0 || chAlphaBits > 8) {
         return NULL;
+    } else if (NULL == this.Mask.pchBuffer || 0 == this.Mask.iHeight || 0 == this.Mask.iWidth) {
+        return NULL;
     }
 
+    /* free previous output lines if any */
+    __arm_lmsk_free_output_lines(&this.tOutput);
+
+    /* update the alpha valid MSB bit count */
     this.tOutput.tHeader.u3AlphaMSBCount = chAlphaBits - 1;
 
+    uint8_t *pchMask = this.Mask.pchBuffer;
+    int16_t iWidth = this.Mask.iWidth;
+    int16_t iHeight = this.Mask.iHeight;
 
+
+    this.tOutput.wDataSize = 0;
+    this.wPosition = 0;
+
+    for (int_fast16_t iY = 0; iY < iHeight; iY++) {
+        size_t tLineSize = __arm_lmsk_encoder_line_process(ptThis, iY, pchMask);
+
+        this.wPosition += tLineSize;
+        this.tOutput.wDataSize += tLineSize;
+
+        pchMask += iWidth;
+    }
+
+    /* update floor table size */
+    do {
+        uint32_t wFloorSizeBit = 16 - this.tOutput.tHeader.u2TagSetBits;
+
+        uint32_t wFloorCount = this.tOutput.wDataSize >> wFloorSizeBit;
+        if (wFloorCount > 255) {
+            /* the output file is too big */
+            return NULL;
+        }
+
+        this.tOutput.tHeader.chFloorCount = wFloorCount;
+
+    } while(0);
 
     return &this.tOutput;
 }
@@ -111,7 +290,7 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
                 /* write a floor */
                 wFloorLevel += wFloorSize;
 
-                if (sizeof(uint16_t) != fwrite(&iY, sizeof(uint16_t), 1, ptOut)) {
+                if (1 != fwrite(&iY, sizeof(uint16_t), 1, ptOut)) {
                     free(phwIndexTable);
                     return -1;
                 }
@@ -122,15 +301,21 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
                                           - (uint32_t)wFloorLevel);
         }
 
+        /* write line index table */
 
+        if (this.tHeader.iHeight != fwrite(phwIndexTable, sizeof(uint16_t), this.tHeader.iHeight, ptOut)) {
+            free(phwIndexTable);
+            return -1;
+        }
+
+        nTotalSize += this.tHeader.iHeight * sizeof(uint16_t);
 
         free(phwIndexTable);
     } while(0);
 
-
     /* write data section */
     do {
-        __arm_lmsk_line_out_t *ptLine = this.ptLines;
+        __arm_lmsk_line_out_t *ptLine = this.Lines.ptHead;
         while(NULL != ptLine) {
 
             if (ptLine->tSize != fwrite(ptLine->pchBuffer, 1, ptLine->tSize, ptOut)) {
@@ -143,7 +328,7 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
         }
     } while(0);
 
-    return 0;
+    return nTotalSize;
 }
 
 
@@ -172,19 +357,81 @@ void __arm_lmsk_free_output_lines(__arm_lmsk_output_t *ptThis)
         return ;
     }
 
-    __arm_lmsk_line_out_t *ptLine = this.ptLines;
+    __arm_lmsk_line_out_t *ptLine = this.Lines.ptHead;
     while(NULL != ptLine) {
 
         __arm_lmsk_line_out_t *ptNext = ptLine->ptNext;
 
+        if (NULL != ptLine->pchBuffer) {
+            free(ptLine->pchBuffer);
+        } else {
+            assert(false);
+        }
+        
         free(ptLine);
 
         ptLine = ptNext;
     }
 
-    this.ptLines = NULL;
+    this.Lines.ptHead = NULL;
+    this.Lines.ptTail = NULL;
 }
 
+static
+void crc32_init_table(void)
+{
+    uint32_t i, j, crc;
+    
+    for (i = 0; i < 256; i++) {
+        crc = i;
+        for (j = 0; j < 8; j++) {
+            crc = (crc >> 1) ^ ((crc & 1u) ? CRC32_POLYNOMIAL : 0);
+        }
+        s_wCRC32Table[i] = crc;
+    }
+    s_bCRCTableInitialized = true;
+}
+
+static
+uint32_t crc32_calculate(const void *data, size_t length)
+{
+    const uint8_t *bytes = (const uint8_t *)data;
+    uint32_t crc = CRC32_INITIAL;
+    size_t i;
+    
+    if (!s_bCRCTableInitialized) {
+        crc32_init_table();
+    }
+    
+    for (i = 0; i < length; i++) {
+        crc = (crc >> 8) ^ s_wCRC32Table[(crc & 0xFF) ^ bytes[i]];
+    }
+    
+    return crc ^ CRC32_XOROUT;
+}
+
+static
+uint32_t crc32_update(uint32_t crc, const void *data, size_t length)
+{
+    const uint8_t *bytes = (const uint8_t *)data;
+    size_t i;
+    
+    if (!s_bCRCTableInitialized) {
+        crc32_init_table();
+    }
+    
+    for (i = 0; i < length; i++) {
+        crc = (crc >> 8) ^ s_wCRC32Table[(crc & 0xFF) ^ bytes[i]];
+    }
+    
+    return crc;
+}
+
+static
+uint32_t crc32_finalize(uint32_t crc)
+{
+    return crc ^ CRC32_XOROUT;
+}
 
 
 #ifdef   __cplusplus

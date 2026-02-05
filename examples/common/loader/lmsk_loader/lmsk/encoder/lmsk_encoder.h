@@ -35,9 +35,12 @@ extern "C" {
 
 typedef struct __arm_lmsk_line_out_t {
     struct __arm_lmsk_line_out_t *ptNext;
+    struct __arm_lmsk_line_out_t *ptPrev;
     uint8_t *pchBuffer;
+    uint8_t *pchSourceLine;
     size_t tSize;
     uint32_t wPosition;
+    uint32_t wCRC;
 } __arm_lmsk_line_out_t;
 
 typedef struct __arm_lmsk_line_in_t {
@@ -48,7 +51,11 @@ typedef struct __arm_lmsk_line_in_t {
 typedef struct __arm_lmsk_output_t {
     arm_lmsk_header_t tHeader;
 
-    __arm_lmsk_line_out_t *ptLines;
+    struct {
+        __arm_lmsk_line_out_t *ptHead;
+        __arm_lmsk_line_out_t *ptTail;
+    } Lines;
+
     uint32_t wDataSize;
 
     struct {
@@ -66,6 +73,8 @@ typedef struct arm_lmsk_encoder_t {
         int16_t iHeight;
     } Mask;
 
+    uint32_t wPosition;
+
 } arm_lmsk_encoder_t;
 
 
@@ -82,6 +91,9 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_init( arm_lmsk_encoder_t *ptThis,
 extern
 __arm_lmsk_output_t *arm_lmsk_encode(   arm_lmsk_encoder_t *ptThis, 
                                         uint8_t chAlphaBits);
+
+extern
+int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut);
 
 extern 
 arm_lmsk_encoder_t * arm_lmsk_encoder_depose(arm_lmsk_encoder_t *ptThis);

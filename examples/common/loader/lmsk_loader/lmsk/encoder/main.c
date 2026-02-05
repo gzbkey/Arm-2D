@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
+
 #include "lmsk_gen.h"
 #include "lmsk_encoder.h"
 
@@ -318,6 +320,8 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
         if (NULL == ptMask->pchBuffer) {
             break;
         }
+
+        printf("BitsPerPixel: %d\r\n", ptImage->format->BitsPerPixel);
         
         switch (ptImage->format->BitsPerPixel) {
             case 8:
@@ -354,6 +358,7 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
                                                 ptMask->pchBuffer,
                                                 ptMask->tRegion.tSize.iWidth,
                                                 ptMask->tRegion.tSize.iHeight);
+                break;
 
             default:
                 return false;
@@ -399,7 +404,35 @@ int main(int argc, char* argv[])
         };
 
 
+        printf("Encoding...\r\n");
+        FILE *fp = fopen(SYSTEM_CFG.Input.pchOutputFilePath, "w");
+        if (NULL == fp) {
+            printf("Failed to write file %s...\r\n", SYSTEM_CFG.Input.pchOutputFilePath);
+            break;
+        }
+        
+        arm_lmsk_encoder_t tEncoder;
 
+        arm_lmsk_encoder_init(  &tEncoder, 
+                                SYSTEM_CFG.Picture.tMask.pchBuffer, 
+                                SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth,
+                                SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight);
+
+
+        int32_t iSizeWritten = arm_lmsk_write_to_file(arm_lmsk_encode(&tEncoder, 8), fp);
+
+        uint32_t wRawSize = SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth *
+                            SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight;
+        double fCompressionRate = ((double)iSizeWritten / (double)wRawSize) * 100.0f;
+        printf("Raw Mask Size: %d\r\n"
+               "Compressed Mask File Size: %"PRIu32" [%2.2f%%]\r\n",
+                wRawSize,
+                iSizeWritten,
+                fCompressionRate );
+
+        arm_lmsk_encoder_depose(&tEncoder);
+
+        fclose(fp);
 
     } while(0);
 
