@@ -85,7 +85,13 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 * **ALPHA_TAG (0xFC)**  
 
-  Followed by **1 byte** of raw alpha value, setting the current pixel directly.
+  Followed by **1 byte** of raw alpha value, setting the current pixel directly. 
+
+  > [!NOTE]
+  >
+  > The `u3AlphaMSBCount` does **NOT** affect **ALPHA_TAG**. It always uses 8-bit. 
+
+  
 
 * **GRADIENT_TAG (0xF8)**  
 
