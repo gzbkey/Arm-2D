@@ -321,7 +321,11 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
             break;
         }
 
-        printf("BitsPerPixel: %d\r\n", ptImage->format->BitsPerPixel);
+        printf("Resolution: %"PRIi16"x%"PRId16"\r\n", 
+                ptMask->tRegion.tSize.iWidth,
+                ptMask->tRegion.tSize.iHeight);
+
+        printf("Bits per Pixel: %d\r\n", ptImage->format->BitsPerPixel);
         
         switch (ptImage->format->BitsPerPixel) {
             case 8:
@@ -336,6 +340,7 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
                 if (ptImage->pitch != ptMask->tRegion.tSize.iWidth * 2) {
                     return false;
                 }
+                printf("Convert to gray scale...\r\n");
                 __arm_2d_impl_rgb565_to_gray8(  (uint16_t *)ptImage->pixels,
                                                 ptMask->tRegion.tSize.iWidth,
                                                 ptMask->pchBuffer,
@@ -344,6 +349,7 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
                 break;
 
             case 24:
+                printf("Convert to gray scale...\r\n");
                 __ccc888_to_gray8(  ptImage->pixels,
                                     ptImage->pitch,
                                     ptMask->pchBuffer,
@@ -424,7 +430,7 @@ int main(int argc, char* argv[])
         uint32_t wRawSize = SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth *
                             SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight;
         double fCompressionRate = ((double)iSizeWritten / (double)wRawSize) * 100.0f;
-        printf("Raw Mask Size: %d\r\n"
+        printf("\r\nRaw Mask Size: %d\r\n"
                "Compressed Mask File Size: %"PRIu32" [%2.2f%%]\r\n",
                 wRawSize,
                 iSizeWritten,
