@@ -389,19 +389,22 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
     size_t tRepeatCount = 0;
 
     uint8_t chBitsToShift = 8 - chAlphaMSBBits;
-    chPrevious >>= chBitsToShift;
+    uint8_t chShiftedPrevious = chPrevious >> chBitsToShift;
 
-    tSizeLeft = MIN(tSizeLeft, 61);
     do {
         uint8_t chCurrent = *pchSource++ >> chBitsToShift;
-        if (chCurrent != chPrevious) {
+        if (chCurrent != chShiftedPrevious) {
             break;
         }
 
         tRepeatCount++;
     } while(--tSizeLeft);
 
-    if (tRepeatCount > 0) {
+    if (tRepeatCount == 0) {
+        return tResult;
+    }
+
+    if (tRepeatCount <= 61) {
 
         tResult.bHit = true;
         tResult.hwRawSize = tRepeatCount;
@@ -413,7 +416,21 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
             .u6Repeat = tRepeatCount,
         }).chByte;
 
-        tResult.chNewPrevious = chPrevious << chBitsToShift;
+        tResult.chNewPrevious = chShiftedPrevious << chBitsToShift;
+    } else {
+
+        tResult.bHit = true;
+        tResult.hwRawSize = tRepeatCount;
+        tResult.pchEncode = (uint8_t *)malloc(4);
+        tResult.u15Size = 4;
+        assert(NULL != tResult.pchEncode);
+
+        tResult.pchEncode[0] = TAG_U8_GRADIENT;
+
+        tResult.pchEncode[1] = chPrevious;                  /* to alpha */
+        *(uint16_t *)(&tResult.pchEncode[2]) = tRepeatCount;
+
+        tResult.chNewPrevious = chShiftedPrevious << chBitsToShift;
     }
 
     return tResult;

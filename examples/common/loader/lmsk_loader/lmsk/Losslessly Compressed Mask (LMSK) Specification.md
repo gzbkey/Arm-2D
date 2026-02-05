@@ -107,7 +107,7 @@ previous_alpha = to_alpha;
 
 > [!IMPORTANT]
 >
-> When using a gradient mode, regardless of `u3AlphaMSBCount`, the start and stop alpha values **MUST** be stored and treated as 8-bit alpha. If the previous pixel is different from the actual alpha, it cannot be used as the start alpha; an **ALPHA_TAG** **MUST** be used to set the start alpha. 
+> When using a gradient mode, regardless of `u3AlphaMSBCount`, the start and stop alpha values are treated as 8-bit alpha. If the previous pixel is different from the actual alpha, an **ALPHA_TAG** **MUST**  be inserted to set the start alpha. 
 
 > [!IMPORTANT]
 >
