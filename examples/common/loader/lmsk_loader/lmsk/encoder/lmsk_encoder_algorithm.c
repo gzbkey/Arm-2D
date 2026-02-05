@@ -48,23 +48,24 @@ typedef struct __arm_lmsk_encode_result_t {
 
 struct __arm_lmsk_algorithm_t {
 
-    __arm_lmsk_encode_result_t (*fnTry)(uint8_t *pchSource, 
-                                        size_t tSizeLeft, 
-                                        uint8_t chPrevious,
-                                        uint8_t chAlphaMSBBits);
+    __arm_lmsk_encode_result_t (* const fnTry)( uint8_t *pchSource, 
+                                                size_t tSizeLeft, 
+                                                uint8_t chPrevious,
+                                                uint8_t chAlphaMSBBits);
 
     uint32_t wPixelCover;
-    const char *pchName;
+    const bool bCheckPalette;
+    const char * const pchName;
 };
 
 enum {
+    TAG_U2_INDEX        = 0x0,
+    TAG_U2_REPETA       = 0x1,
+    TAG_S2_DELTA_SMALL  = -2,   /*! 0b10 */
+    TAG_S2_DELTA_LARGE  = -1,   /*! 0b11 */
 
-    TAG_U2_REPETA       = 0x0,
-    TAG_U1_DELTA_SMALL  = 0x1,
-    TAG_S2_DELTA_LARGE  = -2,   /*! 0b10 */
-
-    TAG_U8_ALPHA        = 0xFC,
-    TAG_U8_GRADIENT     = 0xF8,
+    TAG_U8_ALPHA        = 0xFD,
+    TAG_U8_GRADIENT     = 0xF9,
 };
 
 enum {
@@ -72,6 +73,7 @@ enum {
     LMSK_TAG_DELTA_LARGE,
     LMSK_TAG_REPEAT_PREVIOUS,
     LMSK_TAG_ALPHA,
+    LMSK_TAG_INDEX,
 };
 
 
@@ -122,8 +124,16 @@ __arm_lmsk_algorithm_t c_tAlgorithms[] = {
     [LMSK_TAG_ALPHA] = {
         .fnTry = &__arm_lmsk_try_alpha_tag,
         .pchName = "LMSK_TAG_ALPHA",
+        .bCheckPalette = true,
+    },
+    [LMSK_TAG_INDEX] = {
+        .fnTry = NULL,
+        .pchName = "LMSK_TAG_INDEX",
     },
 };
+
+static 
+uint32_t s_wTotalPixels = 0;
 
 
 /*============================ IMPLEMENTATION ================================*/
@@ -132,15 +142,14 @@ void __arm_lmsk_encoder_prepare(arm_lmsk_encoder_t *ptThis)
 {
     for (uint_fast8_t n = 0; n < dimof(c_tAlgorithms); n++) {
         c_tAlgorithms[n].wPixelCover = 0;
-        assert(NULL != c_tAlgorithms[n].fnTry);
     }
+    s_wTotalPixels = 0;
 }
 
 void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis)
 {
 
-    uint32_t wTotalPixels = this.tOutput.tHeader.iHeight
-                          * this.tOutput.tHeader.iWidth;
+    uint32_t wTotalPixels = s_wTotalPixels;
 
     printf("\r\n-[Report]------------------------------ \r\n");
 
@@ -156,6 +165,33 @@ void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis)
     }
 
     printf("--------------------------------------- \r\n\r\n");
+}
+
+static inline 
+__arm_lmsk_encode_result_t __arm_lmsk_encode_use_index(__arm_lmsk_encode_result_t tOld, uint8_t chIndex)
+{
+    __arm_lmsk_encode_result_t tResult = {
+        .pchEncode = (uint8_t *)malloc(1),
+        .bHit = true,
+        .hwRawSize = 1,
+        .u15Size = 1,
+        .chNewPrevious = tOld.chNewPrevious,
+        .ptAlgorithm = &c_tAlgorithms[LMSK_TAG_INDEX],
+    };
+
+    assert(NULL != tResult.pchEncode);
+
+    tResult.pchEncode[0] = (arm_lmsk_tag_index_t) {
+        .u2Tag = TAG_U2_INDEX,
+        .u6Index = chIndex,
+    }.chByte;
+
+    if (NULL != tOld.pchEncode) {
+        /* free the old result */
+        free(tOld.pchEncode);
+    }
+
+    return tResult;
 }
 
 void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
@@ -185,6 +221,10 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
         /* try all algorithm */
         for (uint_fast8_t n = 0; n < dimof(c_tAlgorithms); n++) {
 
+            if (NULL == c_tAlgorithms[n].fnTry) {
+                continue;
+            }
+
             __arm_lmsk_encode_result_t tResult 
                 = c_tAlgorithms[n].fnTry(pchSource, iSizeLeft, chPrevious, chAlphaMSBBits);
 
@@ -209,6 +249,29 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
         }
 
         assert(tBestResult.bHit);
+
+        if ((tBestResult.ptAlgorithm->bCheckPalette)
+        &&  (1 == tBestResult.hwRawSize)) {
+            int_fast8_t chIndex = 0;
+            bool bFindIndex = false;
+            for (;chIndex < 64; chIndex++) {
+                if (this.tOutput.chPalette[chIndex] == tBestResult.chNewPrevious) {
+
+                    tBestResult = __arm_lmsk_encode_use_index(tBestResult, chIndex);
+                    bFindIndex = true;
+                    break;
+                }
+
+                if (0 == this.tOutput.chPalette[chIndex] && chIndex > 0) {
+                    break;
+                }
+            }
+
+            if (!bFindIndex && chIndex < 64) {
+                this.tOutput.chPalette[chIndex] = tBestResult.chNewPrevious;
+                tBestResult = __arm_lmsk_encode_use_index(tBestResult, chIndex);
+            }
+        }
 
         /* get the best encoding decision */
 
@@ -240,6 +303,7 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
 
     ptLine->tSize = tEncodedSize;
 
+    s_wTotalPixels += iWidth;
 }
 
 
@@ -356,43 +420,39 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_delta_small_tag(  uint8_t *pchSource,
 
     assert(NULL != tResult.pchEncode);
 
-    uint8_t chTag = 0;
+
     uint8_t chBitsToShift = 8 - chAlphaMSBBits;
     do {
         if (tSizeLeft < 2) {
             break;
         }
 
+        arm_lmsk_tag_delta_small_t tTagDeltaSmall = {
+            .s2Tag = TAG_S2_DELTA_SMALL,
+        };
+
         int16_t iDelta = __arm_lmsk_get_delta(  chPrevious, 
                                                 pchSource[0], 
                                                 chAlphaMSBBits);
 
         if (iDelta >= -4 && iDelta <= 3) {
-            
-            chTag |= 0x10;
-            chTag |= ((*(uint8_t *)&iDelta) & 0x7) << 5;
-            
+            tTagDeltaSmall.s3Delta0 = iDelta;
         } else {
             break;
         }
-
-        chTag >>= 4;
 
         iDelta = __arm_lmsk_get_delta(  pchSource[0], 
                                         pchSource[1], 
                                         chAlphaMSBBits);
 
         if (iDelta >= -4 && iDelta <= 3) {
-            
-            chTag |= 0x10;
-            chTag |= ((*(uint8_t *)&iDelta) & 0x7) << 5;
-            
+            tTagDeltaSmall.s3Delta1 = iDelta;
         } else {
             break;
         }
 
         tResult.bHit = true;
-        tResult.pchEncode[0] = chTag;
+        tResult.pchEncode[0] = tTagDeltaSmall.chByte;
         tResult.chNewPrevious = (pchSource[1] >> chBitsToShift) << chBitsToShift;
 
     } while(0);

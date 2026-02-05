@@ -86,10 +86,10 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 | Tag Bits (LSB) |    Size    | Name            | Description                                                  |
 | :------------- | :--------: | :-------------- | :----------------------------------------------------------- |
-| `00`           | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
-| `01`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
-| `10`           | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
-| `11`           | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
+| `0`           | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
+| `1`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
+| `2`           | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
+| `3`           | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
 
 ##### Special Tags Details
 

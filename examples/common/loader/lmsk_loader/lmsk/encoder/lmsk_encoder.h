@@ -70,6 +70,8 @@ typedef struct __arm_lmsk_line_in_t {
 typedef struct __arm_lmsk_output_t {
     arm_lmsk_header_t tHeader;
 
+    uint8_t chPalette[64];
+
     struct {
         __arm_lmsk_line_out_t *ptHead;
         __arm_lmsk_line_out_t *ptTail;

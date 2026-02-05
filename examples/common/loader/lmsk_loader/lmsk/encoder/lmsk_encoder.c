@@ -285,6 +285,14 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
         nTotalSize += sizeof(this.tHeader);
     } while(0);
 
+    /* write palette */
+    do {
+        if (sizeof(this.chPalette) != fwrite(&this.chPalette, 1, sizeof(this.chPalette), ptOut)) {
+            return -1;
+        }
+        nTotalSize += sizeof(this.chPalette);
+    } while(0);
+
     /* write floor table and index table  */
     do {
 

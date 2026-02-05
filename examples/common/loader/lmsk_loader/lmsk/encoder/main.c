@@ -276,6 +276,7 @@ static void print_help(void)
     printf("\t-h, --help            show this help message and exit\r\n");
     printf("\t-p <picture path>     Input picture (*.bmp, *.png etc)\r\n");
     printf("\t-o <output file path> The file path for the compressed mask image  (*.lmsk)\r\n");
+    printf("\t-a <alpha bits>       The valid alpha MSB count (1~8) \r\n");
     printf("\r\n");
 }
 

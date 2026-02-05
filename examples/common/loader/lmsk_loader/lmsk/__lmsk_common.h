@@ -59,11 +59,20 @@ typedef struct arm_lmsk_header_t {
 
 typedef union arm_lmsk_tag_delta_large_t {
     struct {
-        int8_t  s2Tag   : 2;
-        int8_t  s6Delta : 6; 
+        int8_t  s2Tag       : 2;
+        int8_t  s6Delta     : 6; 
     };
     uint8_t chByte;
 } arm_lmsk_tag_delta_large_t;
+
+typedef union arm_lmsk_tag_delta_small_t {
+    struct {
+        int8_t  s2Tag       : 2;
+        int8_t  s3Delta0    : 3; 
+        int8_t  s3Delta1    : 3; 
+    };
+    uint8_t chByte;
+} arm_lmsk_tag_delta_small_t;
 
 typedef union arm_lmsk_tag_repeat_t {
     struct {
@@ -72,6 +81,14 @@ typedef union arm_lmsk_tag_repeat_t {
     };
     uint8_t chByte;
 } arm_lmsk_tag_repeat_t;
+
+typedef union arm_lmsk_tag_index_t {
+    struct {
+        uint8_t  u2Tag      : 2;
+        uint8_t  u6Index    : 6; 
+    };
+    uint8_t chByte;
+} arm_lmsk_tag_index_t;
 
 
 /*============================ GLOBAL VARIABLES ==============================*/

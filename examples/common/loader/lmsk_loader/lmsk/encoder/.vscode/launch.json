@@ -8,11 +8,11 @@
             "program": "${workspaceFolder}/build/lmsk",
             "args": [
                 "-p", 
-                "../../../../asset/radial_line_pattern.png", 
+                "../../../../asset/PitchScale.png", 
                 "-o",
                 "Test.lmsk",
                 "-a",
-                "6",
+                "8",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
