@@ -352,6 +352,14 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
         }
     } while(0);
 
+    uint32_t wEndMark = 0xDEADBEEF;
+
+    /* write the 4 byte end mark */
+    if (sizeof(wEndMark) != fwrite(&wEndMark, 1, sizeof(wEndMark), ptOut)) {
+        return -1;
+    }
+    nTotalSize += sizeof(wEndMark);
+
     printf("Encoded %d line of pixels\r\n", iEncodedLines);
 
     return nTotalSize;

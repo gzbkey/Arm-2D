@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.1.0)
+# Losslessly Compressed Mask (LMSK) Specification (1.1.1)
 
 
 
@@ -19,13 +19,14 @@
 [Floor Table: floor_count * 2 bytes]
 [Line Index Table: height * 2 bytes]
 [Data Stream]
+[End Mark: 4 bytes]
 ```
 
 
 
 ## 2 Data Structures
 
-### Header
+### Header & End Mark
 
 ```c
 /* 16byte header */
@@ -51,6 +52,8 @@ typedef struct arm_lmsk_header_t {
 - `bRaw`: 
   - `0` - The data section contains compressed data. The Palette, Floor Table and Line Index Table are valid.
   - `1`- The data section **ONLY** contains the raw alpha pixels. The Palette, Floor Table and the Line Index Table are removed. Hence, `chFloorCount` should always be `0`, and the decoder should ignore `chFloorCount` and `u3AlphaMSBCount`.
+
+The LMSK file ends with a (**at least 4 bytes long**) marker. The content is defined by the encoder and should be ignored by the decoder. The purpose of introducing 4-byte padding is to enable the encoder to safely implement a 32-bit Tag-fetching scheme. 
 
 ### Palette Table
 

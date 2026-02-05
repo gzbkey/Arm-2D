@@ -427,7 +427,7 @@ int main(int argc, char* argv[])
         /* load picture */
         if (!load_mask(SYSTEM_CFG.Input.pchInputPicturePath,
                        &SYSTEM_CFG.Picture.tMask)) {
-            printf("ERROR: failed to load picture, %s\n", SDL_GetError());
+            printf("ERROR: Failed to load picture, %s\n", SDL_GetError());
             ret = -1;
             break;
         };
@@ -437,7 +437,7 @@ int main(int argc, char* argv[])
 
         FILE *fp = fopen(SYSTEM_CFG.Input.pchOutputFilePath, "w");
         if (NULL == fp) {
-            printf("Failed to write file %s...\r\n", SYSTEM_CFG.Input.pchOutputFilePath);
+            printf("ERROR: Failed to write file %s...\r\n", SYSTEM_CFG.Input.pchOutputFilePath);
             break;
         }
         
@@ -451,14 +451,18 @@ int main(int argc, char* argv[])
 
         int32_t iSizeWritten = arm_lmsk_write_to_file(arm_lmsk_encode(&tEncoder, SYSTEM_CFG.Input.u8AlphaMSBBits), fp);
 
-        uint32_t wRawSize = SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth *
-                            SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight;
-        double fCompressionRate = ((double)iSizeWritten / (double)wRawSize) * 100.0f;
-        printf("\r\nRaw Mask Size: %d\r\n"
-               "Compressed Mask File Size: %"PRIu32" [%2.2f%%]\r\n",
-                wRawSize,
-                iSizeWritten,
-                fCompressionRate );
+        if (iSizeWritten < 0) {
+            printf("ERROR: Failed to create file %s\r\n", SYSTEM_CFG.Input.pchOutputFilePath);
+        } else {
+            uint32_t wRawSize = SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth *
+                                SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight;
+            double fCompressionRate = ((double)iSizeWritten / (double)wRawSize) * 100.0f;
+            printf("\r\nRaw Mask Size: %d\r\n"
+                "Compressed Mask File Size: %"PRIu32" [%2.2f%%]\r\n",
+                    wRawSize,
+                    iSizeWritten,
+                    fCompressionRate );
+        }
 
         arm_lmsk_encoder_depose(&tEncoder);
 
