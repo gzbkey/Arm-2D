@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/build/lmsk",
             "args": [
                 "-p", 
-                "../../../../asset/PitchScale.png", 
+                "../../../../asset/ECGScanMask.png", 
                 "-o",
                 "Test.lmsk",
                 "-a",

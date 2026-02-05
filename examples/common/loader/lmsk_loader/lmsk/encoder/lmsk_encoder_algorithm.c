@@ -158,8 +158,8 @@ void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis)
         double dfRatio = (double)c_tAlgorithms[n].wPixelCover / (double) wTotalPixels;
         dfRatio *= 100.0f;
 
-        printf( "Algorithm: %s \r\n", c_tAlgorithms[n].pchName);
-        printf( "Pixel Hits: %"PRIu32" [%f2.4%%]\r\n\r\n", 
+        printf( "\r\nAlgorithm: %s \r\n", c_tAlgorithms[n].pchName);
+        printf( "Pixel Hits: %"PRIu32" [%f2.4%%]\r\n", 
                 c_tAlgorithms[n].wPixelCover,
                 dfRatio);
     }
