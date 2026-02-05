@@ -59,21 +59,12 @@ struct __arm_lmsk_algorithm_t {
 };
 
 enum {
-    TAG_U2_INDEX        = 0x0,
-    TAG_U2_REPETA       = 0x1,
-    TAG_S2_DELTA_SMALL  = -2,   /*! 0b10 */
-    TAG_S2_DELTA_LARGE  = -1,   /*! 0b11 */
-
-    TAG_U8_ALPHA        = 0xFD,
-    TAG_U8_GRADIENT     = 0xF9,
-};
-
-enum {
     LMSK_TAG_DELTA_SMALL,
     LMSK_TAG_DELTA_LARGE,
     LMSK_TAG_REPEAT_PREVIOUS,
     LMSK_TAG_ALPHA,
     LMSK_TAG_INDEX,
+    LMSK_TAG_GRADIENT,
 };
 
 
@@ -103,11 +94,22 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
                                                             uint8_t chPrevious,
                                                             uint8_t chAlphaMSBBits);
 
+static 
+__arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( uint8_t *pchSource, 
+                                                        size_t tSizeLeft, 
+                                                        uint8_t chPrevious,
+                                                        uint8_t chAlphaMSBBits);
+
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 
 static
 __arm_lmsk_algorithm_t c_tAlgorithms[] = {
+    [LMSK_TAG_INDEX] = {
+        .fnTry = NULL,
+        .pchName = "LMSK_TAG_INDEX",
+    },
+
     [LMSK_TAG_DELTA_SMALL] = {
         .fnTry = &__arm_lmsk_try_delta_small_tag,
         .pchName = "LMSK_TAG_DELTA_SMALL",
@@ -126,10 +128,12 @@ __arm_lmsk_algorithm_t c_tAlgorithms[] = {
         .pchName = "LMSK_TAG_ALPHA",
         .bCheckPalette = true,
     },
-    [LMSK_TAG_INDEX] = {
-        .fnTry = NULL,
-        .pchName = "LMSK_TAG_INDEX",
+    
+    [LMSK_TAG_GRADIENT] = {
+        .fnTry = &__arm_lmsk_try_gradient_tag,
+        .pchName = "LMSK_TAG_GRADIENT",
     },
+    
 };
 
 static 
@@ -159,7 +163,7 @@ void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis)
         dfRatio *= 100.0f;
 
         printf( "\r\nAlgorithm: %s \r\n", c_tAlgorithms[n].pchName);
-        printf( "Pixel Hits: %"PRIu32" [%f2.4%%]\r\n", 
+        printf( "Pixel Hits: %"PRIu32" [%2.2f%%]\r\n", 
                 c_tAlgorithms[n].wPixelCover,
                 dfRatio);
     }
@@ -230,7 +234,9 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
 
             if (tResult.bHit) {
                 float fRate = (float)tResult.hwRawSize / (float)tResult.u15Size;
-                if (fRate > fCompressionRate) {
+                if (    (fRate > fCompressionRate)
+                   ||   (   (fRate == fCompressionRate)
+                        &&  (tBestResult.hwRawSize < tResult.hwRawSize))) {
                     if (NULL != tBestResult.pchEncode) {
                         /* free the old result */
                         free(tBestResult.pchEncode);
@@ -240,7 +246,7 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
                     
                     tBestResult = tResult;
                     continue;
-                }
+                } 
             }
 
             if (NULL != tResult.pchEncode) {
@@ -521,6 +527,74 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
 
     return tResult;
 
+}
+
+
+static 
+__arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( uint8_t *pchSource, 
+                                                        size_t tSizeLeft, 
+                                                        uint8_t chPrevious,
+                                                        uint8_t chAlphaMSBBits)
+{
+    __arm_lmsk_encode_result_t tResult = {
+        .u15Size = 4,
+        .pchEncode = (uint8_t *)malloc(4),
+        .ptAlgorithm = &c_tAlgorithms[LMSK_TAG_GRADIENT],
+    };
+
+    if (tSizeLeft < 4) {
+        return tResult;
+    }
+
+    int16_t iGradientSize = 1;
+    int16_t iPrevious = chPrevious;
+    int16_t iCurrent = *pchSource++;
+    tSizeLeft--;
+
+    uint8_t chToAlpha = iCurrent;
+    int16_t iDeltaPrevious = iCurrent - iPrevious;
+    
+    iPrevious = iCurrent;
+
+    do {
+        iCurrent = *pchSource++;
+        int16_t iDelta = iCurrent - iPrevious;
+        
+        int16_t iDeltaChange = iDelta - iDeltaPrevious;
+        if (ABS(iDeltaChange) > 1) {
+            break;
+        }
+
+        /* wrong direction */
+        if (iDelta < 0 && iDeltaPrevious > 0) {
+            break;
+        }
+        if (iDelta > 0 && iDeltaPrevious < 0) {
+            break;
+        }
+
+        iDeltaPrevious = iDelta;
+        chToAlpha = iCurrent;
+        iPrevious = iCurrent;
+
+        iGradientSize++;
+    } while(--tSizeLeft);
+
+    if (iGradientSize > 4) {
+
+        tResult.bHit = true;
+
+        *(uint32_t *)tResult.pchEncode = (arm_lmsk_tag_gradient_t) {
+            .chTag = TAG_U8_GRADIENT,
+            .chToAlpha = chToAlpha,
+            .iSteps = iGradientSize,
+        }.wWord;
+        
+        tResult.hwRawSize = iGradientSize;
+        tResult.chNewPrevious = chToAlpha;
+    }
+
+    return tResult;
 }
 
 #ifdef   __cplusplus

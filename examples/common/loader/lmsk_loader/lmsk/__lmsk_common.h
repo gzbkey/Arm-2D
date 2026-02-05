@@ -35,6 +35,16 @@ extern "C" {
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
+enum {
+    TAG_U2_INDEX        = 0x0,
+    TAG_U2_REPETA       = 0x1,
+    TAG_S2_DELTA_SMALL  = -2,   /*! 0b10 */
+    TAG_S2_DELTA_LARGE  = -1,   /*! 0b11 */
+
+    TAG_U8_ALPHA        = 0xFD,
+    TAG_U8_GRADIENT     = 0xF9,
+};
+
 /* 16byte header */
 typedef struct arm_lmsk_header_t {
     uint8_t chName[5];                  /* "LMSK": Losslessly compressed MaSK */
@@ -89,6 +99,15 @@ typedef union arm_lmsk_tag_index_t {
     };
     uint8_t chByte;
 } arm_lmsk_tag_index_t;
+
+typedef union arm_lmsk_tag_gradient_t {
+    struct {
+        uint8_t chTag;                  /* Tag: TAG_U8_GRADIENT */
+        uint8_t chToAlpha;
+        int16_t iSteps; 
+    };
+    uint32_t wWord;
+} arm_lmsk_tag_gradient_t;
 
 
 /*============================ GLOBAL VARIABLES ==============================*/

@@ -271,7 +271,7 @@ int app_2d_main_thread (void *argument)
 
 static void print_help(void)
 {
-    printf("The lmsk is a command line tool that extracts alpha masks from PNG file and generate lossless compressed mask files.  \r\n");
+    printf("The lmsk (v0.9.0) is a command line tool that extracts alpha masks from PNG file and generate lossless compressed mask files.  \r\n");
     printf("\r\noptions:\r\n");
     printf("\t-h, --help            show this help message and exit\r\n");
     printf("\t-p <picture path>     Input picture (*.bmp, *.png etc)\r\n");

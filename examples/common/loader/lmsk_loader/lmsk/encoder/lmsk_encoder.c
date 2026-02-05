@@ -414,57 +414,34 @@ void __arm_lmsk_free_output_lines(__arm_lmsk_output_t *ptThis)
 static
 void crc32_init_table(void)
 {
-    uint32_t i, j, crc;
+    uint32_t wCRC;
     
-    for (i = 0; i < 256; i++) {
-        crc = i;
-        for (j = 0; j < 8; j++) {
-            crc = (crc >> 1) ^ ((crc & 1u) ? CRC32_POLYNOMIAL : 0);
+    for (int_fast16_t i = 0; i < 256; i++) {
+        wCRC = i;
+        for (int_fast8_t j = 0; j < 8; j++) {
+            wCRC = (wCRC >> 1) ^ ((wCRC & 1u) ? CRC32_POLYNOMIAL : 0);
         }
-        s_wCRC32Table[i] = crc;
+        s_wCRC32Table[i] = wCRC;
     }
     s_bCRCTableInitialized = true;
 }
 
 static
-uint32_t crc32_calculate(const void *data, size_t length)
+uint32_t crc32_calculate(const void *pData, size_t nLength)
 {
-    const uint8_t *bytes = (const uint8_t *)data;
-    uint32_t crc = CRC32_INITIAL;
+    const uint8_t *pchBytes = (const uint8_t *)pData;
+    uint32_t wCRC = CRC32_INITIAL;
     size_t i;
     
     if (!s_bCRCTableInitialized) {
         crc32_init_table();
     }
     
-    for (i = 0; i < length; i++) {
-        crc = (crc >> 8) ^ s_wCRC32Table[(crc & 0xFF) ^ bytes[i]];
+    for (i = 0; i < nLength; i++) {
+        wCRC = (wCRC >> 8) ^ s_wCRC32Table[(wCRC & 0xFF) ^ pchBytes[i]];
     }
     
-    return crc ^ CRC32_XOROUT;
-}
-
-static
-uint32_t crc32_update(uint32_t crc, const void *data, size_t length)
-{
-    const uint8_t *bytes = (const uint8_t *)data;
-    size_t i;
-    
-    if (!s_bCRCTableInitialized) {
-        crc32_init_table();
-    }
-    
-    for (i = 0; i < length; i++) {
-        crc = (crc >> 8) ^ s_wCRC32Table[(crc & 0xFF) ^ bytes[i]];
-    }
-    
-    return crc;
-}
-
-static
-uint32_t crc32_finalize(uint32_t crc)
-{
-    return crc ^ CRC32_XOROUT;
+    return wCRC ^ CRC32_XOROUT;
 }
 
 
