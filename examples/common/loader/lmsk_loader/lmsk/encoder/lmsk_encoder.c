@@ -54,7 +54,10 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
                             __arm_lmsk_line_out_t *ptLine,
                             uint8_t chAlphaMSBBits);
 extern
-void __arm_lmsk_encode_prepare(arm_lmsk_encoder_t *ptThis);
+void __arm_lmsk_encoder_prepare(arm_lmsk_encoder_t *ptThis);
+
+extern
+void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis);
 
 /*============================ IMPLEMENTATION ================================*/
 
@@ -217,7 +220,9 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
     /* free previous output lines if any */
     __arm_lmsk_free_output_lines(&this.tOutput);
 
-    __arm_lmsk_encode_prepare(ptThis);
+    __arm_lmsk_encoder_prepare(ptThis);
+
+    printf("Valid Alpha MSB Count:%"PRId8"\r\n", chAlphaMSBBits);
 
     /* update the alpha valid MSB bit count */
     this.tOutput.tHeader.u3AlphaMSBCount = chAlphaMSBBits - 1;
@@ -242,6 +247,8 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
 
         pchMask += iWidth;
     }
+
+    __arm_lmsk_encoder_report(ptThis);
 
     printf("Merge %d duplicated lines\r\n", iDuplicatedLineCount);
 

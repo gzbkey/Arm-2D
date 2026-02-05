@@ -8,9 +8,11 @@
             "program": "${workspaceFolder}/build/lmsk",
             "args": [
                 "-p", 
-                "../../../../asset/ECGScanMask.png", 
+                "../../../../asset/radial_line_pattern.png", 
                 "-o",
                 "Test.lmsk",
+                "-a",
+                "6",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

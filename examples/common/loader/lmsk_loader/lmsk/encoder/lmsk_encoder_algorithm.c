@@ -54,7 +54,7 @@ struct __arm_lmsk_algorithm_t {
                                         uint8_t chAlphaMSBBits);
 
     uint32_t wPixelCover;
-
+    const char *pchName;
 };
 
 enum {
@@ -108,28 +108,54 @@ static
 __arm_lmsk_algorithm_t c_tAlgorithms[] = {
     [LMSK_TAG_DELTA_SMALL] = {
         .fnTry = &__arm_lmsk_try_delta_small_tag,
+        .pchName = "LMSK_TAG_DELTA_SMALL",
     },
 
     [LMSK_TAG_DELTA_LARGE] = {
         .fnTry = &__arm_lmsk_try_delta_large_tag,
+        .pchName = "LMSK_TAG_DELTA_LARGE",
     },
     [LMSK_TAG_REPEAT_PREVIOUS] = {
         .fnTry = &__arm_lmsk_try_repeat_prev_tag,
+        .pchName = "LMSK_TAG_REPEAT_PREVIOUS",
     },
     [LMSK_TAG_ALPHA] = {
         .fnTry = &__arm_lmsk_try_alpha_tag,
+        .pchName = "LMSK_TAG_ALPHA",
     },
 };
 
 
 /*============================ IMPLEMENTATION ================================*/
 
-void __arm_lmsk_encode_prepare(arm_lmsk_encoder_t *ptThis)
+void __arm_lmsk_encoder_prepare(arm_lmsk_encoder_t *ptThis)
 {
     for (uint_fast8_t n = 0; n < dimof(c_tAlgorithms); n++) {
         c_tAlgorithms[n].wPixelCover = 0;
         assert(NULL != c_tAlgorithms[n].fnTry);
     }
+}
+
+void __arm_lmsk_encoder_report(arm_lmsk_encoder_t *ptThis)
+{
+
+    uint32_t wTotalPixels = this.tOutput.tHeader.iHeight
+                          * this.tOutput.tHeader.iWidth;
+
+    printf("\r\n-[Report]------------------------------ \r\n");
+
+    for (uint_fast8_t n = 0; n < dimof(c_tAlgorithms); n++) {
+    
+        double dfRatio = (double)c_tAlgorithms[n].wPixelCover / (double) wTotalPixels;
+        dfRatio *= 100.0f;
+
+        printf( "Algorithm: %s \r\n", c_tAlgorithms[n].pchName);
+        printf( "Pixel Hits: %"PRIu32" [%f2.4%%]\r\n\r\n", 
+                c_tAlgorithms[n].wPixelCover,
+                dfRatio);
+    }
+
+    printf("--------------------------------------- \r\n\r\n");
 }
 
 void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,

@@ -616,7 +616,9 @@ typedef struct system_cfg_t {
         char *pchOutputFilePath;
 
         uint32_t bValid                 : 1;
-        uint32_t                        : 31;
+        uint32_t                        : 7;
+        uint32_t u8AlphaMSBBits         : 8;
+        uint32_t                        : 16;
     } Input;
 
     struct {

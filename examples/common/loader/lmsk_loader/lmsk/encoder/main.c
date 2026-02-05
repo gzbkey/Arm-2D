@@ -176,6 +176,8 @@ arm_2d_err_t process_args(int argc, char* argv[])
         return ARM_2D_ERR_MISSING_PARAM;
     }
 
+    SYSTEM_CFG.Input.u8AlphaMSBBits = 8;
+
     for (int n = 0; n < argc; n++) {
 
         if (0 == n) {
@@ -213,6 +215,26 @@ arm_2d_err_t process_args(int argc, char* argv[])
             }
 
             SYSTEM_CFG.Input.pchOutputFilePath = argv[n];
+            continue;
+        }
+
+        if (0 == strncmp(argv[n], "-a", 2)) {
+            n++;
+            if (n >= argc) {
+                bInputIsValid = false;
+                break;
+            }
+
+            int32_t iAlphaMSBBits = SDL_atoi(argv[n]);
+
+            if (iAlphaMSBBits > 0 && iAlphaMSBBits <= 8) {
+                SYSTEM_CFG.Input.u8AlphaMSBBits = iAlphaMSBBits;
+            } else {
+                printf("ERROR: Invalid alpha MSB bits count: %"PRIi32"\r\n", iAlphaMSBBits);
+                bInputIsValid = false;
+                break;
+            }
+
             continue;
         }
 
@@ -411,6 +433,7 @@ int main(int argc, char* argv[])
 
 
         printf("Encoding...\r\n");
+
         FILE *fp = fopen(SYSTEM_CFG.Input.pchOutputFilePath, "w");
         if (NULL == fp) {
             printf("Failed to write file %s...\r\n", SYSTEM_CFG.Input.pchOutputFilePath);
@@ -425,7 +448,7 @@ int main(int argc, char* argv[])
                                 SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight);
 
 
-        int32_t iSizeWritten = arm_lmsk_write_to_file(arm_lmsk_encode(&tEncoder, 8), fp);
+        int32_t iSizeWritten = arm_lmsk_write_to_file(arm_lmsk_encode(&tEncoder, SYSTEM_CFG.Input.u8AlphaMSBBits), fp);
 
         uint32_t wRawSize = SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth *
                             SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight;

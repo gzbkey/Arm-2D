@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.0.1)
+# Losslessly Compressed Mask (LMSK) Specification (1.1.0)
 
 
 
@@ -15,6 +15,7 @@
 #### File Structure
 ```
 [Header: 16 bytes]
+[64 Palette]
 [Floor Table: floor_count * 2 bytes]
 [Line Index Table: height * 2 bytes]
 [Data Stream]
@@ -75,11 +76,12 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 ### 3.1 Tags
 
-| Tag Bits (LSB)   |    Size    | Name            | Description                                                  |
-| :--------------- | :--------: | :-------------- | :----------------------------------------------------------- |
-| `xxxx_xxxx_xxx1` | **4 bits** | **DELTA_SMALL** | Small delta. `delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
-| `xxxx_xxxx_xx00` | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **REPEAT_START**<br>• `1–61`: **REPEAT_STOP**, run length = `count + 1`<br>• `62` (0xF8): **GRADIENT_TAG**<br>• `63` (0xFC): **ALPHA_TAG** |
-| `xxxx_xxxx_xx10` | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
+| Tag Bits (LSB) |    Size    | Name            | Description                                                  |
+| :------------- | :--------: | :-------------- | :----------------------------------------------------------- |
+| `00`           | **8 bits** | **Index**       | An index for a constant Palette.                             |
+| `01`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF8): **GRADIENT_TAG**<br>• `63` (0xFC): **ALPHA_TAG** |
+| `10`           | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
+| `11`           | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
 
 ##### Special Tags Details
 
@@ -115,16 +117,16 @@ previous_alpha = to_alpha;
 
 
 
-* **REPEAT_START / STOP**  
-  - **Standalone STOP**: If no matching **START** precedes it, repeat the **previous pixel** `count + 1` times.  
+* **DO / WHILE**  
+  - **Standalone WHILE** (a.k.a **REPEAT**): If no matching **DO** precedes it, repeat the **previous pixel** `count + 1` times.  
   
-  - **Paired**: Instructions between **START** and **STOP** form a **macro**, executed `count + 1` times (initial + N repeats). Nesting is not supported.
-  - **Standalone START** (without STOP) is ignored. 
+  - **Paired**: Instructions between **DO** and **WHILE** form a **macro**, executed `count + 1` times (initial + N repeats). Nesting is not supported.
+  - **Standalone DO** (without **WHILE**) is ignored. 
 
 
 > [!IMPORTANT]
 >
-> The **REPEAT_START / STOP** implements a loop structure. If you want to repeat the exact same string of pixels, you have to explicitly specify the pixel alpha at the start of an iteration; otherwise, for each iteration, the start alpha (a.k.a the alpha at the end of the previous iteration) might be different, leading to a totally different string of pixels. 
+> The **DO / WHILE** implements a loop structure. If you want to repeat the exact same string of pixels, you have to explicitly specify the pixel alpha at the start of an iteration; otherwise, for each iteration, the start alpha (a.k.a the alpha at the end of the previous iteration) might be different, leading to a totally different string of pixels. 
 >
 > Please implement **REPEAT_START/STOP** as a feature, not a **BUG**. 
 
