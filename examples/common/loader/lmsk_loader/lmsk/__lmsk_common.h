@@ -57,6 +57,22 @@ typedef struct arm_lmsk_header_t {
     uint32_t                    : 32;   /* reserved */
 } arm_lmsk_header_t;
 
+typedef union arm_lmsk_tag_delta_large_t {
+    struct {
+        int8_t  s2Tag   : 2;
+        int8_t  s6Delta : 6; 
+    };
+    uint8_t chByte;
+} arm_lmsk_tag_delta_large_t;
+
+typedef union arm_lmsk_tag_repeat_t {
+    struct {
+        uint8_t  u2Tag      : 2;
+        uint8_t  u6Repeat   : 6; 
+    };
+    uint8_t chByte;
+} arm_lmsk_tag_repeat_t;
+
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ PROTOTYPES ====================================*/

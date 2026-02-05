@@ -381,7 +381,6 @@ static bool load_mask(const char *pchPath, arm_2d_tile_t *ptMask)
     return false;
 }
 
-
 int main(int argc, char* argv[])
 {
     int ret = 0;
@@ -397,6 +396,7 @@ int main(int argc, char* argv[])
             return -1;
             break;
     }
+
 
     SDL_Init(SDL_INIT_VIDEO);
     

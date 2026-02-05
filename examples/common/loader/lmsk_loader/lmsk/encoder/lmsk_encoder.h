@@ -31,6 +31,25 @@ extern "C" {
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
+#ifndef MAX
+#   define MAX(a,b)	((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#   define MIN(a,b)	((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef ABS
+#   define ABS(x) ((x) > 0 ? (x) : -(x))
+#endif
+
+/*! 
+ * \brief get the number of items in an given array
+ */
+#ifndef dimof
+#   define dimof(__array)          (sizeof(__array)/sizeof(__array[0]))
+#endif
+
 /*============================ TYPES =========================================*/
 
 typedef struct __arm_lmsk_line_out_t {

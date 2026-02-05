@@ -51,7 +51,10 @@ uint32_t crc32_calculate(const void *data, size_t length);
 
 extern
 void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
-                            __arm_lmsk_line_out_t *ptLine);
+                            __arm_lmsk_line_out_t *ptLine,
+                            uint8_t chAlphaMSBBits);
+extern
+void __arm_lmsk_encode_prepare(arm_lmsk_encoder_t *ptThis);
 
 /*============================ IMPLEMENTATION ================================*/
 
@@ -133,7 +136,10 @@ void __arm_lmsk_encoder_append(arm_lmsk_encoder_t *ptThis, __arm_lmsk_line_out_t
 }
 
 static 
-size_t __arm_lmsk_encoder_line_process(arm_lmsk_encoder_t *ptThis, int16_t iY, uint8_t *pchSourceLine)
+size_t __arm_lmsk_encoder_line_process( arm_lmsk_encoder_t *ptThis, 
+                                        int16_t iY, 
+                                        uint8_t *pchSourceLine,
+                                        uint8_t chAlphaMSBBits)
 {
     assert(NULL != ptThis);
     assert(NULL != pchSourceLine);
@@ -190,7 +196,7 @@ size_t __arm_lmsk_encoder_line_process(arm_lmsk_encoder_t *ptThis, int16_t iY, u
      *  } __arm_lmsk_line_out_t;
      */
 
-    __arm_lmsk_encode_line(ptThis, ptOutputLine);
+    __arm_lmsk_encode_line(ptThis, ptOutputLine, chAlphaMSBBits);
 
     /* append */
     __arm_lmsk_encoder_append(ptThis, ptOutputLine);
@@ -200,9 +206,9 @@ size_t __arm_lmsk_encoder_line_process(arm_lmsk_encoder_t *ptThis, int16_t iY, u
     return ptOutputLine->tSize;
 }
 
-__arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlphaBits)
+__arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlphaMSBBits)
 {
-    if (NULL == ptThis || chAlphaBits == 0 || chAlphaBits > 8) {
+    if (NULL == ptThis || chAlphaMSBBits == 0 || chAlphaMSBBits > 8) {
         return NULL;
     } else if (NULL == this.Mask.pchBuffer || 0 == this.Mask.iHeight || 0 == this.Mask.iWidth) {
         return NULL;
@@ -211,8 +217,10 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
     /* free previous output lines if any */
     __arm_lmsk_free_output_lines(&this.tOutput);
 
+    __arm_lmsk_encode_prepare(ptThis);
+
     /* update the alpha valid MSB bit count */
-    this.tOutput.tHeader.u3AlphaMSBCount = chAlphaBits - 1;
+    this.tOutput.tHeader.u3AlphaMSBCount = chAlphaMSBBits - 1;
 
     uint8_t *pchMask = this.Mask.pchBuffer;
     int16_t iWidth = this.Mask.iWidth;
@@ -225,7 +233,7 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
     int16_t iDuplicatedLineCount = 0;
 
     for (int_fast16_t iY = 0; iY < iHeight; iY++) {
-        size_t tLineSize = __arm_lmsk_encoder_line_process(ptThis, iY, pchMask);
+        size_t tLineSize = __arm_lmsk_encoder_line_process(ptThis, iY, pchMask, chAlphaMSBBits);
 
         iDuplicatedLineCount += (tLineSize == 0);
 
