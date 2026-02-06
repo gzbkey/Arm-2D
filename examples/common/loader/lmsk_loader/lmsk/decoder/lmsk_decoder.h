@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -16,18 +16,23 @@
  * limitations under the License.
  */
 
-#ifndef __ARM_2D_EXAMPLE_LOADERS_H__
-#define __ARM_2D_EXAMPLE_LOADERS_H__
-
 /*============================ INCLUDES ======================================*/
+#ifndef __LMSK_DECODER_H__
+#define __LMSK_DECODER_H__   1
 
-#include "./generic_loader/arm_2d_generic_loader.h"
-#include "./tjpgd_loader/tjpgd_loader.h"
-#include "./zjpgd_loader/zjpgd_loader.h"
-#include "./freetype_loader/freetype_loader.h"
-#include "./qoi_loader/qoi_loader.h"
-#include "./zhrgb565_loader/zhrgb565_loader.h"
-#include "./lmsk_loader/lmsk_loader.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#ifdef __ARM_LMSK_DECODER_CFG__
+#   include __ARM_LMSK_DECODER_CFG__
+#else
+#   include "arm_lmsk_cfg.h"
+#endif
+
+
+#include "../__lmsk_common.h"
 
 #ifdef   __cplusplus
 extern "C" {
@@ -36,11 +41,25 @@ extern "C" {
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
+
+
+
+typedef struct arm_lmsk_decoder_t {
+
+
+} arm_lmsk_decoder_t;
+
+
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ PROTOTYPES ====================================*/
+/*============================ IMPLEMENTATION ================================*/
+
+
+
 
 #ifdef   __cplusplus
 }
 #endif
 
 #endif
+
