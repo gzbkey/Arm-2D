@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.2.1)
+# Losslessly Compressed Mask (LMSK) Specification (1.2.2)
 
 
 
@@ -49,7 +49,13 @@ typedef struct arm_lmsk_header_t {
 } arm_lmsk_header_t;
 ```
 - `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_bits = value + 1).  Unless otherwise specified,  all operations apply only to these significant high bits.
+
+  > [!NOTE]
+  >
+  > The **TAG_INDEX**, **TAG_RADIENT** and **Palette** are not affected by `u3AlphaMSBCount`.
+
 - `bRaw`: 
+
   - `0` - The data section contains compressed data. The Palette, Floor Table and Line Index Table are valid.
   - `1`- The data section **ONLY** contains the raw alpha pixels. The Palette, Floor Table and the Line Index Table are removed. Hence, `chFloorCount` should always be `0`, and the decoder should ignore `chFloorCount` and `u3AlphaMSBCount`.
 
