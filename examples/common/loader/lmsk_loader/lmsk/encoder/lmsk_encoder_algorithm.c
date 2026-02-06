@@ -184,7 +184,7 @@ __arm_lmsk_encode_result_t __arm_lmsk_encode_use_index(__arm_lmsk_encode_result_
 
     tResult.pchEncode[0] = (arm_lmsk_tag_index_t) {
         .u2Tag = TAG_U2_INDEX,
-        .u6Index = chIndex,
+        .u5Index = chIndex,
     }.chByte;
 
     if (NULL != tOld.pchEncode) {

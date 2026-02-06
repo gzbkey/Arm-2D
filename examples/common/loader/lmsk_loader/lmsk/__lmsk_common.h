@@ -37,6 +37,9 @@ extern "C" {
 
 enum {
     TAG_U2_INDEX        = 0x0,
+    TAG_U2_DO           = 0x0,
+    TAG_U2_WHILE        = 0x0,
+
     TAG_U2_REPETA       = 0x1,
     TAG_S2_DELTA_SMALL  = -2,   /*! 0b10 */
     TAG_S2_DELTA_LARGE  = -1,   /*! 0b11 */
@@ -94,11 +97,22 @@ typedef union arm_lmsk_tag_repeat_t {
 
 typedef union arm_lmsk_tag_index_t {
     struct {
-        uint8_t  u2Tag      : 2;
-        uint8_t  u6Index    : 6; 
+        uint8_t  u2Tag      : 2;    /* TAG_U2_INDEX */
+        uint8_t  u5Index    : 5;
+        uint8_t  bDoWhile   : 1;    /* must be zero */
     };
     uint8_t chByte;
 } arm_lmsk_tag_index_t;
+
+/* tag: do while */
+typedef union arm_lmsk_tag_dw_t {
+    struct {
+        uint8_t  u2Tag      : 2;    /* TAG_U2_DO / TAG_U2_WHILE */
+        uint8_t  u5Index    : 5;
+        uint8_t  bDoWhile   : 1;    /* must be 1 */
+    };
+    uint8_t chByte;
+} arm_lmsk_tag_dw_t;
 
 typedef union arm_lmsk_tag_gradient_t {
     struct {
