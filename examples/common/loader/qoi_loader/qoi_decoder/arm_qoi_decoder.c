@@ -339,7 +339,10 @@ size_t __arm_qoi_dec_io_try_to_read_word(arm_qoi_dec_t *ptThis, uint8_t *pchBuff
     return tSize;
 #endif
 #else
-    *(uint32_t *)pchBuffer = *(uint32_t *)&this.tCFG.pchQOISource[this.ptWorking->tPosition];
+    memcpy( (uint32_t *)pchBuffer, 
+            &this.tCFG.pchQOISource[this.ptWorking->tPosition],
+            4);
+    //*(uint32_t *)pchBuffer = *(uint32_t *)&this.tCFG.pchQOISource[this.ptWorking->tPosition];
     this.ptWorking->tPosition += 4;
 
     return 4;
