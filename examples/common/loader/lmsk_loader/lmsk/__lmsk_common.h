@@ -28,7 +28,7 @@ extern "C" {
 
 /*============================ MACROS ========================================*/
 #define ARM_LMSK_VERSION_MAJOR      1
-#define ARM_LMSK_VERSION_MINOR      0
+#define ARM_LMSK_VERSION_MINOR      2
 #define ARM_LMSK_VERSION            (   (ARM_LMSK_VERSION_MAJOR << 4)   \
                                     |   ARM_LMSK_VERSION_MINOR          )
 
