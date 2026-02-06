@@ -198,6 +198,12 @@ arm_2d_err_t __lmsk_loader_decoder_init(arm_generic_loader_t *ptObj)
         },
     };
 
+    if (0 != arm_lmsk_decoder_init(&this.tDecoder, &tCFG)) {
+        return ARM_2D_ERR_IO_ERROR;
+    }
+
+    this.tTile.tRegion.tSize.iWidth = this.tDecoder.tSetting.iWidth;
+    this.tTile.tRegion.tSize.iHeight = this.tDecoder.tSetting.iHeight;
 
     return ARM_2D_ERR_NONE;
 }
@@ -207,7 +213,7 @@ static
 arm_2d_err_t __lmsk_loader_draw(arm_generic_loader_t *ptObj,
                                 arm_2d_region_t *ptROI,
                                 uint8_t *pchBuffer,
-                                uint32_t iTargetStrideInByte,
+                                uint32_t wTargetStrideInByte,
                                 uint_fast8_t chBitsPerPixel)
 {
     assert(NULL != ptObj);
@@ -217,34 +223,15 @@ arm_2d_err_t __lmsk_loader_draw(arm_generic_loader_t *ptObj,
     int_fast16_t iXLimit = ptROI->tSize.iWidth + ptROI->tLocation.iX; 
     int_fast16_t iYLimit = ptROI->tSize.iHeight + ptROI->tLocation.iY; 
 
-    uint_fast8_t chBytesPerPixel = chBitsPerPixel >> 3;
-
-    for (int_fast16_t iY = ptROI->tLocation.iY; iY < iYLimit; iY++) {
-
-        /* a simple demo of drawing based on the y coordinate */
-        if ((iY & 0x07)) {
-            /* move to next line */
-            pchBuffer += iTargetStrideInByte;
-            continue;
-        }
-
-        uint8_t *pchPixelLine = pchBuffer;
-
-        for (int_fast16_t iX = ptROI->tLocation.iX; iX < iXLimit; iX++) {
-
-            /* use your code to replace the following demo code */
-
-            /* a simple demo of drawing based on the x coordinate */
-            if (!(iX & 0x07)) {
-                memset(pchPixelLine, 0x00, chBytesPerPixel);
-            }
-
-            /* next pixel */
-            pchPixelLine += chBytesPerPixel;
-        }
-
-        /* move to next line */
-        pchBuffer += iTargetStrideInByte;
+    /* decode */
+    if (0 != arm_lmsk_decode(   &this.tDecoder, 
+                                ptROI->tLocation.iX,
+                                ptROI->tLocation.iY,
+                                ptROI->tSize.iWidth,
+                                ptROI->tSize.iHeight,
+                                pchBuffer, 
+                                wTargetStrideInByte)) {
+        return ARM_2D_ERR_IO_ERROR;
     }
 
     return ARM_2D_ERR_NONE;
@@ -254,7 +241,7 @@ static
 bool __lmsk_loader_seek(uintptr_t pTarget, int32_t nOffset)
 {
     lmsk_loader_t *ptThis = (lmsk_loader_t *)pTarget;
-    assert(NULL != ptThis);
+
 #if __ARM_LMSK_USE_LOADER_IO__
     return arm_generic_loader_io_seek(  &this.use_as__arm_generic_loader_t, 
                                         nOffset, 
@@ -270,7 +257,15 @@ size_t __lmsk_loader_read ( intptr_t pTarget,
                             uint8_t *pchBuffer,
                             size_t tLength)
 {
-    return 0;
+    lmsk_loader_t *ptThis = (lmsk_loader_t *)pTarget;
+
+#if __ARM_LMSK_USE_LOADER_IO__
+    return arm_generic_loader_io_read(&this.use_as__arm_generic_loader_t, pchBuffer, tLength);
+#else
+    memcpy(pchBuffer, &this.pchLMSKSource[this.nPosition], tLength); 
+    
+    return tLength;
+#endif
 }
 
 

@@ -80,8 +80,8 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_init( arm_lmsk_encoder_t *ptThis,
         memcpy(this.tOutput.tHeader.chName, "LMSK", 4);
 
         this.tOutput.tHeader.Version.chValue = ARM_LMSK_VERSION;
-        this.tOutput.tHeader.iWidth = iWidth;
-        this.tOutput.tHeader.iHeight = iHeight;
+        this.tOutput.tHeader.tSetting.iWidth = iWidth;
+        this.tOutput.tHeader.tSetting.iHeight = iHeight;
 
         /* allocate memory for the line index reference table */
         this.tOutput.tLineIndexTable.pwReferences = (uint32_t *)malloc(iHeight * sizeof(uint32_t));
@@ -151,7 +151,7 @@ size_t __arm_lmsk_encoder_line_process( arm_lmsk_encoder_t *ptThis,
     __arm_lmsk_line_out_t *ptOutputLine = __arm_lmsk_find_existing_line(ptThis, pchSourceLine);
     if (NULL != ptOutputLine) {
         /* find an existing one */
-        uint32_t wFloorSize = 1 << (16 - this.tOutput.tHeader.u2TagSetBits);
+        uint32_t wFloorSize = 1 << (16 - this.tOutput.tHeader.tSetting.u2TagSetBits);
 
         if ((this.wPosition - ptOutputLine->wPosition) >= wFloorSize) {
             /* too far away, we have to duplicate one  */
@@ -226,7 +226,7 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
     printf("Valid Alpha MSB Count:%"PRId8"\r\n", chAlphaMSBBits);
 
     /* update the alpha valid MSB bit count */
-    this.tOutput.tHeader.u3AlphaMSBCount = chAlphaMSBBits - 1;
+    this.tOutput.tHeader.tSetting.u3AlphaMSBCount = chAlphaMSBBits - 1;
 
     uint8_t *pchMask = this.Mask.pchBuffer;
     int16_t iWidth = this.Mask.iWidth;
@@ -255,7 +255,7 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
 
     /* update floor table size */
     do {
-        uint32_t wFloorSizeBit = 16 - this.tOutput.tHeader.u2TagSetBits;
+        uint32_t wFloorSizeBit = 16 - this.tOutput.tHeader.tSetting.u2TagSetBits;
 
         uint32_t wFloorCount = this.tOutput.wDataSize >> wFloorSizeBit;
         if (wFloorCount > 255) {
@@ -263,7 +263,7 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
             return NULL;
         }
 
-        this.tOutput.tHeader.chFloorCount = wFloorCount;
+        this.tOutput.tHeader.tSetting.chFloorCount = wFloorCount;
 
     } while(0);
 
@@ -297,12 +297,12 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
     /* write floor table and index table  */
     do {
 
-        uint16_t *phwIndexTable = (uint16_t *)malloc(this.tHeader.iHeight * sizeof(uint16_t));
+        uint16_t *phwIndexTable = (uint16_t *)malloc(this.tHeader.tSetting.iHeight * sizeof(uint16_t));
         assert(NULL != phwIndexTable);
 
-        uint32_t wFloorSize = 1 << (16 - this.tHeader.u2TagSetBits);
+        uint32_t wFloorSize = 1 << (16 - this.tHeader.tSetting.u2TagSetBits);
         uint32_t wFloorLevel = 0;
-        for (int_fast16_t iY = 0; iY < this.tHeader.iHeight; iY++) {
+        for (int_fast16_t iY = 0; iY < this.tHeader.tSetting.iHeight; iY++) {
             if (this.tLineIndexTable.pwReferences[iY] - wFloorLevel >= wFloorSize) {
 
                 /* write a floor */
@@ -321,12 +321,12 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
 
         /* write line index table */
 
-        if (this.tHeader.iHeight != fwrite(phwIndexTable, sizeof(uint16_t), this.tHeader.iHeight, ptOut)) {
+        if (this.tHeader.tSetting.iHeight != fwrite(phwIndexTable, sizeof(uint16_t), this.tHeader.tSetting.iHeight, ptOut)) {
             free(phwIndexTable);
             return -1;
         }
 
-        nTotalSize += this.tHeader.iHeight * sizeof(uint16_t);
+        nTotalSize += this.tHeader.tSetting.iHeight * sizeof(uint16_t);
 
         free(phwIndexTable);
     } while(0);

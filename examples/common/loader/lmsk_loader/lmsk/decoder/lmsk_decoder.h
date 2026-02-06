@@ -53,13 +53,32 @@ typedef struct arm_lmsk_decoder_t {
     arm_lsmk_setting_t tSetting;
     uint8_t chPalette[32];
 
+    uint32_t bValid         : 1;
+
+    uint8_t chLastFloorIndex;
+    uint16_t hwCurrentFloor;
+    uint16_t hwNextFloor;
+    uint32_t wFloorStart;
+
 } arm_lmsk_decoder_t;
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ PROTOTYPES ====================================*/
 /*============================ IMPLEMENTATION ================================*/
 
+extern
+int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis, 
+                            arm_lmsk_decoder_cfg_t *ptCFG);
 
+
+extern
+int arm_lmsk_decode(arm_lmsk_decoder_t *ptThis,
+                    int16_t iX,
+                    int16_t iY,
+                    int16_t iWidth,
+                    int16_t iHeight,
+                    uint8_t *pchBuffer,
+                    uint32_t wTargetStride);
 
 
 #ifdef   __cplusplus
