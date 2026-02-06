@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #ifdef   __cplusplus
 extern "C" {
@@ -48,6 +49,17 @@ enum {
     TAG_U8_GRADIENT     = 0xF9,
 };
 
+typedef struct arm_lsmk_setting_t {
+    int16_t iWidth;
+    int16_t iHeight;
+  
+    uint8_t u3AlphaMSBCount     : 3;    /* MSB alpha bits = u3AlphaBits + 1 */
+    uint8_t bRaw                : 1;    /* whether the alpha is compressed or not */
+    uint8_t u2TagSetBits        : 2;    /* must be 0x00 for now, reservef for the future */
+    uint8_t                     : 2;    /* must be 0x00 for now, reserved for the future */
+    uint8_t chFloorCount;
+} arm_lsmk_setting_t;
+
 /* 16byte header */
 typedef struct arm_lmsk_header_t {
     uint8_t chName[5];                  /* "LMSK": Losslessly compressed MaSK */
@@ -58,15 +70,9 @@ typedef struct arm_lmsk_header_t {
         };
         uint8_t chValue;
     } Version;
-  
-    int16_t iWidth;
-    int16_t iHeight;
-  
-    uint8_t u3AlphaMSBCount     : 3;    /* MSB alpha bits = u3AlphaBits + 1 */
-    uint8_t bRaw                : 1;    /* whether the alpha is compressed or not */
-    uint8_t u2TagSetBits        : 2;    /* must be 0x00 for now, reservef for the future */
-    uint8_t                     : 2;    /* must be 0x00 for now, reserved for the future */
-    uint8_t chFloorCount;
+    
+    arm_lsmk_setting_t tSetting;
+
     uint32_t                    : 32;   /* reserved */
 } arm_lmsk_header_t;
 

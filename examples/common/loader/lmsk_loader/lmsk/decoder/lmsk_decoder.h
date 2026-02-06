@@ -20,11 +20,6 @@
 #ifndef __LMSK_DECODER_H__
 #define __LMSK_DECODER_H__   1
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #ifdef __ARM_LMSK_DECODER_CFG__
 #   include __ARM_LMSK_DECODER_CFG__
 #else
@@ -42,13 +37,23 @@ extern "C" {
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
-
+typedef struct arm_lmsk_decoder_cfg_t {
+    struct {
+        bool (*fnSeek)(     uintptr_t pTarget, int32_t offset);
+        size_t (*fnRead) (  intptr_t pTarget,      
+                            uint8_t *pchBuffer,
+                            size_t tLength);
+        uintptr_t pTarget;
+    } IO;
+} arm_lmsk_decoder_cfg_t;
 
 typedef struct arm_lmsk_decoder_t {
+    arm_lmsk_decoder_cfg_t tCFG;
 
+    arm_lsmk_setting_t tSetting;
+    uint8_t chPalette[32];
 
 } arm_lmsk_decoder_t;
-
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ PROTOTYPES ====================================*/

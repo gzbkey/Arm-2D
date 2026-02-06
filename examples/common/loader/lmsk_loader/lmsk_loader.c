@@ -76,6 +76,13 @@ arm_2d_err_t __lmsk_loader_draw(  arm_generic_loader_t *ptObj,
                                     uint32_t iTargetStrideInByte,
                                     uint_fast8_t chBitsPerPixel);
 
+static
+bool __lmsk_loader_seek(uintptr_t pTarget, int32_t offset);
+
+static
+size_t __lmsk_loader_read ( intptr_t pTarget,      
+                            uint8_t *pchBuffer,
+                            size_t tLength);
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
 
@@ -87,15 +94,18 @@ arm_2d_err_t lmsk_loader_init(lmsk_loader_t *ptThis,
     assert(NULL != ptCFG);
     memset(ptThis, 0, sizeof(lmsk_loader_t));
 
-    //if (NULL != ptCFG) {
-        this.tCFG = *ptCFG;
-    //}
 
     arm_2d_err_t tResult = ARM_2D_ERR_NONE;
 
     do {
-    #if 0 /* Please make the following code avaiable when the IO is used. */
-        if (NULL == this.tCFG.ImageIO.ptIO) {
+    #if __ARM_LMSK_USE_LOADER_IO__
+        if (NULL == ptCFG->ImageIO.ptIO) {
+            this.use_as__arm_generic_loader_t.bErrorDetected = true;
+            tResult = ARM_2D_ERR_IO_ERROR;
+            break;
+        }
+    #else
+        if (NULL == ptCFG->pchLMSKSource) {
             this.use_as__arm_generic_loader_t.bErrorDetected = true;
             tResult = ARM_2D_ERR_IO_ERROR;
             break;
@@ -103,20 +113,22 @@ arm_2d_err_t lmsk_loader_init(lmsk_loader_t *ptThis,
     #endif
 
         arm_generic_loader_cfg_t tCFG = {
-            .bUseHeapForVRES = this.tCFG.bUseHeapForVRES,
-            .tColourInfo.chScheme = ARM_2D_COLOUR,
-            .bBlendWithBG = true,
+            .bUseHeapForVRES = ptCFG->bUseHeapForVRES,
+            .tColourInfo.chScheme = ARM_2D_COLOUR_MASK_A8,
+        
+        #if __ARM_LMSK_USE_LOADER_IO__
             .ImageIO = {
-                .ptIO = this.tCFG.ImageIO.ptIO,
-                .pTarget = this.tCFG.ImageIO.pTarget,
+                .ptIO = ptCFG->ImageIO.ptIO,
+                .pTarget = ptCFG->ImageIO.pTarget,
             },
+        #endif
 
             .UserDecoder = {
                 .fnDecoderInit = &__lmsk_loader_decoder_init,
                 .fnDecode = &__lmsk_loader_draw,
             },
 
-            .ptScene = this.tCFG.ptScene,
+            .ptScene = ptCFG->ptScene,
         };
 
         tResult = arm_generic_loader_init(  &this.use_as__arm_generic_loader_t,
@@ -126,7 +138,6 @@ arm_2d_err_t lmsk_loader_init(lmsk_loader_t *ptThis,
             break;
         }
 
-        this.tTile.tRegion.tSize = this.tCFG.tSize;
         if ((0 == this.tTile.tRegion.tSize.iWidth)
          || (0 == this.tTile.tRegion.tSize.iHeight)) {
             tResult = ARM_2D_ERR_INVALID_PARAM;
@@ -178,18 +189,26 @@ arm_2d_err_t __lmsk_loader_decoder_init(arm_generic_loader_t *ptObj)
     assert(NULL != ptObj);
 
     lmsk_loader_t *ptThis = (lmsk_loader_t *)ptObj;
-    ARM_2D_UNUSED(ptThis);
+
+    arm_lmsk_decoder_cfg_t tCFG = {
+        .IO = {
+            .fnSeek = &__lmsk_loader_seek,
+            .fnRead = &__lmsk_loader_read,
+            .pTarget = (uintptr_t)ptObj,
+        },
+    };
+
 
     return ARM_2D_ERR_NONE;
 }
 
 ARM_NONNULL(1, 2, 3)
 static
-arm_2d_err_t __lmsk_loader_draw(  arm_generic_loader_t *ptObj,
-                                    arm_2d_region_t *ptROI,
-                                    uint8_t *pchBuffer,
-                                    uint32_t iTargetStrideInByte,
-                                    uint_fast8_t chBitsPerPixel)
+arm_2d_err_t __lmsk_loader_draw(arm_generic_loader_t *ptObj,
+                                arm_2d_region_t *ptROI,
+                                uint8_t *pchBuffer,
+                                uint32_t iTargetStrideInByte,
+                                uint_fast8_t chBitsPerPixel)
 {
     assert(NULL != ptObj);
     lmsk_loader_t *ptThis = (lmsk_loader_t *)ptObj;
@@ -230,6 +249,30 @@ arm_2d_err_t __lmsk_loader_draw(  arm_generic_loader_t *ptObj,
 
     return ARM_2D_ERR_NONE;
 }
+
+static
+bool __lmsk_loader_seek(uintptr_t pTarget, int32_t nOffset)
+{
+    lmsk_loader_t *ptThis = (lmsk_loader_t *)pTarget;
+    assert(NULL != ptThis);
+#if __ARM_LMSK_USE_LOADER_IO__
+    return arm_generic_loader_io_seek(  &this.use_as__arm_generic_loader_t, 
+                                        nOffset, 
+                                        SEEK_SET);
+#else
+    this.nPosition = nOffset;
+    return true;
+#endif
+}
+
+static
+size_t __lmsk_loader_read ( intptr_t pTarget,      
+                            uint8_t *pchBuffer,
+                            size_t tLength)
+{
+    return 0;
+}
+
 
 #if defined(__clang__)
 #   pragma clang diagnostic pop

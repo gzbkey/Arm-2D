@@ -59,15 +59,16 @@ extern "C" {
 
 typedef struct lmsk_loader_cfg_t {
 
-    arm_2d_size_t tSize;
+    bool bUseHeapForVRES;
 
-    uint16_t bUseHeapForVRES        : 1;
-    uint16_t bAntiAlias             : 1;
-
+#if __ARM_LMSK_USE_LOADER_IO__
     struct {
         const arm_loader_io_t *ptIO;
         uintptr_t pTarget;
     } ImageIO;
+#else
+    uint8_t *pchLMSKSource;
+#endif
 
     arm_2d_scene_t *ptScene;
 } lmsk_loader_cfg_t;
@@ -84,9 +85,16 @@ struct lmsk_loader_t {
         inherit(arm_generic_loader_t);
     };
 
+
 ARM_PRIVATE(
-    lmsk_loader_cfg_t tCFG;
+#if !__ARM_LMSK_USE_LOADER_IO__
+    uint8_t *pchLMSKSource;
+    size_t nPosition;
+#endif
+
+    arm_lmsk_decoder_t tDecoder;
 )
+
     /* place your public member here */
     
 };
