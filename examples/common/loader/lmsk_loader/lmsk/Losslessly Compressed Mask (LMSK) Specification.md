@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.1.1)
+# Losslessly Compressed Mask (LMSK) Specification (1.2.0)
 
 
 
@@ -15,7 +15,7 @@
 #### File Structure
 ```
 [Header: 16 bytes]
-[64 Palette]
+[32 Palette]
 [Floor Table: floor_count * 2 bytes]
 [Line Index Table: height * 2 bytes]
 [Data Stream]
@@ -57,7 +57,7 @@ The LMSK file ends with a (**at least 4 bytes long**) marker. The content is def
 
 ### Palette Table
 
-The compressed file has a 64-slot palette right after the header. The encoder can place a dedicated **INDEX** tag to use the palette. How the palette is generated is fully determined by the encoder. Some commonly used strategies are:
+The compressed file has a 32-slot palette right after the header. The encoder can place a dedicated **INDEX** tag to use the palette. How the palette is generated is fully determined by the encoder. Some commonly used strategies are:
 
 * Places frequently used alphas. 
 * Replaces the **ALPHA_TAG**.
@@ -89,10 +89,12 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 | Tag Bits (LSB) |    Size    | Name            | Description                                                  |
 | :------------- | :--------: | :-------------- | :----------------------------------------------------------- |
-| `0`           | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
-| `1`           | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0`: **DO**<br>• `1–61`: **WHILE**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
-| `2`           | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
-| `3`           | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
+| `0b0xxx-xx00` | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
+| `0b1000-0000` | **8bits** | **DO** | The start marker of the **DO / WHILE** loop. |
+| `0b1xxx-xx00` | **8bits** | **WHILE** | The end marker of the DO / WHILE loop. `count = bits[6:2]` (6-bit):<br/> repeat iteration count = `count + 1` |
+| `0bxxxx-xx01` | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0–61`: **REPEAT**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
+| `0bxxxx-xx10` | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
+| `0bxxxx-xx11` | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
 
 ##### Special Tags Details
 
@@ -108,13 +110,13 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 * **GRADIENT_TAG (0xF9)**  
 
-  Followed by **3 bytes**: `uint8_t to_alpha`, `uint16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count` pixels:
+  Followed by **3 bytes**: `uint8_t to_alpha`, `uint16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count + 1` pixels:
 
 ```c
-q16_step = ((to_alpha - previous_alpha) << 16) / count;
-for (i = 0; i < count - 1; i++)
+q16_step = ((to_alpha - previous_alpha) << 16) / (count + 1);
+for (i = 0; i < count; i++)
     out[i] = current + ((q16_step * i) >> 16);
-out[count-1] = to_alpha;  /* Force endpoint alignment */
+out[count] = to_alpha;  /* Force endpoint alignment */
 previous_alpha = to_alpha;
 ```
 
@@ -129,10 +131,8 @@ previous_alpha = to_alpha;
 
 
 * **DO / WHILE**  
-  - **Standalone WHILE** (a.k.a **REPEAT**): If no matching **DO** precedes it, repeat the **previous pixel** `count + 1` times.  
-  
-  - **Paired**: Instructions between **DO** and **WHILE** form a **macro**, executed `count + 1` times (initial + N repeats). Nesting is not supported.
-  - **Standalone DO** (without **WHILE**) is ignored. 
+  - **Paired**: Instructions between **DO** and **WHILE** form a **macro**, executed `count + 1` times. **Nesting is not allowed**.
+  - **Standalone DO** (without **WHILE**) or **WHILE** (without **DO**) is ignored. 
 
 
 > [!IMPORTANT]

@@ -59,12 +59,12 @@ struct __arm_lmsk_algorithm_t {
 };
 
 enum {
-    LMSK_TAG_DELTA_SMALL,
+    LMSK_TAG_INDEX,
     LMSK_TAG_DELTA_LARGE,
     LMSK_TAG_REPEAT_PREVIOUS,
-    LMSK_TAG_ALPHA,
-    LMSK_TAG_INDEX,
+    LMSK_TAG_DELTA_SMALL,
     LMSK_TAG_GRADIENT,
+    LMSK_TAG_ALPHA,
 };
 
 
@@ -109,12 +109,6 @@ __arm_lmsk_algorithm_t c_tAlgorithms[] = {
         .fnTry = NULL,
         .pchName = "LMSK_TAG_INDEX",
     },
-
-    [LMSK_TAG_DELTA_SMALL] = {
-        .fnTry = &__arm_lmsk_try_delta_small_tag,
-        .pchName = "LMSK_TAG_DELTA_SMALL",
-    },
-
     [LMSK_TAG_DELTA_LARGE] = {
         .fnTry = &__arm_lmsk_try_delta_large_tag,
         .pchName = "LMSK_TAG_DELTA_LARGE",
@@ -123,17 +117,19 @@ __arm_lmsk_algorithm_t c_tAlgorithms[] = {
         .fnTry = &__arm_lmsk_try_repeat_prev_tag,
         .pchName = "LMSK_TAG_REPEAT_PREVIOUS",
     },
+    [LMSK_TAG_DELTA_SMALL] = {
+        .fnTry = &__arm_lmsk_try_delta_small_tag,
+        .pchName = "LMSK_TAG_DELTA_SMALL",
+    },
+    [LMSK_TAG_GRADIENT] = {
+        .fnTry = &__arm_lmsk_try_gradient_tag,
+        .pchName = "LMSK_TAG_GRADIENT",
+    },
     [LMSK_TAG_ALPHA] = {
         .fnTry = &__arm_lmsk_try_alpha_tag,
         .pchName = "LMSK_TAG_ALPHA",
         .bCheckPalette = true,
     },
-    
-    [LMSK_TAG_GRADIENT] = {
-        .fnTry = &__arm_lmsk_try_gradient_tag,
-        .pchName = "LMSK_TAG_GRADIENT",
-    },
-    
 };
 
 static 
@@ -214,8 +210,8 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
 
     uint8_t chPrevious = ptLine->pchBuffer[0]; 
     int16_t iSizeLeft = iWidth - 1;
-    uint8_t *pchSource = ptLine->pchSourceLine;
-    uint8_t *pchTarget = ptLine->pchBuffer;
+    uint8_t *pchSource = ptLine->pchSourceLine + 1;
+    uint8_t *pchTarget = ptLine->pchBuffer + 1;
     size_t tEncodedSize = 1;
     do {
         __arm_lmsk_encode_result_t tBestResult = {0};
@@ -260,7 +256,7 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
         &&  (1 == tBestResult.hwRawSize)) {
             int_fast8_t chIndex = 0;
             bool bFindIndex = false;
-            for (;chIndex < 64; chIndex++) {
+            for (;chIndex < dimof(this.tOutput.chPalette); chIndex++) {
                 if (this.tOutput.chPalette[chIndex] == tBestResult.chNewPrevious) {
 
                     tBestResult = __arm_lmsk_encode_use_index(tBestResult, chIndex);
@@ -273,7 +269,7 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
                 }
             }
 
-            if (!bFindIndex && chIndex < 64) {
+            if (!bFindIndex && chIndex < dimof(this.tOutput.chPalette)) {
                 this.tOutput.chPalette[chIndex] = tBestResult.chNewPrevious;
                 tBestResult = __arm_lmsk_encode_use_index(tBestResult, chIndex);
             }
@@ -496,10 +492,10 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
         return tResult;
     }
 
-    if (tRepeatCount <= 61) {
+    if (tRepeatCount <= 62) {
 
         tResult.bHit = true;
-        tResult.hwRawSize = tRepeatCount;
+        tResult.hwRawSize = tRepeatCount - 1;
         tResult.pchEncode = (uint8_t *)malloc(1);
         assert(NULL != tResult.pchEncode);
 
@@ -508,21 +504,22 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
             .u6Repeat = tRepeatCount,
         }).chByte;
 
-        tResult.chNewPrevious = chShiftedPrevious << chBitsToShift;
+        tResult.chNewPrevious = chPrevious;
     } else {
 
         tResult.bHit = true;
-        tResult.hwRawSize = tRepeatCount;
+        tResult.hwRawSize = tRepeatCount - 1;
         tResult.pchEncode = (uint8_t *)malloc(4);
         tResult.u15Size = 4;
         assert(NULL != tResult.pchEncode);
 
-        tResult.pchEncode[0] = TAG_U8_GRADIENT;
+        *(uint32_t *)tResult.pchEncode = (arm_lmsk_tag_gradient_t) {
+            .chTag = TAG_U8_GRADIENT,
+            .chToAlpha = chPrevious,
+            .iSteps = tRepeatCount - 1,
+        }.wWord;
 
-        tResult.pchEncode[1] = chPrevious;                  /* to alpha */
-        *(uint16_t *)(&tResult.pchEncode[2]) = tRepeatCount;
-
-        tResult.chNewPrevious = chShiftedPrevious << chBitsToShift;
+        tResult.chNewPrevious = chPrevious;
     }
 
     return tResult;
@@ -587,7 +584,7 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( uint8_t *pchSource,
         *(uint32_t *)tResult.pchEncode = (arm_lmsk_tag_gradient_t) {
             .chTag = TAG_U8_GRADIENT,
             .chToAlpha = chToAlpha,
-            .iSteps = iGradientSize,
+            .iSteps = iGradientSize - 1,
         }.wWord;
         
         tResult.hwRawSize = iGradientSize;
