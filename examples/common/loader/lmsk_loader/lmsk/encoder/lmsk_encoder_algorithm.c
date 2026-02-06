@@ -496,20 +496,20 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_repeat_prev_tag(  uint8_t *pchSource,
     if (tRepeatCount <= 62) {
 
         tResult.bHit = true;
-        tResult.hwRawSize = tRepeatCount - 1;
+        tResult.hwRawSize = tRepeatCount;
         tResult.pchEncode = (uint8_t *)malloc(1);
         assert(NULL != tResult.pchEncode);
 
         tResult.pchEncode[0] = ((arm_lmsk_tag_repeat_t){
             .u2Tag = TAG_U2_REPETA,
-            .u6Repeat = tRepeatCount,
+            .u6Repeat = tRepeatCount - 1,
         }).chByte;
 
         tResult.chNewPrevious = chPrevious;
     } else {
 
         tResult.bHit = true;
-        tResult.hwRawSize = tRepeatCount - 1;
+        tResult.hwRawSize = tRepeatCount;
         tResult.pchEncode = (uint8_t *)malloc(4);
         tResult.u15Size = 4;
         assert(NULL != tResult.pchEncode);
