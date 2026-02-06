@@ -43,7 +43,9 @@ enum {
 
     TAG_U2_REPETA       = 0x1,
     TAG_S2_DELTA_SMALL  = -2,   /*! 0b10 */
+    TAG_U2_DELTA_SMALL  = 0x2,
     TAG_S2_DELTA_LARGE  = -1,   /*! 0b11 */
+    TAG_U2_DELTA_LARGE  = 0x3,
 
     TAG_U8_ALPHA        = 0xFD,
     TAG_U8_GRADIENT     = 0xF9,
