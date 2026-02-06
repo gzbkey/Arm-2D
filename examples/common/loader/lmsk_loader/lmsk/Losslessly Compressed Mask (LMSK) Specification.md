@@ -1,14 +1,14 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.2.0)
+# Losslessly Compressed Mask (LMSK) Specification (1.2.1)
 
 
 
 ## 1 Overview 
 
-**LMSK** is a lossless compression format optimised for alpha mask images. It employs a hybrid entropy coding strategy combining 4-bit deltas, run-length encoding, linear gradient descriptions, and random line access capabilities.
+**LMSK** is a lossless compression format optimised for alpha mask images. It employs a hybrid entropy coding strategy combining deltas, run-length encoding, linear gradient descriptions, and random line access capabilities.
 
 
 
-#### Byte Order
+#### Endiant
 - **Integers**: All multi-byte integers are stored in **Little Endian**.
 - **Bitstream**: Decoding uses **LSB First** bit ordering (Least Significant Bit consumed first).
 
@@ -146,15 +146,16 @@ previous_alpha = to_alpha;
 ### 3.2 Decoding Procedure
 Per-line decoder state:
 1. Calculate the start address of a line based on the **Floor Table** and the **Line Index Table**.
-2. Read 1 byte as `current_alpha`.
+2. Read 1 byte as `previous_alpha`.
 3. Loop until `width` pixels are output:
    i)  Read a tag
    ii) Inspect the lowest 2 bits:
-     - If `...00`: consume 4 bits, execute **INDEX**.
-     - If `...10`: consume 4 bits, execute **DELTA_SMALL**.
+     - If `...00`: consume 8 bits, parse **INDEX** or **DO / WHILE**.
      - If `...01`: consume 8 bits, parse **REPEAT** or **special tags**, i.e. **ALPHA_TAG** and **GRADIENT_TAG**
+     - If `...10`: consume 8 bits, execute **DELTA_SMALL**.
      - If `...11`: consume 8 bits, execute **DELTA_LARGE**.
-4. Truncate immediately when line width is reached; discard remaining bits for that line.
+4. Each Tag should update the `previous_alpha`.
+5. Truncate immediately when line width is reached; discard remaining bits for that line.
 
 
 
