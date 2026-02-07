@@ -178,13 +178,118 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
     return wLineStart + this.wFloorStart;
 }
 
+
+
+
 static
 int __arm_lmsk_decode_line( arm_lmsk_decoder_t *ptThis, 
                             uint32_t wLineStartPosition,
-                            int16_t iX,
+                            int16_t iXStart,
                             int16_t iWidth,
                             uint8_t *pchBuffer)
 {
+
+    uint32_t wTagFetchBuffer = 0;
+    uint8_t chTagFetchByteLeft = 0;
+    int16_t iXLimit = iXStart + iWidth - 1;
+
+    /* first fetch */
+    do {
+        /* move to 32bit aligned address */
+        if (!arm_lmsk_decoder_seek(ptThis, wLineStartPosition & ~0x3)) {
+            return -1;
+        }
+
+        /* load first word */
+        if (sizeof(wTagFetchBuffer) != arm_lmsk_decoder_read(
+                                        ptThis, 
+                                        (uint8_t *)&wTagFetchBuffer, 
+                                        sizeof(wTagFetchBuffer))) {
+            return -1;
+        }
+
+        if (wLineStartPosition & 0x3) {
+            /* unaligned */
+            chTagFetchByteLeft = 4 - (wLineStartPosition & 0x3);
+            wTagFetchBuffer >>= (wLineStartPosition & 0x3) * 8;
+        } else {
+            chTagFetchByteLeft = 4;
+        }
+    } while(0);
+
+    /* first pixel */
+    uint8_t chPrevious = wTagFetchBuffer & 0xFF;
+    chTagFetchByteLeft--;
+
+    bool bInWindow = false;
+
+    int16_t iX = 0;
+    if (iX >= iXStart && iX <= iXLimit) {
+        bInWindow = true;
+        *pchBuffer++ = chPrevious;
+
+        if (0 == --iWidth) {
+            return 0;
+        }
+    }
+
+    iX++;
+
+#define FETCH_BYTE()                                                            \
+        ({                                                                      \
+            uint8_t chByte;                                                     \
+            if (0 == chTagFetchByteLeft) {                                      \
+                chTagFetchByteLeft = 4;                                         \
+                if (sizeof(wTagFetchBuffer) != arm_lmsk_decoder_read(           \
+                                                ptThis,                         \
+                                                (uint8_t *)&wTagFetchBuffer,    \
+                                                sizeof(wTagFetchBuffer))) {     \
+                    return -1;                                                  \
+                }                                                               \
+            }                                                                   \
+            chTagFetchByteLeft--;                                               \
+            chByte = wTagFetchBuffer & 0xFF;                                    \
+            wTagFetchBuffer >>= 8;                                              \
+            chByte;                                                             \
+        })
+    
+    /* skip phase */
+    if (!bInWindow) {
+        do {
+            if (iX >= iXStart) {
+                break;
+            }
+            uint8_t chTag = FETCH_BYTE();
+            
+            if (chTag == TAG_U8_ALPHA) {
+                chPrevious = FETCH_BYTE();
+            } else if (chTag == TAG_U8_GRADIENT) {
+                /* todo */
+            } else switch (chTag & 0x03) {
+                case TAG_U2_INDEX:
+                    arm_lmsk_tag_index_t tTagIndex = *(arm_lmsk_tag_index_t *)&chTag;
+                    if (tTagIndex.bDoWhile) {
+                        /* do while: todo  */
+
+                    } else {
+                        chPrevious = this.chPalette[tTagIndex.u5Index];
+                    }
+                    break;
+            
+                case TAG_U2_REPETA:
+                    
+                    break;
+                    
+                case TAG_U2_DELTA_SMALL:
+                    break;
+
+                case TAG_U2_DELTA_LARGE:
+                    break;
+            }
+
+            iX++;
+        } while(true);
+    }
 
     return 0;
 }

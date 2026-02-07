@@ -513,6 +513,10 @@
             <file category="sourceC"     name="examples/common/loader/qoi_loader/qoi_decoder/arm_qoi_decoder.c" />
             <file category="header"      name="examples/common/loader/qoi_loader/arm_qoi_cfg.h"           attr="config" version="1.2.1"/>
 
+            <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk_loader.c" />
+            <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk/decoder/lmsk_decoder.c" />
+            <file category="header"      name="examples/common/loader/lmsk_loader/arm_lmsk_cfg.h"         attr="config" version="0.5.0"/>
+
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565_loader.c" />
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565/zhRGB565_Decoder/zhRGB565_Decoder.c" />
             <file category="header"      name="examples/common/loader/zhrgb565_loader/arm_zhrgb565_cfg.h" attr="config" version="1.0.0"/>
