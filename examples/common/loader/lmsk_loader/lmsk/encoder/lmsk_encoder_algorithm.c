@@ -32,7 +32,7 @@ extern "C" {
 #undef this
 #define this (*ptThis)
 
-#define DEBUG_GRADIENT          0
+#define DEBUG_GRADIENT          1
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -560,9 +560,6 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
     }
 
     uint_fast8_t chGradientTolerant = this.u2GradientTolerant;
-    if (chGradientTolerant == 0) {
-        chGradientTolerant = 1;
-    }
 
 #if DEBUG_GRADIENT
     printf("\r\n Gradient Tolerant %d\r\n", chGradientTolerant);

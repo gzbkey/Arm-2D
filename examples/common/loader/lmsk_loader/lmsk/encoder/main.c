@@ -178,6 +178,7 @@ arm_2d_err_t process_args(int argc, char* argv[])
     }
 
     SYSTEM_CFG.Input.u8AlphaMSBBits = 8;
+    SYSTEM_CFG.Input.u2GradientTolerant = 1;
 
     for (int n = 0; n < argc; n++) {
 
@@ -248,12 +249,8 @@ arm_2d_err_t process_args(int argc, char* argv[])
 
             int32_t nGradientTolerant = SDL_atoi(argv[n]);
 
-            if (nGradientTolerant > 0 && nGradientTolerant <= 3) {
-
+            if (nGradientTolerant >= 0 && nGradientTolerant <= 3) {
                 SYSTEM_CFG.Input.u2GradientTolerant = nGradientTolerant;
-            } else if (0 == nGradientTolerant) {
-                SYSTEM_CFG.Input.u2GradientTolerant = 0;
-                SYSTEM_CFG.Input.bNoGradient = true;
             } else {
                 printf("ERROR: Invalid Gradient Tolerant (0~3): %"PRIi32"\r\n", nGradientTolerant);
                 bInputIsValid = false;
