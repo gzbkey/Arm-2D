@@ -233,6 +233,10 @@ void __arm_lmsk_encode_line(arm_lmsk_encoder_t *ptThis,
                 continue;
             }
 
+            if (n == LMSK_TAG_GRADIENT && this.bNoGradient) {
+                continue;
+            }
+
             __arm_lmsk_encode_result_t tResult 
                 = c_tAlgorithms[n].fnTry(ptThis, pchSource, iSizeLeft, chPrevious, chAlphaMSBBits);
 
@@ -555,8 +559,13 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
         return tResult;
     }
 
+    uint_fast8_t chGradientTolerant = this.u2GradientTolerant;
+    if (chGradientTolerant == 0) {
+        chGradientTolerant = 1;
+    }
+
 #if DEBUG_GRADIENT
-    printf("\r\n");
+    printf("\r\n Gradient Tolerant %d\r\n", chGradientTolerant);
 #endif
     uint8_t *pchSource = pchSourceBase;
 
@@ -616,9 +625,10 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
             if (bFirstStepLength) {
                 bFirstStepLength = false;
             } else {
+                
                 /* compare two step length */
                 int16_t iStepLengthDelta = iStepLength[STEP_LEN_CURRENT] - iStepLength[STEP_LEN_PREV];
-                if (ABS(iStepLengthDelta) > 3) {
+                if (ABS(iStepLengthDelta) > chGradientTolerant) {
                     break;
                 }
             }

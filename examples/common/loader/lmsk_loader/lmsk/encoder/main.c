@@ -239,11 +239,36 @@ arm_2d_err_t process_args(int argc, char* argv[])
             continue;
         }
 
+        if (0 == strncmp(argv[n], "--gradient", 2)) {
+            n++;
+            if (n >= argc) {
+                bInputIsValid = false;
+                break;
+            }
+
+            int32_t nGradientTolerant = SDL_atoi(argv[n]);
+
+            if (nGradientTolerant > 0 && nGradientTolerant <= 3) {
+
+                SYSTEM_CFG.Input.u2GradientTolerant = nGradientTolerant;
+            } else if (0 == nGradientTolerant) {
+                SYSTEM_CFG.Input.u2GradientTolerant = 0;
+                SYSTEM_CFG.Input.bNoGradient = true;
+            } else {
+                printf("ERROR: Invalid Gradient Tolerant (0~3): %"PRIi32"\r\n", nGradientTolerant);
+                bInputIsValid = false;
+                break;
+            }
+
+            continue;
+        }
+
         if (    (0 == strncmp(argv[n], "--help", 6)) 
             ||  (0 == strncmp(argv[n], "-h", 2))) {
             bInputIsValid = false;
             return ARM_2D_ERR_MISSING_PARAM;
         }
+
     }
 
     SYSTEM_CFG.Input.bValid = bInputIsValid;
@@ -272,12 +297,13 @@ int app_2d_main_thread (void *argument)
 
 static void print_help(void)
 {
-    printf("The lmsk (v0.9.0) is a command line tool that extracts alpha masks from PNG file and generate lossless compressed mask files.  \r\n");
+    printf("The lmsk (v0.9.1) is a command line tool that extracts alpha masks from PNG file and generate lossless compressed mask files.  \r\n");
     printf("\r\noptions:\r\n");
     printf("\t-h, --help            show this help message and exit\r\n");
     printf("\t-p <picture path>     Input picture (*.bmp, *.png etc)\r\n");
     printf("\t-o <output file path> The file path for the compressed mask image  (*.lmsk)\r\n");
     printf("\t-a <alpha bits>       The valid alpha MSB count (1~8) \r\n");
+    printf("\t--gradient <tolerant> The valid range [0,3]. \r\n");
     printf("\r\n");
 }
 
@@ -449,6 +475,9 @@ int main(int argc, char* argv[])
                                 SYSTEM_CFG.Picture.tMask.tRegion.tSize.iWidth,
                                 SYSTEM_CFG.Picture.tMask.tRegion.tSize.iHeight);
 
+
+        tEncoder.bNoGradient = SYSTEM_CFG.Input.bNoGradient;
+        tEncoder.u2GradientTolerant = SYSTEM_CFG.Input.u2GradientTolerant;
 
         int32_t iSizeWritten = arm_lmsk_write_to_file(arm_lmsk_encode(&tEncoder, SYSTEM_CFG.Input.u8AlphaMSBBits), fp);
 

@@ -95,6 +95,9 @@ typedef struct arm_lmsk_encoder_t {
         int16_t iHeight;
     } Mask;
 
+    uint8_t bNoGradient         : 1;
+    uint8_t u2GradientTolerant  : 2;
+
     uint32_t wPosition;
 
 } arm_lmsk_encoder_t;
