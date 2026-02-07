@@ -581,6 +581,11 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
     int16_t iStepLength[2] = {2, 0};
     bool bFirstStepLength = true;
 
+    struct {
+        uint8_t chToAlpha;
+        int16_t iGradientSize;
+    } PreviousStep = {0};
+
     enum {
         STEP_LEN_CURRENT,
         STEP_LEN_PREV,
@@ -596,31 +601,36 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
         printf("%02"PRIx8" ", (uint8_t)iCurrent);
     #endif
         if (ABS(iDeltaChange) > 1) {
+
+        #if DEBUG_GRADIENT
+            printf("|");
+        #endif
+
+            //hwStepCount++;
             break;
         }
         if (0 == iDeltaChange || bNewStep) {
             iStepLength[STEP_LEN_CURRENT]++;
             bNewStep = false;
+
         } else {
+
+        #if DEBUG_GRADIENT
+            printf("[%d]", iStepLength[STEP_LEN_CURRENT]);
+        #endif
             if (bFirstStepLength) {
                 bFirstStepLength = false;
             } else {
                 /* compare two step length */
                 int16_t iStepLengthDelta = iStepLength[STEP_LEN_CURRENT] - iStepLength[STEP_LEN_PREV];
-                if (ABS(iStepLengthDelta) > 1) {
-                    if (hwStepCount <= 1) {
-                    #if DEBUG_GRADIENT
-                        printf("\r\n");
-                    #endif
-                        goto label_exit;
-                    }
+                if (ABS(iStepLengthDelta) > 3) {
                     break;
                 }
             }
 
-        #if DEBUG_GRADIENT
-            printf("[%d]", iStepLength[STEP_LEN_CURRENT]);
-        #endif
+            PreviousStep.chToAlpha = iPrevious;
+            PreviousStep.iGradientSize = iGradientSize;
+
             hwStepCount++;
 
             iStepLength[STEP_LEN_PREV] = iStepLength[STEP_LEN_CURRENT];
@@ -645,13 +655,22 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
     } while(--tSizeLeft);
 
 #if DEBUG_GRADIENT
-    printf("\r\n");
+    printf("\r\n Steps: %d \r\n", hwStepCount);
 #endif
+
+
+    if (hwStepCount > 0) {
+        chToAlpha = PreviousStep.chToAlpha;
+        iGradientSize = PreviousStep.iGradientSize;
+
+    #if DEBUG_GRADIENT
+        printf("\r\n Resume to %"PRIx8" Size:%d\r\n", chToAlpha, iGradientSize);
+    #endif
+    }
 
     uint8_t chStartPixel = pchSourceBase[-1];
     if (iGradientSize > 4) {
 
-        
         if (chPrevious == chStartPixel) {
             /* The previous is exact the same as the original 
              * alpha.
