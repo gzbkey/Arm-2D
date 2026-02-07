@@ -548,7 +548,6 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
 {
     __arm_lmsk_encode_result_t tResult = {
         .u15Size = 4,
-        //.pchEncode = (uint8_t *)malloc(4),
         .ptAlgorithm = &c_tAlgorithms[LMSK_TAG_GRADIENT],
     };
 
@@ -600,21 +599,17 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
     #if DEBUG_GRADIENT
         printf("%02"PRIx8" ", (uint8_t)iCurrent);
     #endif
-        if (ABS(iDeltaChange) > 1) {
 
+        if (ABS(iDeltaChange) > 1) {
         #if DEBUG_GRADIENT
             printf("|");
         #endif
-
-            //hwStepCount++;
             break;
         }
         if (0 == iDeltaChange || bNewStep) {
             iStepLength[STEP_LEN_CURRENT]++;
             bNewStep = false;
-
         } else {
-
         #if DEBUG_GRADIENT
             printf("[%d]", iStepLength[STEP_LEN_CURRENT]);
         #endif
