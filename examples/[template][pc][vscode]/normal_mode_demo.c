@@ -136,6 +136,11 @@ void scene_transform_inspection_loader(void)
     arm_2d_scene_transform_inspection_init(&DISP0_ADAPTER);
 }
 
+void scene_lmsk_loader(void) 
+{
+    arm_2d_scene_lmsk_init(&DISP0_ADAPTER);
+}
+
 void scene_atom_loader(void) 
 {
     arm_2d_scene_atom_init(&DISP0_ADAPTER);
@@ -488,12 +493,13 @@ static demo_scene_t const c_SceneLoaders[] = {
 #else    /* debug list */
     {
         .fnLoader = 
+        scene_lmsk_loader,
         //scene_zhrgb565_loader
         //scene_transform_inspection_loader,
         //scene_qoi_animation_loader
         //scene_histogram_loader,
         //scene_qoi_loader,
-        scene_radars_loader,
+        //scene_radars_loader,
         //scene_audiomark_loader
         //scene_watch_face_01_loader
         //scene_fitness_loader,
