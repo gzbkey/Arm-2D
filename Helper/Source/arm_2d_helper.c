@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  The source code for arm-2d helper utilities
  *
- * $Date:        23. Jan 2026
- * $Revision:    V.2.5.2
+ * $Date:        07. Feb 2026
+ * $Revision:    V.2.5.3
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -776,6 +776,14 @@ void arm_2d_helper_film_set_frame(arm_2d_helper_film_t *ptThis, int32_t nIndex)
         = (nIndex % this.hwColumn) * ptFrame->tRegion.tSize.iWidth;
     ptFrame->tRegion.tLocation.iY 
         = (nIndex / this.hwColumn) * ptFrame->tRegion.tSize.iHeight;
+}
+
+ARM_NONNULL(1)
+uint_fast16_t arm_2d_helper_film_get_frame_index(arm_2d_helper_film_t *ptThis)
+{
+    assert(NULL != ptThis);
+
+    return this.hwFrameIndex;
 }
 
 #if __ARM_2D_HELPER_CFG_LAYOUT_DEBUG_MODE__

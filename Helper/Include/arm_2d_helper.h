@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  Public header file for the all helper services
  *
- * $Date:        23. Jan 2026
- * $Revision:    V.2.5.2
+ * $Date:        07. Feb 2026
+ * $Revision:    V.2.5.3
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -509,6 +509,13 @@ extern
 ARM_NONNULL(1)
 void arm_2d_helper_film_set_frame(arm_2d_helper_film_t *ptThis, int32_t nIndex);
 
+/*!
+ * \brief get the current frame index number
+ * \param[in] ptThis the target film
+ * \return uint_fast16_t the current index
+ */
+ARM_NONNULL(1)
+uint_fast16_t arm_2d_helper_film_get_frame_index(arm_2d_helper_film_t *ptThis);
 /*----------------------------------------------------------------------------*
  * FIFO Helper Service                                                        *
  *----------------------------------------------------------------------------*/
