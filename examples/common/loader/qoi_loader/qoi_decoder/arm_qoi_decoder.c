@@ -354,12 +354,12 @@ ARM_NONNULL(1)
 uint32_t __arm_qoi_get_fetch_bits(arm_qoi_dec_t *ptThis, uint_fast8_t chBits)
 {
     uint32_t wReturn = 0;
-    uint32_t wMask;
+    uint32_t wMask = 0;
     uint8_t chLaterShift = 0;
     do {
         if (this.ptWorking->chBitsAvailable >= chBits) {
 
-            wMask = (1 << chBits) - 1;
+            wMask = ((uint64_t)1 << chBits) - 1;
 
             wReturn |= (this.ptWorking->wOPFetch & wMask) << chLaterShift;
             this.ptWorking->chBitsAvailable -= chBits;
