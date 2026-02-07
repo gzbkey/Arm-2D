@@ -32,7 +32,7 @@ extern "C" {
 #undef this
 #define this (*ptThis)
 
-#define DEBUG_GRADIENT          1
+#define DEBUG_GRADIENT          0
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
