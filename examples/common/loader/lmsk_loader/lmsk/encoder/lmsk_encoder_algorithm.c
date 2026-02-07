@@ -708,7 +708,7 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
             }
 
         #if DEBUG_GRADIENT
-            printf("insert a alpha\r\n");
+            printf("insert a alpha %02"PRIx8"\r\n", chStartPixel);
         #endif
 
             if (bFindIndex) {
