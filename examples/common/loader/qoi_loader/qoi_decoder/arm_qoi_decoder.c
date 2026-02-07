@@ -359,7 +359,11 @@ uint32_t __arm_qoi_get_fetch_bits(arm_qoi_dec_t *ptThis, uint_fast8_t chBits)
     do {
         if (this.ptWorking->chBitsAvailable >= chBits) {
 
+        #if (__ARM_ARCH_PROFILE == 'M') || defined(__TARGET_PROFILE_M)
+            wMask = ((uint32_t)1 << chBits) - 1;
+        #else
             wMask = ((uint64_t)1 << chBits) - 1;
+        #endif
 
             wReturn |= (this.ptWorking->wOPFetch & wMask) << chLaterShift;
             this.ptWorking->chBitsAvailable -= chBits;
