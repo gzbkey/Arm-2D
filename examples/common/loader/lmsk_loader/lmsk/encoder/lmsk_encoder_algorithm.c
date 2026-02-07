@@ -32,6 +32,7 @@ extern "C" {
 #undef this
 #define this (*ptThis)
 
+#define DEBUG_GRADIENT          0
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -555,6 +556,9 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
         return tResult;
     }
 
+#if DEBUG_GRADIENT
+    printf("\r\n");
+#endif
     uint8_t *pchSource = pchSourceBase;
 
     int16_t iGradientSize = 1;
@@ -562,19 +566,68 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
     int16_t iCurrent = *pchSource++;
     tSizeLeft--;
 
+#if DEBUG_GRADIENT
+    printf("%02"PRIx8"\r\n", (uint8_t)iPrevious);
+#endif
+
     uint8_t chToAlpha = iCurrent;
     int16_t iDeltaPrevious = iCurrent - iPrevious;
-    
-    iPrevious = iCurrent;
 
+#if DEBUG_GRADIENT
+    printf("%02"PRIx8" ", (uint8_t)iCurrent);
+#endif
+
+    iPrevious = iCurrent;
+    int16_t iStepLength[2] = {2, 0};
+    bool bFirstStepLength = true;
+
+    enum {
+        STEP_LEN_CURRENT,
+        STEP_LEN_PREV,
+    };
+    uint16_t hwStepCount = 0;
+    bool bNewStep = false;
     do {
         iCurrent = *pchSource++;
         int16_t iDelta = iCurrent - iPrevious;
-        
+
         int16_t iDeltaChange = iDelta - iDeltaPrevious;
+    #if DEBUG_GRADIENT
+        printf("%02"PRIx8" ", (uint8_t)iCurrent);
+    #endif
         if (ABS(iDeltaChange) > 1) {
             break;
         }
+        if (0 == iDeltaChange || bNewStep) {
+            iStepLength[STEP_LEN_CURRENT]++;
+            bNewStep = false;
+        } else {
+            if (bFirstStepLength) {
+                bFirstStepLength = false;
+            } else {
+                /* compare two step length */
+                int16_t iStepLengthDelta = iStepLength[STEP_LEN_CURRENT] - iStepLength[STEP_LEN_PREV];
+                if (ABS(iStepLengthDelta) > 1) {
+                    if (hwStepCount <= 1) {
+                    #if DEBUG_GRADIENT
+                        printf("\r\n");
+                    #endif
+                        goto label_exit;
+                    }
+                    break;
+                }
+            }
+
+        #if DEBUG_GRADIENT
+            printf("[%d]", iStepLength[STEP_LEN_CURRENT]);
+        #endif
+            hwStepCount++;
+
+            iStepLength[STEP_LEN_PREV] = iStepLength[STEP_LEN_CURRENT];
+            iStepLength[STEP_LEN_CURRENT] = 1;
+            bNewStep = true;
+        }
+
 
         /* wrong direction */
         if (iDelta < 0 && iDeltaPrevious > 0) {
@@ -591,9 +644,14 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
         iGradientSize++;
     } while(--tSizeLeft);
 
+#if DEBUG_GRADIENT
+    printf("\r\n");
+#endif
+
+    uint8_t chStartPixel = pchSourceBase[-1];
     if (iGradientSize > 4) {
 
-        uint8_t chStartPixel = pchSourceBase[-1];
+        
         if (chPrevious == chStartPixel) {
             /* The previous is exact the same as the original 
              * alpha.
@@ -634,6 +692,10 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
                 this.tOutput.chPalette[chIndex] = chStartPixel;
                 bFindIndex = true;
             }
+
+        #if DEBUG_GRADIENT
+            printf("insert a alpha\r\n");
+        #endif
 
             if (bFindIndex) {
                 /* we can insert an TAG_INDEX */
@@ -693,6 +755,12 @@ __arm_lmsk_encode_result_t __arm_lmsk_try_gradient_tag( arm_lmsk_encoder_t *ptTh
         }
     }
 
+#if DEBUG_GRADIENT
+    if (tResult.bHit) {
+        printf("From %02"PRIx8" To %02"PRIx8" In %d Steps:\r\n\r\n", chStartPixel, chToAlpha, iGradientSize);
+    }
+#endif
+label_exit:
     return tResult;
 }
 
