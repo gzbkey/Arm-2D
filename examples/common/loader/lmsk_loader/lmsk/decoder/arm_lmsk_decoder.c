@@ -18,11 +18,7 @@
 
 /*============================ INCLUDES ======================================*/
 
-
 #include "arm_lmsk_decoder.h"
-#include "arm_math_types.h"
-
-#include "arm_math.h"
 
 #ifdef   __cplusplus
 extern "C" {
@@ -66,26 +62,7 @@ enum {
 
 #ifndef __ARM_2D_MATH_DEFINED_Q16__
 #   define __ARM_2D_MATH_DEFINED_Q16__
-__STATIC_INLINE
-q16_t
-reinterpret_q16_q31(q31_t q31In0)
-{
-    return ((q16_t)(q31In0) >> 15);
-}
 
-/*!
- * \brief convert q16 number to q31. NOTE: It is your own responsibility to ensure
- *        it is safe to do so.
- * 
- * \param q16In0 the input q16 number
- * \return q31_t the q31 number 
- */
-__STATIC_INLINE 
-q31_t
-reinterpret_q31_q16(q16_t q16In0)
-{
-    return ((q31_t)(q16In0) << 16);
-}
 
 __STATIC_INLINE 
 q16_t
@@ -170,20 +147,6 @@ q16_t
 abs_q16(q16_t q16In0)
 {
     return ABS(q16In0);
-}
-
-__STATIC_INLINE
-q16_t
-qadd_q16(q16_t q16In0, q16_t q16In1) 
-{
-    return ((q16_t)(clip_q63_to_q31((q63_t)q16In0 + (q63_t)q16In1)));
-}
-
-__STATIC_INLINE
-q16_t
-qsub_q16(q16_t q16In0, q16_t q16In1) 
-{
-    return ((q16_t)(clip_q63_to_q31((q63_t)q16In0 - (q63_t)q16In1)));
 }
 
 #endif
