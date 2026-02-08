@@ -82,6 +82,7 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_init( arm_lmsk_encoder_t *ptThis,
         this.tOutput.tHeader.Version.chValue = ARM_LMSK_VERSION;
         this.tOutput.tHeader.tSetting.iWidth = iWidth;
         this.tOutput.tHeader.tSetting.iHeight = iHeight;
+        //this.tOutput.tHeader.tSetting.u2TagSetBits = 3;
 
         /* allocate memory for the line index reference table */
         this.tOutput.tLineIndexTable.pwReferences = (uint32_t *)malloc(iHeight * sizeof(uint32_t));

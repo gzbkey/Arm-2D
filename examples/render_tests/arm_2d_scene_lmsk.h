@@ -65,6 +65,10 @@ extern "C" {
 #   define ARM_2D_DEMO_LMSK_QOI_USE_FILE    1
 #endif
 
+#ifndef ARM_2D_DEMO_LMSK_USE_FILE
+#   define ARM_2D_DEMO_LMSK_USE_FILE    0
+#endif
+
 #ifndef ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
 #   define ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE    0
 #endif
