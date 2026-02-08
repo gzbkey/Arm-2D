@@ -514,7 +514,7 @@
             <file category="header"      name="examples/common/loader/qoi_loader/arm_qoi_cfg.h"           attr="config" version="1.2.1"/>
 
             <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk_loader.c" />
-            <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk/decoder/lmsk_decoder.c" />
+            <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk/decoder/arm_lmsk_decoder.c" />
             <file category="header"      name="examples/common/loader/lmsk_loader/arm_lmsk_cfg.h"         attr="config" version="1.0.0"/>
 
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565_loader.c" />
