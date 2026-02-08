@@ -67,7 +67,7 @@ typedef struct arm_lmsk_loader_cfg_t {
         uintptr_t pTarget;
     } ImageIO;
 #else
-    uint8_t *pchLMSKSource;
+    const uint8_t *pchLMSKSource;
 #endif
 
     arm_2d_scene_t *ptScene;
@@ -87,7 +87,7 @@ struct arm_lmsk_loader_t {
 
 ARM_PRIVATE(
 #if !__ARM_LMSK_USE_LOADER_IO__
-    uint8_t *pchLMSKSource;
+    const uint8_t *pchLMSKSource;
     size_t nPosition;
 #endif
 

@@ -110,6 +110,7 @@ arm_2d_err_t arm_lmsk_loader_init(  arm_lmsk_loader_t *ptThis,
             tResult = ARM_2D_ERR_IO_ERROR;
             break;
         }
+        this.pchLMSKSource = ptCFG->pchLMSKSource;
     #endif
 
         arm_generic_loader_cfg_t tCFG = {
@@ -263,7 +264,7 @@ size_t __lmsk_loader_read ( intptr_t pTarget,
     return arm_generic_loader_io_read(&this.use_as__arm_generic_loader_t, pchBuffer, tLength);
 #else
     memcpy(pchBuffer, &this.pchLMSKSource[this.nPosition], tLength); 
-    
+    this.nPosition += tLength;
     return tLength;
 #endif
 }

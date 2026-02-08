@@ -78,8 +78,12 @@
 #undef this
 #define this (*ptThis)
 
-//#define REFERENCE_MASK  c_tileMeterPanelMask
-#define REFERENCE_MASK      this.Reference.tLoader.tTile
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
+#   define REFERENCE_MASK   this.Reference.tLoader.tTile
+#else
+#   define REFERENCE_MASK   c_tileECGScanMask
+#endif
+
 #define LMSK_MASK           this.LMSK.tLoader.tTile
 
 /*============================ TYPES =========================================*/
@@ -91,6 +95,7 @@ extern const arm_2d_tile_t c_tileCMSISLogoA2Mask;
 extern const arm_2d_tile_t c_tileCMSISLogoA4Mask;
 
 extern const arm_2d_tile_t c_tileMeterPanelMask;
+extern const arm_2d_tile_t c_tileECGScanMask;
 
 extern const
 struct {
@@ -131,7 +136,9 @@ static void __on_scene_lmsk_load(arm_2d_scene_t *ptScene)
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     arm_qoi_loader_on_load(&this.Reference.tLoader);
+#endif
     arm_lmsk_loader_on_load(&this.LMSK.tLoader);
 
 }
@@ -149,7 +156,9 @@ static void __on_scene_lmsk_depose(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     /*--------------------- insert your depose code begin --------------------*/
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     arm_qoi_loader_depose(&this.Reference.tLoader);
+#endif
     arm_lmsk_loader_depose(&this.LMSK.tLoader);
 
     /*---------------------- insert your depose code end  --------------------*/
@@ -187,8 +196,10 @@ static void __on_scene_lmsk_frame_start(arm_2d_scene_t *ptScene)
 {
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
-
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     arm_qoi_loader_on_frame_start(&this.Reference.tLoader);
+#endif
+
     arm_lmsk_loader_on_frame_start(&this.LMSK.tLoader);
 
 }
@@ -198,7 +209,9 @@ static void __on_scene_lmsk_frame_complete(arm_2d_scene_t *ptScene)
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     arm_qoi_loader_on_frame_complete(&this.Reference.tLoader);
+#endif
     arm_lmsk_loader_on_frame_complete(&this.LMSK.tLoader);
 
 }
@@ -374,6 +387,7 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
     };
 
     /* ------------   initialize members of user_scene_lmsk_t begin ---------------*/
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     /* initialize QOI loader */
     do {
     #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
@@ -416,36 +430,36 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
 
         arm_qoi_loader_init(&this.Reference.tLoader, &tCFG);
     } while(0);
+#endif
 
     /* initialize LMSK loader */
     do {
-    #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
+    #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
         arm_loader_io_file_init(&this.LMSK.LoaderIO.tFile, 
-                                "../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
+                                "../common/asset/ECGScanMaskSmall.lmsk");
     #else
-        extern const uint8_t c_qoiMeterPanel[20394];
-        extern const uint8_t c_qoiRadarBackground[45557];
+        extern const uint8_t c_lmskECGScan[913];
 
         arm_loader_io_rom_init( &this.LMSK.LoaderIO.tROM, 
-                                (uintptr_t)c_qoiMeterPanel, 
-                                sizeof(c_qoiMeterPanel));
+                                (uintptr_t)c_lmskECGScan, 
+                                sizeof(c_lmskECGScan));
     #endif
         arm_lmsk_loader_cfg_t tCFG = {
             //.bUseHeapForVRES = true,
             .ptScene = (arm_2d_scene_t *)ptThis,
 
-        #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
+        #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LMSK.LoaderIO.tFile,
             },
-        #elif __ARM_QOI_USE_LOADER_IO__
+        #elif __ARM_LMSK_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_LOADER_IO_ROM,
                 .pTarget = (uintptr_t)&this.LMSK.LoaderIO.tROM,
             },
         #else
-            .pchLMSKSource = c_qoiMeterPanel,
+            .pchLMSKSource = c_lmskECGScan,
         #endif
         };
 

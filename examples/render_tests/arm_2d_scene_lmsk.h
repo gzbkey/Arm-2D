@@ -65,6 +65,10 @@ extern "C" {
 #   define ARM_2D_DEMO_LMSK_QOI_USE_FILE    1
 #endif
 
+#ifndef ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
+#   define ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE    0
+#endif
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 
 /*!
@@ -93,6 +97,7 @@ ARM_PRIVATE(
     int64_t lTimestamp[1];
     bool bUserAllocated;
 
+#if ARM_2D_DEMO_LMSK_USE_QOI_AS_REFERENCE
     struct {
         arm_qoi_loader_t tLoader;
         union {
@@ -101,6 +106,7 @@ ARM_PRIVATE(
             arm_loader_io_rom_t tROM;
         } LoaderIO;
     } Reference;
+#endif
 
     struct {
         arm_lmsk_loader_t tLoader;
