@@ -490,7 +490,7 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Loaders" Cversion="5.5.5" condition="Arm-2D-Loaders">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Loaders" Cversion="5.6.0" condition="Arm-2D-Loaders">
           <description>A helper service for loading various resource, e.g. loading baseline jpg files using TJpgDec, ZJpgDec, loading Lossless Compressed images (*.QOI) and loading font files using FreeType etc.</description>
           <files>
             <file category="include"     name="examples/common/loader/" />
@@ -515,7 +515,7 @@
 
             <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk_loader.c" />
             <file category="sourceC"     name="examples/common/loader/lmsk_loader/lmsk/decoder/lmsk_decoder.c" />
-            <file category="header"      name="examples/common/loader/lmsk_loader/arm_lmsk_cfg.h"         attr="config" version="0.5.0"/>
+            <file category="header"      name="examples/common/loader/lmsk_loader/arm_lmsk_cfg.h"         attr="config" version="1.0.0"/>
 
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565_loader.c" />
             <file category="sourceC"     name="examples/common/loader/zhrgb565_loader/zhrgb565/zhRGB565_Decoder/zhRGB565_Decoder.c" />
@@ -1190,6 +1190,17 @@
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Render_Tests_Transform_Inspection
+          </RTE_Components_h>
+        </component>
+
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Lossless Compressed Mask(LMSK)" Cversion="1.0.0" condition="Arm-2D-Render-Test">
+          <description>A demo for the tile filling rendering test.</description>
+          <files>
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_lmsk.c" attr="config" version="1.0.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_lmsk.h" attr="config" version="1.0.0" />
+          </files>
+          <RTE_Components_h>
+#define RTE_Acceleration_Arm_2D_Render_Tests_LMSK
           </RTE_Components_h>
         </component>
 

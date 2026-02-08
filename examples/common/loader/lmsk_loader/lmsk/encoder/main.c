@@ -179,6 +179,7 @@ arm_2d_err_t process_args(int argc, char* argv[])
 
     SYSTEM_CFG.Input.u8AlphaMSBBits = 8;
     SYSTEM_CFG.Input.u2GradientTolerant = 1;
+    SYSTEM_CFG.Input.bNoGradient = false;
 
     for (int n = 0; n < argc; n++) {
 

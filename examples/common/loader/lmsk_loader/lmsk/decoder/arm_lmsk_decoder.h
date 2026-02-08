@@ -35,7 +35,10 @@ extern "C" {
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
+
 /*============================ TYPES =========================================*/
+
+typedef int32_t q16_t;
 
 typedef struct arm_lmsk_decoder_cfg_t {
     struct {
@@ -53,12 +56,27 @@ typedef struct arm_lmsk_decoder_t {
     arm_lsmk_setting_t tSetting;
     uint8_t chPalette[32];
 
-    uint32_t bValid         : 1;
-
-    uint8_t chLastFloorIndex;
     uint16_t hwCurrentFloor;
     uint16_t hwNextFloor;
     uint32_t wFloorStart;
+
+    uint16_t u15Repeat          : 15;
+    uint16_t bValid             : 1;
+
+    uint8_t chLastFloorIndex;
+    uint8_t chTagFetchByteLeft;
+    uint32_t wTagFetchBuffer;
+
+    q16_t   q16LSBCompensation;
+
+    q16_t   q16Gradient;
+    int16_t iGradientSteps;
+    int16_t iGradientStepIndex;
+    uint8_t chGradientFromAlpha;
+    uint8_t chGradientToAlpha;
+
+    uint8_t chPrevious;
+    uint8_t chState;
 
 } arm_lmsk_decoder_t;
 

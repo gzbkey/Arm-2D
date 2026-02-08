@@ -93,12 +93,24 @@ ARM_PRIVATE(
     int64_t lTimestamp[1];
     bool bUserAllocated;
 
-    arm_qoi_loader_t tQOIReference;
-    union {
-        arm_loader_io_file_t tFile;
-        arm_loader_io_binary_t tBinary;
-        arm_loader_io_rom_t tROM;
-    } LoaderIO;
+    struct {
+        arm_qoi_loader_t tLoader;
+        union {
+            arm_loader_io_file_t tFile;
+            arm_loader_io_binary_t tBinary;
+            arm_loader_io_rom_t tROM;
+        } LoaderIO;
+    } Reference;
+
+    struct {
+        arm_lmsk_loader_t tLoader;
+        union {
+            arm_loader_io_file_t tFile;
+            arm_loader_io_binary_t tBinary;
+            arm_loader_io_rom_t tROM;
+        } LoaderIO;
+    } LMSK;
+
 
 )
     /* place your public member here */

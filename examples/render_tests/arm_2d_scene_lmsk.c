@@ -79,7 +79,8 @@
 #define this (*ptThis)
 
 //#define REFERENCE_MASK  c_tileMeterPanelMask
-#define REFERENCE_MASK  this.tQOIReference.tTile
+#define REFERENCE_MASK      this.Reference.tLoader.tTile
+#define LMSK_MASK           this.LMSK.tLoader.tTile
 
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
@@ -90,6 +91,12 @@ extern const arm_2d_tile_t c_tileCMSISLogoA2Mask;
 extern const arm_2d_tile_t c_tileCMSISLogoA4Mask;
 
 extern const arm_2d_tile_t c_tileMeterPanelMask;
+
+extern const
+struct {
+    implement(arm_2d_user_font_t);
+    arm_2d_char_idx_t tUTF8Table;
+} ARM_2D_FONT_LiberationSansRegular14_A4 ;
 /*============================ PROTOTYPES ====================================*/
 /*============================ LOCAL VARIABLES ===============================*/
 
@@ -124,7 +131,8 @@ static void __on_scene_lmsk_load(arm_2d_scene_t *ptScene)
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
-    arm_qoi_loader_on_load(&this.tQOIReference);
+    arm_qoi_loader_on_load(&this.Reference.tLoader);
+    arm_lmsk_loader_on_load(&this.LMSK.tLoader);
 
 }
 
@@ -141,7 +149,8 @@ static void __on_scene_lmsk_depose(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     /*--------------------- insert your depose code begin --------------------*/
-    arm_qoi_loader_depose(&this.tQOIReference);
+    arm_qoi_loader_depose(&this.Reference.tLoader);
+    arm_lmsk_loader_depose(&this.LMSK.tLoader);
 
     /*---------------------- insert your depose code end  --------------------*/
 
@@ -179,7 +188,8 @@ static void __on_scene_lmsk_frame_start(arm_2d_scene_t *ptScene)
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
-    arm_qoi_loader_on_frame_start(&this.tQOIReference);
+    arm_qoi_loader_on_frame_start(&this.Reference.tLoader);
+    arm_lmsk_loader_on_frame_start(&this.LMSK.tLoader);
 
 }
 
@@ -188,7 +198,8 @@ static void __on_scene_lmsk_frame_complete(arm_2d_scene_t *ptScene)
     user_scene_lmsk_t *ptThis = (user_scene_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
-    arm_qoi_loader_on_frame_complete(&this.tQOIReference);
+    arm_qoi_loader_on_frame_complete(&this.Reference.tLoader);
+    arm_lmsk_loader_on_frame_complete(&this.LMSK.tLoader);
 
 }
 
@@ -211,14 +222,71 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
     arm_2d_canvas(ptTile, __top_canvas) {
     /*-----------------------draw the scene begin-----------------------*/
         
+        arm_2d_size_t tImageBoxSize = REFERENCE_MASK.tRegion.tSize;
+        arm_2d_size_t tTitleSize = arm_lcd_printf_to_buffer(
+                                    (arm_2d_font_t *)&ARM_2D_FONT_LiberationSansRegular14_A4, 
+                                    "Reference Mask");
 
-        arm_2d_align_centre(__top_canvas,  REFERENCE_MASK.tRegion.tSize) {
+        tImageBoxSize.iHeight += tTitleSize.iHeight;
 
-            arm_2d_fill_colour_with_mask(   ptTile, 
-                                            &__centre_region, 
-                                            &REFERENCE_MASK,
-                                            (__arm_2d_color_t){GLCD_COLOR_WHITE});
+        arm_2d_dock_vertical(__top_canvas, tImageBoxSize.iHeight ) {
 
+            arm_2d_layout(__vertical_region) {
+
+                __item_line_dock_horizontal(tImageBoxSize.iWidth, 4, 4, 0, 0) {
+
+                    arm_2d_layout(__item_region) {
+
+                        __item_line_dock_vertical(tTitleSize.iHeight) {
+
+                            arm_2d_fill_colour(ptTile, &__item_region, GLCD_COLOR_WHITE);
+
+                            arm_2d_align_centre(__item_region, tTitleSize) {
+                                arm_lcd_text_set_draw_region(&__centre_region);
+                                arm_lcd_text_set_colour(GLCD_COLOR_RED, GLCD_COLOR_WHITE);
+
+                                arm_lcd_printf_buffer(0);
+                            }
+
+                        }
+
+                        __item_line_dock_vertical() {
+                            arm_2d_fill_colour_with_mask(   ptTile, 
+                                                            &__item_region, 
+                                                            &REFERENCE_MASK,
+                                                            (__arm_2d_color_t){GLCD_COLOR_WHITE});
+
+                        }
+                    }
+                }
+
+                __item_line_dock_horizontal(tImageBoxSize.iWidth, 4, 4, 0, 0) {
+
+                    arm_2d_layout(__item_region) {
+
+                        __item_line_dock_vertical(tTitleSize.iHeight) {
+
+                            arm_2d_fill_colour(ptTile, &__item_region, GLCD_COLOR_WHITE);
+
+                            arm_lcd_text_set_draw_region(&__item_region);
+                            arm_lcd_text_set_colour(GLCD_COLOR_BLUE, GLCD_COLOR_WHITE);
+
+                            arm_lcd_printf_label(ARM_2D_ALIGN_CENTRE, "LMSK A8");
+
+                        }
+
+                    #if 1
+                        __item_line_dock_vertical() {
+                            arm_2d_fill_colour_with_mask(   ptTile, 
+                                                            &__item_region, 
+                                                            &LMSK_MASK,
+                                                            (__arm_2d_color_t){GLCD_COLOR_WHITE});
+
+                        }
+                    #endif
+                    }
+                }
+            }
         }
 
 
@@ -309,12 +377,13 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
     /* initialize QOI loader */
     do {
     #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
-        arm_loader_io_file_init(&this.LoaderIO.tFile, "../common/asset/ECGScanMaskSmall.qoi");
+        arm_loader_io_file_init(&this.Reference.LoaderIO.tFile, 
+                                "../common/asset/ECGScanMaskSmall.qoi");
     #else
         extern const uint8_t c_qoiMeterPanel[20394];
         extern const uint8_t c_qoiRadarBackground[45557];
 
-        arm_loader_io_rom_init( &this.LoaderIO.tROM, 
+        arm_loader_io_rom_init( &this.Reference.LoaderIO.tROM, 
                                 (uintptr_t)c_qoiMeterPanel, 
                                 sizeof(c_qoiMeterPanel));
     #endif
@@ -333,7 +402,7 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
         #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_LOADER_IO_FILE,
-                .pTarget = (uintptr_t)&this.LoaderIO.tFile,
+                .pTarget = (uintptr_t)&this.Reference.LoaderIO.tFile,
             },
         #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
@@ -345,9 +414,43 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
         #endif
         };
 
-        arm_qoi_loader_init(&this.tQOIReference, &tCFG);
+        arm_qoi_loader_init(&this.Reference.tLoader, &tCFG);
     } while(0);
 
+    /* initialize LMSK loader */
+    do {
+    #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
+        arm_loader_io_file_init(&this.LMSK.LoaderIO.tFile, 
+                                "../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
+    #else
+        extern const uint8_t c_qoiMeterPanel[20394];
+        extern const uint8_t c_qoiRadarBackground[45557];
+
+        arm_loader_io_rom_init( &this.LMSK.LoaderIO.tROM, 
+                                (uintptr_t)c_qoiMeterPanel, 
+                                sizeof(c_qoiMeterPanel));
+    #endif
+        arm_lmsk_loader_cfg_t tCFG = {
+            //.bUseHeapForVRES = true,
+            .ptScene = (arm_2d_scene_t *)ptThis,
+
+        #if ARM_2D_DEMO_LMSK_QOI_USE_FILE && __ARM_QOI_USE_LOADER_IO__
+            .ImageIO = {
+                .ptIO = &ARM_LOADER_IO_FILE,
+                .pTarget = (uintptr_t)&this.LMSK.LoaderIO.tFile,
+            },
+        #elif __ARM_QOI_USE_LOADER_IO__
+            .ImageIO = {
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.LMSK.LoaderIO.tROM,
+            },
+        #else
+            .pchLMSKSource = c_qoiMeterPanel,
+        #endif
+        };
+
+        arm_lmsk_loader_init(&this.LMSK.tLoader, &tCFG);
+    } while(0);
     /* ------------   initialize members of user_scene_lmsk_t end   ---------------*/
 
     arm_2d_scene_player_append_scenes(  ptDispAdapter, 

@@ -5,8 +5,6 @@
 #ifndef __ARM_2D_LMSK_CFG_H__
 #define __ARM_2D_LMSK_CFG_H__
 
-#include "arm_2d.h"
-
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 //
 // <h>LMSK System Configurations

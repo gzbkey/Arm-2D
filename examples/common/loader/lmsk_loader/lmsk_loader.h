@@ -28,7 +28,7 @@
 
 #include "arm_2d_helper.h"
 #include "../generic_loader/arm_2d_generic_loader.h"
-#include "lmsk/decoder/lmsk_decoder.h"
+#include "lmsk/decoder/arm_lmsk_decoder.h"
 
 #ifdef   __cplusplus
 extern "C" {
@@ -57,7 +57,7 @@ extern "C" {
 /*============================ TYPES =========================================*/
 
 
-typedef struct lmsk_loader_cfg_t {
+typedef struct arm_lmsk_loader_cfg_t {
 
     bool bUseHeapForVRES;
 
@@ -71,20 +71,19 @@ typedef struct lmsk_loader_cfg_t {
 #endif
 
     arm_2d_scene_t *ptScene;
-} lmsk_loader_cfg_t;
+} arm_lmsk_loader_cfg_t;
 
 /*!
- * \brief a user class for user defined control
+ * \brief the Lossless Compressed Mask Loader
  */
-typedef struct lmsk_loader_t lmsk_loader_t;
+typedef struct arm_lmsk_loader_t arm_lmsk_loader_t;
 
-struct lmsk_loader_t {
+struct arm_lmsk_loader_t {
 
     union {
         arm_2d_tile_t tTile;
         inherit(arm_generic_loader_t);
     };
-
 
 ARM_PRIVATE(
 #if !__ARM_LMSK_USE_LOADER_IO__
@@ -94,8 +93,6 @@ ARM_PRIVATE(
 
     arm_lmsk_decoder_t tDecoder;
 )
-
-    /* place your public member here */
     
 };
 
@@ -104,23 +101,23 @@ ARM_PRIVATE(
 
 extern
 ARM_NONNULL(1, 2)
-arm_2d_err_t lmsk_loader_init(lmsk_loader_t *ptThis,
-                                lmsk_loader_cfg_t *ptCFG);
+arm_2d_err_t arm_lmsk_loader_init(  arm_lmsk_loader_t *ptThis,
+                                    arm_lmsk_loader_cfg_t *ptCFG);
 extern
 ARM_NONNULL(1)
-void lmsk_loader_depose( lmsk_loader_t *ptThis);
+void arm_lmsk_loader_depose( arm_lmsk_loader_t *ptThis);
 
 extern
 ARM_NONNULL(1)
-void lmsk_loader_on_load( lmsk_loader_t *ptThis);
+void arm_lmsk_loader_on_load( arm_lmsk_loader_t *ptThis);
 
 extern
 ARM_NONNULL(1)
-void lmsk_loader_on_frame_start( lmsk_loader_t *ptThis);
+void arm_lmsk_loader_on_frame_start( arm_lmsk_loader_t *ptThis);
 
 extern
 ARM_NONNULL(1)
-void lmsk_loader_on_frame_complete( lmsk_loader_t *ptThis);
+void arm_lmsk_loader_on_frame_complete( arm_lmsk_loader_t *ptThis);
 
 
 

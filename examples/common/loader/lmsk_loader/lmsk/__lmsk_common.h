@@ -21,6 +21,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #ifdef   __cplusplus
