@@ -288,23 +288,25 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
 
                         }
 
-                    #if 1
                         __item_line_dock_vertical() {
                             arm_2d_fill_colour_with_mask(   ptTile, 
                                                             &__item_region, 
                                                             &LMSK_MASK,
                                                             (__arm_2d_color_t){GLCD_COLOR_WHITE});
 
+                            arm_2d_helper_dirty_region_update_item( 
+                                &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+                                (arm_2d_tile_t *)ptTile,
+                                NULL,
+                                &__item_region);
+
                         }
-                    #endif
                     }
                 }
             }
         }
 
-
         /* draw text at the top-left corner */
-
         arm_lcd_text_set_target_framebuffer((arm_2d_tile_t *)ptTile);
         arm_lcd_text_set_font(&ARM_2D_FONT_6x8.use_as__arm_2d_font_t);
         arm_lcd_text_set_draw_region(NULL);
@@ -381,7 +383,7 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
             .fnOnFrameCPL   = &__on_scene_lmsk_frame_complete,
             .fnDepose       = &__on_scene_lmsk_depose,
 
-            .bUseDirtyRegionHelper = false,
+            .bUseDirtyRegionHelper = true,
         },
         .bUserAllocated = bUserAllocated,
     };
