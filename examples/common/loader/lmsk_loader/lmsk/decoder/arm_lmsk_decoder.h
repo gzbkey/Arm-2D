@@ -41,6 +41,7 @@ extern "C" {
 typedef int32_t q16_t;
 
 typedef struct arm_lmsk_decoder_cfg_t {
+#if __ARM_LMSK_USE_LOADER_IO__
     struct {
         bool (*fnSeek)(     uintptr_t pTarget, int32_t offset);
         size_t (*fnRead) (  intptr_t pTarget,      
@@ -48,10 +49,17 @@ typedef struct arm_lmsk_decoder_cfg_t {
                             size_t tLength);
         uintptr_t pTarget;
     } IO;
+#else
+    const uint8_t *pchLMSKSource;
+#endif
 } arm_lmsk_decoder_cfg_t;
 
 typedef struct arm_lmsk_decoder_t {
     arm_lmsk_decoder_cfg_t tCFG;
+
+#if !__ARM_LMSK_USE_LOADER_IO__
+    size_t nPosition;
+#endif
 
     arm_lsmk_setting_t tSetting;
     uint8_t chPalette[32];

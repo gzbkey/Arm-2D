@@ -155,7 +155,12 @@ abs_q16(q16_t q16In0)
 __STATIC_INLINE
 bool arm_lmsk_decoder_seek(arm_lmsk_decoder_t *ptThis, int32_t nOffset)
 {
+#if __ARM_LMSK_USE_LOADER_IO__
     return this.tCFG.IO.fnSeek(this.tCFG.IO.pTarget, nOffset);
+#else
+    this.nPosition = nOffset;
+    return true;
+#endif
 }
 
 __STATIC_INLINE
@@ -163,7 +168,13 @@ size_t arm_lmsk_decoder_read(   arm_lmsk_decoder_t *ptThis,
                                 uint8_t *pchBuffer,
                                 size_t tLength)
 {
+#if __ARM_LMSK_USE_LOADER_IO__
     return this.tCFG.IO.fnRead(this.tCFG.IO.pTarget, pchBuffer, tLength);
+#else
+    memcpy(pchBuffer, &this.tCFG.pchLMSKSource[this.nPosition], tLength);
+    this.nPosition += tLength;
+    return tLength;
+#endif
 }
 
 int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis, 
@@ -176,9 +187,15 @@ int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis,
 
     this.tCFG = *ptCFG;
 
+#if __ARM_LMSK_USE_LOADER_IO__
     if (NULL == this.tCFG.IO.fnSeek || NULL == this.tCFG.IO.fnRead) {
         return -1;
     }
+#else
+    if (NULL == this.tCFG.pchLMSKSource) {
+        return -1;
+    }
+#endif
 
     /* read header and palette */
     do {
@@ -307,12 +324,21 @@ static uint8_t __arm_lsmk_decode_fetch_byte(arm_lmsk_decoder_t *ptThis)
 {
     uint8_t chByte;
     if (0 == this.chTagFetchByteLeft) {
+
+    #if __ARM_LMSK_USE_LOADER_IO__
         size_t tActualRead =
         arm_lmsk_decoder_read(  ptThis,
                                 (uint8_t *)&this.wTagFetchBuffer,
                                 sizeof(this.wTagFetchBuffer));
         assert(tActualRead == sizeof(this.wTagFetchBuffer));
         this.chTagFetchByteLeft = sizeof(this.wTagFetchBuffer);
+    #else
+        /* guaranteed word access */
+        assert(0 == (this.nPosition & 0x03));
+        this.wTagFetchBuffer = *(uint32_t *)&this.tCFG.pchLMSKSource[this.nPosition];
+        this.nPosition += 4;
+        this.chTagFetchByteLeft = sizeof(this.wTagFetchBuffer);
+    #endif
     }                                   
                                 
     this.chTagFetchByteLeft--;

@@ -88,7 +88,6 @@ struct arm_lmsk_loader_t {
 ARM_PRIVATE(
 #if !__ARM_LMSK_USE_LOADER_IO__
     const uint8_t *pchLMSKSource;
-    size_t nPosition;
 #endif
 
     arm_lmsk_decoder_t tDecoder;

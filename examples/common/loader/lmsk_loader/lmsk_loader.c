@@ -192,11 +192,15 @@ arm_2d_err_t __lmsk_loader_decoder_init(arm_generic_loader_t *ptObj)
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)ptObj;
 
     arm_lmsk_decoder_cfg_t tCFG = {
+    #if __ARM_LMSK_USE_LOADER_IO__
         .IO = {
             .fnSeek = &__lmsk_loader_seek,
             .fnRead = &__lmsk_loader_read,
             .pTarget = (uintptr_t)ptObj,
         },
+    #else
+        .pchLMSKSource = this.pchLMSKSource,
+    #endif
     };
 
     if (0 != arm_lmsk_decoder_init(&this.tDecoder, &tCFG)) {
@@ -238,19 +242,16 @@ arm_2d_err_t __lmsk_loader_draw(arm_generic_loader_t *ptObj,
     return ARM_2D_ERR_NONE;
 }
 
+#if __ARM_LMSK_USE_LOADER_IO__
 static
 bool __lmsk_loader_seek(uintptr_t pTarget, int32_t nOffset)
 {
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
 
-#if __ARM_LMSK_USE_LOADER_IO__
+
     return arm_generic_loader_io_seek(  &this.use_as__arm_generic_loader_t, 
                                         nOffset, 
                                         SEEK_SET);
-#else
-    this.nPosition = nOffset;
-    return true;
-#endif
 }
 
 static
@@ -260,14 +261,9 @@ size_t __lmsk_loader_read ( intptr_t pTarget,
 {
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
 
-#if __ARM_LMSK_USE_LOADER_IO__
     return arm_generic_loader_io_read(&this.use_as__arm_generic_loader_t, pchBuffer, tLength);
-#else
-    memcpy(pchBuffer, &this.pchLMSKSource[this.nPosition], tLength); 
-    this.nPosition += tLength;
-    return tLength;
-#endif
 }
+#endif
 
 
 #if defined(__clang__)
