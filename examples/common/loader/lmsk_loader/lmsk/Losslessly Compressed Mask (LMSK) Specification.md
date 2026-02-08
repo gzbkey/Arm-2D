@@ -116,7 +116,7 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 
 * **GRADIENT_TAG (0xF9)**  
 
-  Followed by **3 bytes**: `uint8_t to_alpha`, `uint16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count + 1` pixels:
+  Followed by **3 bytes**: `uint8_t to_alpha`, `int16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count + 1` pixels:
 
 ```c
 q16_step = ((to_alpha - previous_alpha) << 16) / (count + 1);
