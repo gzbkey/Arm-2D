@@ -19,6 +19,8 @@
 /*============================ INCLUDES ======================================*/
 
 #include "arm_lmsk_decoder.h"
+#include <stdio.h>
+#include <inttypes.h>
 
 #ifdef   __cplusplus
 extern "C" {
@@ -309,7 +311,8 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
 
     /* get to line index */
     if (!arm_lmsk_decoder_seek( ptThis, 
-                                FLOOR_TABLE_START + iY * sizeof(uint16_t))) {
+                                FLOOR_TABLE_START 
+                                + (this.tSetting.chFloorCount + iY) * sizeof(uint16_t))) {
         return -1;
     }
 
@@ -678,6 +681,8 @@ int arm_lmsk_decode(arm_lmsk_decoder_t *ptThis,
         + this.tSetting.iHeight * sizeof(uint16_t);     /* line index table */
 
     int16_t iYLimit = iY + iHeight - 1;
+    
+
     for (; iY <= iYLimit; iY++) {
         int32_t iLineOffset = __arm_lmsk_decoder_get_line_start_postion(ptThis, iY);
         if (iLineOffset < 0) {
