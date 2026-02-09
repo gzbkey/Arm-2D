@@ -285,8 +285,8 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
     #if ARM_2D_DEMO_LARGE_LMSK_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
         arm_loader_io_file_init(&this.LoaderIO.tFile, 
                                 //"../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
-                                "../render_tests/bad_apple_320x240_24_a4.lmsk");
-                                //"../render_tests/bad_apple_100x75_16_a4.lmsk");
+                                //"../render_tests/bad_apple_320x240_24_a4.lmsk");
+                                "../render_tests/bad_apple_100x75_16_a4.lmsk");
     #else
         extern const uint8_t c_qoiDogeDance[126958];
 
@@ -330,9 +330,9 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
 
     this.tFilm = (arm_2d_helper_film_t)
                     impl_film(  this.tAnimation, 
-                        320, 
-                        240, 
-                        24, 
+                        100, 
+                        75, 
+                        16, 
                         3110, 
                         33);
 
