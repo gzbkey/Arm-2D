@@ -244,7 +244,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
 
         arm_2d_dock_vertical(__top_canvas, tImageBoxSize.iHeight ) {
 
-            arm_2d_layout(__vertical_region) {
+            arm_2d_layout(__vertical_region, RIGHT_TO_LEFT) {
 
                 __item_line_dock_horizontal(tImageBoxSize.iWidth, 4, 4, 0, 0) {
 

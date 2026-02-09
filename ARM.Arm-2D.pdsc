@@ -1193,11 +1193,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Lossless Compressed Mask(LMSK)" Cversion="1.0.1" condition="Arm-2D-Render-Test">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Lossless Compressed Mask(LMSK)" Cversion="1.0.2" condition="Arm-2D-Render-Test">
           <description>A demo for the tile filling rendering test.</description>
           <files>
-            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_lmsk.c" attr="config" version="1.0.1" />
-            <file category="header"      name="examples/render_tests/arm_2d_scene_lmsk.h" attr="config" version="1.0.1" />
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_lmsk.c" attr="config" version="1.0.2" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_lmsk.h" attr="config" version="1.0.2" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Render_Tests_LMSK
