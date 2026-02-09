@@ -280,8 +280,6 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
                         break;
                     }
                 }
-
-
             }
 
             uint8_t chStartFloorIndex = 0;
@@ -301,6 +299,10 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
             uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
             
             this.tFloorContext.hwNext = this.tSetting.iHeight;
+
+            if (chStartFloorIndex == 0) {
+                memset(&this.tFloorContext, 0, sizeof(this.tFloorContext));
+            }
 
             for (uint_fast8_t n = chStartFloorIndex; n < chFloors; n++) {
                 uint16_t hwFloor;
