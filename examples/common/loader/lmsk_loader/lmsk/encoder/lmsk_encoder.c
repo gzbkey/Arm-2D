@@ -261,6 +261,10 @@ __arm_lmsk_output_t *arm_lmsk_encode(arm_lmsk_encoder_t *ptThis, uint8_t chAlpha
         uint32_t wFloorCount = this.tOutput.wDataSize >> wFloorSizeBit;
         if (wFloorCount > 255) {
             /* the output file is too big */
+
+            printf( "ERROR: Output data size is too big! [%"PRIu32"]. It is bigger than the maximum allowed size %"PRIu32"\r\n", 
+                    this.tOutput.wDataSize,
+                    ((uint32_t)1 << 24) - 1);
             return NULL;
         }
 
