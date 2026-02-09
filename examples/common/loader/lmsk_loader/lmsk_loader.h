@@ -91,6 +91,9 @@ ARM_PRIVATE(
 #endif
 
     arm_lmsk_decoder_t tDecoder;
+    __arm_lmsk_floor_context_t tContext;
+    
+    bool bIsNewFrame;
 )
     
 };

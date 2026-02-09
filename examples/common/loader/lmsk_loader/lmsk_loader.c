@@ -83,6 +83,15 @@ static
 size_t __lmsk_loader_read ( intptr_t pTarget,      
                             uint8_t *pchBuffer,
                             size_t tLength);
+
+static
+__arm_lmsk_floor_context_t *
+__lmsk_loader_search_context( intptr_t pTarget, int16_t iY);
+
+static
+void __lmsk_loader_report_context(
+                                intptr_t pTarget, 
+                                const __arm_lmsk_floor_context_t *ptContext);
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
 
@@ -172,6 +181,7 @@ void arm_lmsk_loader_on_frame_start( arm_lmsk_loader_t *ptThis)
 {
     assert(NULL != ptThis);
     
+    this.bIsNewFrame = true;
     arm_generic_loader_on_frame_start(&this.use_as__arm_generic_loader_t);
 }
 
@@ -192,13 +202,17 @@ arm_2d_err_t __lmsk_loader_decoder_init(arm_generic_loader_t *ptObj)
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)ptObj;
 
     arm_lmsk_decoder_cfg_t tCFG = {
-    #if __ARM_LMSK_USE_LOADER_IO__
+    
         .IO = {
+        #if __ARM_LMSK_USE_LOADER_IO__
             .fnSeek = &__lmsk_loader_seek,
             .fnRead = &__lmsk_loader_read,
+        #endif
+            .fnSearchFloorContext = &__lmsk_loader_search_context,
+            .fnReportFloorContext = &__lmsk_loader_report_context,
             .pTarget = (uintptr_t)ptObj,
         },
-    #else
+    #if !__ARM_LMSK_USE_LOADER_IO__
         .pchLMSKSource = this.pchLMSKSource,
     #endif
     };
@@ -265,6 +279,30 @@ size_t __lmsk_loader_read ( intptr_t pTarget,
 }
 #endif
 
+static
+__arm_lmsk_floor_context_t *__lmsk_loader_search_context( intptr_t pTarget, int16_t iY)
+{
+    arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
+
+    if (this.tContext.hwCurrent <= iY) {
+        return &this.tContext;
+    }
+
+    return NULL;
+}
+
+static
+void __lmsk_loader_report_context(  intptr_t pTarget, 
+                                    const __arm_lmsk_floor_context_t *ptContext)
+{
+    arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
+    if (this.bIsNewFrame) {
+        if (this.tContext.hwCurrent != ptContext->hwCurrent) {
+            this.tContext = *ptContext;
+        }
+        this.bIsNewFrame = false;
+    }
+}
 
 #if defined(__clang__)
 #   pragma clang diagnostic pop

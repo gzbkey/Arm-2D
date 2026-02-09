@@ -40,19 +40,35 @@ extern "C" {
 
 typedef int32_t q16_t;
 
+typedef struct __arm_lmsk_floor_context_t {
+    uint16_t hwCurrent;
+    uint16_t hwNext;
+    uint32_t wFloorStart;
+    uint8_t chLastFloorIndex;
+} __arm_lmsk_floor_context_t;
+
 typedef struct arm_lmsk_decoder_cfg_t {
-#if __ARM_LMSK_USE_LOADER_IO__
+
     struct {
+    #if __ARM_LMSK_USE_LOADER_IO__
         bool (*fnSeek)(     uintptr_t pTarget, int32_t offset);
         size_t (*fnRead) (  intptr_t pTarget,      
                             uint8_t *pchBuffer,
                             size_t tLength);
+    #endif
+        __arm_lmsk_floor_context_t *
+               (*fnSearchFloorContext)( intptr_t pTarget, int16_t iY);
+        void (*fnReportFloorContext)(   intptr_t pTarget, 
+                                        const __arm_lmsk_floor_context_t *ptContext);
         uintptr_t pTarget;
     } IO;
-#else
+
+#if !__ARM_LMSK_USE_LOADER_IO__
     const uint8_t *pchLMSKSource;
 #endif
 } arm_lmsk_decoder_cfg_t;
+
+
 
 typedef struct arm_lmsk_decoder_t {
     arm_lmsk_decoder_cfg_t tCFG;
@@ -64,14 +80,11 @@ typedef struct arm_lmsk_decoder_t {
     arm_lsmk_setting_t tSetting;
     uint8_t chPalette[32];
 
-    uint16_t hwCurrentFloor;
-    uint16_t hwNextFloor;
-    uint32_t wFloorStart;
+    __arm_lmsk_floor_context_t tFloorContext;
 
     uint16_t u15Repeat          : 15;
     uint16_t bValid             : 1;
 
-    uint8_t chLastFloorIndex;
     uint8_t chTagFetchByteLeft;
     uint32_t wTagFetchBuffer;
 

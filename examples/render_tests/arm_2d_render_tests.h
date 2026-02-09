@@ -25,6 +25,7 @@
 #include "arm_2d_scene_pave.h"
 #include "arm_2d_scene_transform_inspection.h"
 #include "arm_2d_scene_lmsk.h"
+#include "arm_2d_scene_large_lmsk.h"
 
 #ifdef   __cplusplus
 extern "C" {

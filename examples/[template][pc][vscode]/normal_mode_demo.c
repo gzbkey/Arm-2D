@@ -141,6 +141,11 @@ void scene_lmsk_loader(void)
     arm_2d_scene_lmsk_init(&DISP0_ADAPTER);
 }
 
+void scene_large_lmsk_loader(void) 
+{
+    arm_2d_scene_large_lmsk_init(&DISP0_ADAPTER);
+}
+
 void scene_atom_loader(void) 
 {
     arm_2d_scene_atom_init(&DISP0_ADAPTER);
@@ -493,7 +498,8 @@ static demo_scene_t const c_SceneLoaders[] = {
 #else    /* debug list */
     {
         .fnLoader = 
-        scene_lmsk_loader,
+        scene_large_lmsk_loader,
+        //scene_lmsk_loader,
         //scene_zhrgb565_loader
         //scene_transform_inspection_loader,
         //scene_qoi_animation_loader
