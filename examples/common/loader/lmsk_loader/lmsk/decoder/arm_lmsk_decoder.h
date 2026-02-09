@@ -88,7 +88,9 @@ typedef struct arm_lmsk_decoder_t {
     uint8_t chTagFetchByteLeft;
     uint32_t wTagFetchBuffer;
 
+#if __ARM_LMSK_LSB_COMPENSATION_POLICY__ == 2
     q16_t   q16LSBCompensation;
+#endif
 
     q16_t   q16Gradient;
     int16_t iGradientSteps;

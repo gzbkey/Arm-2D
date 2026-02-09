@@ -237,6 +237,7 @@ int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis,
             return -1;
         }
 
+    #if __ARM_LMSK_LSB_COMPENSATION_POLICY__ == 2
         if (this.tSetting.u3AlphaMSBCount < 7) {
             /* calculate LSB compenstation */
 
@@ -245,6 +246,7 @@ int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis,
             this.q16LSBCompensation = div_n_q16(reinterpret_q16_s16(255), iSteps);
 
         }
+    #endif
 
         this.bValid = true;
     } while(0);
@@ -389,6 +391,7 @@ uint8_t __arm_lmsk_update_with_delta(   arm_lmsk_decoder_t *ptThis,
         iCurrent >>= chBitsToIgnore;
         iCurrent += chDelta;
 
+    #if __ARM_LMSK_LSB_COMPENSATION_POLICY__  == 2
         /* implement LSB compenstation */
         //iCurrent <<= chBitsToIgnore;
         uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
@@ -396,12 +399,26 @@ uint8_t __arm_lmsk_update_with_delta(   arm_lmsk_decoder_t *ptThis,
         
         if (chCurrent == chMask) {
             chCurrent = 0xFF;
-        } else if (chCurrent > 0) {
+        } else {
             chCurrent = 
                 reinterpret_s16_q16(
                     mul_n_q16(this.q16LSBCompensation,
                                 chCurrent)); 
         }
+    #elif __ARM_LMSK_LSB_COMPENSATION_POLICY__ == 1
+        uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
+        chCurrent = ((uint8_t *)&iCurrent)[0] & chMask;
+        
+        if (chCurrent == chMask) {
+            chCurrent = 0xFF;
+        } else {
+            chCurrent <<= chBitsToIgnore;
+        }
+    #else
+        iCurrent <<= chBitsToIgnore;
+        chCurrent = ((uint8_t *)&iCurrent)[0] & 0xFF;
+        
+    #endif
     }
 
     return chCurrent;
