@@ -154,8 +154,11 @@ size_t __arm_lmsk_encoder_line_process( arm_lmsk_encoder_t *ptThis,
         /* find an existing one */
         uint32_t wFloorSize = 1 << (16 - this.tOutput.tHeader.tSetting.u2TagSetBits);
 
-        if ((this.wPosition - ptOutputLine->wPosition) >= wFloorSize) {
-            /* too far away, we have to duplicate one  */
+        uint32_t wCurrentFloor = this.wPosition >> (16 - this.tOutput.tHeader.tSetting.u2TagSetBits);
+        uint32_t wTargetFloor = ptOutputLine->wPosition >> (16 - this.tOutput.tHeader.tSetting.u2TagSetBits);
+
+        if (wCurrentFloor != wTargetFloor) {
+            /* at different floor  */
 
             __arm_lmsk_line_out_t *ptNewLine = (__arm_lmsk_line_out_t *)malloc(sizeof(__arm_lmsk_line_out_t));
             assert(NULL != ptNewLine);
@@ -307,18 +310,28 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
 
         uint32_t wFloorSize = 1 << (16 - this.tHeader.tSetting.u2TagSetBits);
 
-        //printf("-[Floor Table] %"PRIu32" 0x%08"PRIX32"------------\r\n", wFloorSize, wFloorSize);
+        printf("[Floor Table: %"PRIu8"] %"PRIu32" 0x%08"PRIX32"\r\n", 
+                this.tHeader.tSetting.chFloorCount,
+                wFloorSize, wFloorSize);
 
         uint32_t wFloorLevel = 0;
-        for (int_fast16_t iY = 0; iY < this.tHeader.tSetting.iHeight; iY++) {
+        int_fast16_t iY = 0;
+        for (; iY < this.tHeader.tSetting.iHeight; iY++) {
+
+            if ((int32_t)this.tLineIndexTable.pwReferences[iY] - (int32_t)wFloorLevel < 0) {
+                assert(false);
+            }
+
             if (this.tLineIndexTable.pwReferences[iY] - wFloorLevel >= wFloorSize) {
 
                 /* write a floor */
                 wFloorLevel += wFloorSize;
 
-                //printf( "  Floor %"PRId16 " Address 0x%08"PRIx32"\r\n", 
+                //printf( "  Floor %"PRId16 " Address 0x%08"PRIx32" 0x%08"PRIx32"\r\n", 
                 //        iY, 
-                //        this.tLineIndexTable.pwReferences[iY]);
+                //        this.tLineIndexTable.pwReferences[iY],
+                //        wFloorLevel);
+            
 
                 if (1 != fwrite(&iY, sizeof(uint16_t), 1, ptOut)) {
                     free(phwIndexTable);
@@ -330,10 +343,16 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
             phwIndexTable[iY] = (uint16_t)( (uint32_t)this.tLineIndexTable.pwReferences[iY] 
                                           - (uint32_t)wFloorLevel);
 
-            //printf("\tLine %"PRIi16" Offset 0x%04"PRIx16"\r\n", iY, phwIndexTable[iY]);
+            //if (iY < 10) {
+            //    printf("\tLine %"PRIi16" Offset 0x%04"PRIx16"\r\n", iY, phwIndexTable[iY]);
+            //}
         }
 
-        //printf("\r\n\r\n");
+        //if (iY < 10) {
+        //    printf("\r\n\r\n");
+        //}
+
+        printf("Line Index Table Starts at 0x%08"PRIx32"\r\n", nTotalSize);
 
         /* write line index table */
 

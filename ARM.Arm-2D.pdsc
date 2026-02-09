@@ -542,6 +542,7 @@
     #define RTE_Acceleration_Arm_2D_Extra_Loader
     #define RTE_Acceleration_Arm_2D_Extra_JPEG_Loader
     #define RTE_Acceleration_Arm_2D_Extra_QOI_Loader
+    #define RTE_Acceleration_Arm_2D_Extra_LMSK_Loader
     #define RTE_Acceleration_Arm_2D_Extra_TJpgDec_Loader
     #define RTE_Acceleration_Arm_2D_Extra_ZJpgDec_Loader
     #define RTE_Acceleration_Arm_2D_Extra_FreeType_Loader
