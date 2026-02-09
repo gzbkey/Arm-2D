@@ -390,35 +390,8 @@ uint8_t __arm_lmsk_update_with_delta(   arm_lmsk_decoder_t *ptThis,
     } else {
         iCurrent >>= chBitsToIgnore;
         iCurrent += chDelta;
-
-    #if __ARM_LMSK_LSB_COMPENSATION_POLICY__  == 2
-        /* implement LSB compenstation */
-        //iCurrent <<= chBitsToIgnore;
-        uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
-        chCurrent = ((uint8_t *)&iCurrent)[0] & chMask;
-        
-        if (chCurrent == chMask) {
-            chCurrent = 0xFF;
-        } else {
-            chCurrent = 
-                reinterpret_s16_q16(
-                    mul_n_q16(this.q16LSBCompensation,
-                                chCurrent)); 
-        }
-    #elif __ARM_LMSK_LSB_COMPENSATION_POLICY__ == 1
-        uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
-        chCurrent = ((uint8_t *)&iCurrent)[0] & chMask;
-        
-        if (chCurrent == chMask) {
-            chCurrent = 0xFF;
-        } else {
-            chCurrent <<= chBitsToIgnore;
-        }
-    #else
         iCurrent <<= chBitsToIgnore;
         chCurrent = ((uint8_t *)&iCurrent)[0] & 0xFF;
-        
-    #endif
     }
 
     return chCurrent;
@@ -458,7 +431,6 @@ int16_t __arm_lmsk_get_next_alpha(  arm_lmsk_decoder_t *ptThis,
                 *pchBuff++ = __arm_lsmk_decode_fetch_byte(ptThis);
                 *pchBuff++ = __arm_lsmk_decode_fetch_byte(ptThis);
                 *pchBuff++ = __arm_lsmk_decode_fetch_byte(ptThis);
-
 
                 this.iGradientSteps = Gradient.tTag.iSteps + 1;
                 this.chGradientFromAlpha = chCurrent;
@@ -686,11 +658,56 @@ int __arm_lmsk_decode_line( arm_lmsk_decoder_t *ptThis,
     } while(iX <= iXLimit);
 
 
-    do {
-        __arm_lmsk_get_next_alpha(ptThis, pchBuffer++, 0);
-        iX++;
-    } while(iX <= iXLimit);
+    if (this.tSetting.u3AlphaMSBCount == 7) {
+        do {
+            uint8_t chCurrent;
+            __arm_lmsk_get_next_alpha(ptThis, pchBuffer++, 0);
+            iX++;
+        } while(iX <= iXLimit);
 
+    } else {
+        do {
+            uint8_t chCurrent;
+            __arm_lmsk_get_next_alpha(ptThis, &chCurrent, 0);
+
+            uint8_t chBitsToIgnore = 7 - this.tSetting.u3AlphaMSBCount;
+            uint16_t iCurrent = chCurrent;
+            iCurrent >>= chBitsToIgnore;
+
+        #if __ARM_LMSK_LSB_COMPENSATION_POLICY__  == 2
+            /* implement LSB compenstation */
+            //iCurrent <<= chBitsToIgnore;
+            uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
+            chCurrent = ((uint8_t *)&iCurrent)[0] & chMask;
+            
+            if (chCurrent == chMask) {
+                chCurrent = 0xFF;
+            } else {
+                chCurrent = 
+                    reinterpret_s16_q16(
+                        mul_n_q16(this.q16LSBCompensation,
+                                    chCurrent)); 
+            }
+        #elif __ARM_LMSK_LSB_COMPENSATION_POLICY__ == 1
+            uint8_t chMask = ((1 << (8 - chBitsToIgnore)) - 1);
+            chCurrent = ((uint8_t *)&iCurrent)[0] & chMask;
+            
+            if (chCurrent == chMask) {
+                chCurrent = 0xFF;
+            } else {
+                chCurrent <<= chBitsToIgnore;
+            }
+        #else
+            iCurrent <<= chBitsToIgnore;
+            chCurrent = ((uint8_t *)&iCurrent)[0] & 0xFF;
+            
+        #endif
+
+            *pchBuffer++ = chCurrent;
+
+            iX++;
+        } while(iX <= iXLimit);
+    }
 
     return 0;
 }
