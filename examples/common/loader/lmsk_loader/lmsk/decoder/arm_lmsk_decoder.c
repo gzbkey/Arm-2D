@@ -263,21 +263,22 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
     uint_fast8_t chFloors = this.tSetting.chFloorCount;
     if (chFloors > 0) {
         do {
-        #if 0
+
             if (iY >= this.hwCurrentFloor && iY < this.hwNextFloor) {
                 /* we are still in the same floor */
                 break;
             }
-        #endif
+
             uint8_t chStartFloorIndex = 0;
             uint32_t wFloorStart = 0;
 
-        #if 0
             if (iY > this.hwCurrentFloor) {
-                chStartFloorIndex = this.chLastFloorIndex + 1;
+                if (this.hwCurrentFloor > 0) {
+                    chStartFloorIndex = this.chLastFloorIndex + 1;
+                }
                 wFloorStart = this.wFloorStart;
             }
-        #endif
+
             if (!arm_lmsk_decoder_seek(ptThis, FLOOR_TABLE_START + chStartFloorIndex * sizeof(uint16_t))) {
                 return -1;
             }
