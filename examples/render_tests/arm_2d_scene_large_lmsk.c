@@ -136,7 +136,7 @@ static void __on_scene_large_lmsk_depose(arm_2d_scene_t *ptScene)
 }
 
 /*----------------------------------------------------------------------------*
- * Scene large_lmsk                                                                    *
+ * Scene large_lmsk                                                           *
  *----------------------------------------------------------------------------*/
 
 static void __on_scene_large_lmsk_background_start(arm_2d_scene_t *ptScene)
@@ -193,6 +193,12 @@ static void __on_scene_large_lmsk_frame_start(arm_2d_scene_t *ptScene)
 
     } while(0);
 
+    if (0 != ptScene->ptPlayer->Benchmark.wAverage) {
+        this.iNumber = MIN(( arm_2d_helper_get_reference_clock_frequency() 
+                           / ptScene->ptPlayer->Benchmark.wAverage), 
+                          999);
+    }
+
     arm_lmsk_loader_on_frame_start(&this.tAnimation);
 }
 
@@ -227,23 +233,46 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
     arm_2d_canvas(ptTile, __top_canvas) {
     /*-----------------------draw the foreground begin-----------------------*/
         
+        arm_2d_size_t tTVBoxSize = this.tFilm.use_as__arm_2d_tile_t.tRegion.tSize;
+        tTVBoxSize.iHeight += 10;
 
         arm_2d_align_centre(__top_canvas, 
-                            this.tFilm.use_as__arm_2d_tile_t.tRegion.tSize ) {
+                            tTVBoxSize ) {
             
-            arm_2d_fill_colour_with_mask(   ptTile, 
-                                            &__centre_region, 
-                                            (const arm_2d_tile_t *)&this.tFilm, 
-                                            (__arm_2d_color_t){this.tColour});
-            
+            arm_2d_layout(__centre_region) {
+
+                __item_line_dock_vertical(10, 0, 0, 0, 0) {
+
+                    arm_2d_fill_colour(ptTile, &__item_region, GLCD_COLOR_DARK_GREY);
+
+                    arm_2d_dock_vertical(__item_region, 8, 2) {
+                        arm_lcd_text_set_font(&ARM_2D_FONT_6x8.use_as__arm_2d_font_t);
+                        arm_lcd_text_set_draw_region(&__vertical_region);
+                        arm_lcd_text_set_colour(GLCD_COLOR_WHITE, GLCD_COLOR_WHITE);
+                        arm_lcd_printf("Frame:%04"PRId16"\tFPS:%"PRId16, 
+                                        arm_2d_helper_film_get_frame_index(&this.tFilm),
+                                        this.iNumber);
+                    }
+                }
+
+                __item_line_dock_vertical_open() {
+                    __arm_2d_hint_optimize_for_pfb__(__item_region) {
+                        arm_2d_fill_colour_with_mask(   ptTile, 
+                                                &__centre_region, 
+                                                (const arm_2d_tile_t *)&this.tFilm, 
+                                                (__arm_2d_color_t){this.tColour});
+                    }
+                }
+            }
+
             arm_2d_helper_dirty_region_update_item( 
-                    &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
-                    (arm_2d_tile_t *)ptTile,
-                    &__top_canvas,
-                    &__centre_region);
+                            &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+                            (arm_2d_tile_t *)ptTile,
+                            &__top_canvas,
+                            &__centre_region);
                                     
         }
-
+    
         /* draw text at the top-left corner */
         arm_lcd_text_set_target_framebuffer((arm_2d_tile_t *)ptTile);
         arm_lcd_text_set_font(&ARM_2D_FONT_6x8.use_as__arm_2d_font_t);

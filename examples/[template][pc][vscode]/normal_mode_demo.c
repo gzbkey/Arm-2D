@@ -430,7 +430,7 @@ typedef struct demo_scene_t {
 
 static demo_scene_t const c_SceneLoaders[] = {
 
-#if 1   /* Looping playlist */
+#if 0   /* Looping playlist */
 
 #if defined(__DISP0_CFG_COLOR_SOLUTION__) && __DISP0_CFG_COLOR_SOLUTION__ == 1
     { 13000,    scene_mono_loading_loader, },
@@ -499,7 +499,7 @@ static demo_scene_t const c_SceneLoaders[] = {
     {
         .fnLoader = 
         //scene_hollow_out_list_loader,
-        //scene_large_lmsk_loader,
+        scene_large_lmsk_loader,
         //scene_lmsk_loader,
         //scene_zhrgb565_loader
         //scene_transform_inspection_loader,
@@ -533,7 +533,7 @@ static demo_scene_t const c_SceneLoaders[] = {
         //scene_transform_loader,
         //scene_tjpgd_loader,
         //scene_text_reader_loader,
-        scene_ruler_loader,
+        //scene_ruler_loader,
         //scene_filters_loader,
         //scene_listview_loader,
         //scene_mono_tracking_list_loader
