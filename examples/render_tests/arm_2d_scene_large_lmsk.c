@@ -239,13 +239,11 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
         arm_2d_align_centre(__top_canvas, 
                             tTVBoxSize ) {
             
-            arm_2d_layout(__centre_region) {
+                arm_2d_dock_top(__centre_region, 10) {
 
-                __item_line_dock_vertical(10, 0, 0, 0, 0) {
+                    arm_2d_fill_colour(ptTile, &__top_region, GLCD_COLOR_DARK_GREY);
 
-                    arm_2d_fill_colour(ptTile, &__item_region, GLCD_COLOR_DARK_GREY);
-
-                    arm_2d_dock_vertical(__item_region, 8, 2) {
+                    arm_2d_dock_vertical(__top_region, 8, 2) {
                         arm_lcd_text_set_font(&ARM_2D_FONT_6x8.use_as__arm_2d_font_t);
                         arm_lcd_text_set_draw_region(&__vertical_region);
                         arm_lcd_text_set_colour(GLCD_COLOR_WHITE, GLCD_COLOR_WHITE);
@@ -255,15 +253,10 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
                     }
                 }
 
-                __item_line_dock_vertical_open() {
-                    __arm_2d_hint_optimize_for_pfb__(__item_region) {
-                        arm_2d_fill_colour_with_mask(   ptTile, 
-                                                &__centre_region, 
-                                                (const arm_2d_tile_t *)&this.tFilm, 
-                                                (__arm_2d_color_t){this.tColour});
-                    }
-                }
-            }
+                arm_2d_fill_colour_with_mask(   ptTile, 
+                                        &__centre_region, 
+                                        (const arm_2d_tile_t *)&this.tFilm, 
+                                        (__arm_2d_color_t){this.tColour});
 
             arm_2d_helper_dirty_region_update_item( 
                             &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
