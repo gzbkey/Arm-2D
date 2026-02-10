@@ -87,6 +87,21 @@ extern const arm_2d_tile_t c_tileCMSISLogoA2Mask;
 extern const arm_2d_tile_t c_tileCMSISLogoA4Mask;
 /*============================ PROTOTYPES ====================================*/
 /*============================ LOCAL VARIABLES ===============================*/
+
+static uint32_t c_wColourTable[] = {
+    __RGB32(0xFF, 0x00, 0x00),
+    __RGB32(0x00, 0xFF, 0x00),
+    __RGB32(0x00, 0x00, 0xFF),
+    __RGB32(0x00, 0xFF, 0xFF),
+    __RGB32(0xFF, 0xFF, 0xFF),
+    __RGB32(0xFF, 0xFF, 0x00),
+    __RGB32(0xFF, 0x00, 0x00),
+    __RGB32(0xFF, 0x00, 0xFF),
+    __RGB32(0xFF, 0x80, 0x00),      /* orange */
+    __RGB32(0xFF, 0xA5, 0x00),      /* nixie tube */
+
+};
+
 /*============================ IMPLEMENTATION ================================*/
 
 static void __on_scene_large_lmsk_load(arm_2d_scene_t *ptScene)
@@ -157,6 +172,27 @@ static void __on_scene_large_lmsk_frame_start(arm_2d_scene_t *ptScene)
             true);
     }
 
+    /* update cloud colour */
+    do {
+        int32_t nResult;
+        if (arm_2d_helper_time_liner_slider(0, 1000, 5000, &nResult, &this.lTimestamp[1])) {
+            this.lTimestamp[1] = 0;
+            this.wPreviousColour = c_wColourTable[this.chColourTableIndex];
+
+            srand((uint32_t)arm_2d_helper_get_system_timestamp());
+            this.chColourTableIndex = rand() % dimof(c_wColourTable);
+            nResult = 0;
+        }
+
+        this.tColour = arm_2d_pixel_from_brga8888(
+                                            __arm_2d_helper_colour_slider(
+                                                this.wPreviousColour, 
+                                                c_wColourTable[this.chColourTableIndex],
+                                                1000,
+                                                nResult));
+
+    } while(0);
+
     arm_lmsk_loader_on_frame_start(&this.tAnimation);
 }
 
@@ -198,7 +234,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
             arm_2d_fill_colour_with_mask(   ptTile, 
                                             &__centre_region, 
                                             (const arm_2d_tile_t *)&this.tFilm, 
-                                            (__arm_2d_color_t){GLCD_COLOR_NIXIE_TUBE});
+                                            (__arm_2d_color_t){this.tColour});
             
             arm_2d_helper_dirty_region_update_item( 
                     &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
@@ -291,11 +327,13 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
         extern 
         const uint8_t c_lmskBadApple100x75col16a4[2381132];
 
+        extern 
+        const uint8_t c_lmskBadApple160x120col20a4[4636049];
         
     #   if 1
         arm_loader_io_cache_init(   &this.LoaderIO.tCache, 
-                                    (uintptr_t)c_lmskBadApple100x75col16a4, 
-                                    sizeof(c_lmskBadApple100x75col16a4),
+                                    (uintptr_t)c_lmskBadApple160x120col20a4, 
+                                    sizeof(c_lmskBadApple160x120col20a4),
                                     this.tCachelines,
                                     dimof(this.tCachelines));
     #   else
@@ -322,7 +360,7 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
             #endif
             },
         #else
-            .pchLMSKSource = c_lmskBadApple100x75col16a4,
+            .pchLMSKSource = c_lmskBadApple160x120col20a4,
         #endif
         };
 
@@ -331,9 +369,9 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
 
     this.tFilm = (arm_2d_helper_film_t)
                     impl_film(  this.tAnimation, 
-                        100, 
-                        75, 
-                        16, 
+                        160, 
+                        120, 
+                        20, 
                         3110, 
                         33);
 

@@ -91,11 +91,10 @@ struct user_scene_large_lmsk_t {
 
 ARM_PRIVATE(
     /* place your private member here, following two are examples */
-    int64_t lTimestamp[1];
+    int64_t lTimestamp[2];
     bool bUserAllocated;
 
     arm_lmsk_loader_t tAnimation;
-
     union {
         arm_loader_io_file_t tFile;
         arm_loader_io_binary_t tBinary;
@@ -106,6 +105,11 @@ ARM_PRIVATE(
     arm_io_cacheline_t tCachelines[2];
 
     arm_2d_helper_film_t tFilm;
+
+    uint8_t chColourTableIndex;
+    uint32_t wPreviousColour;
+
+    COLOUR_INT tColour;
 )
     /* place your public member here */
     

@@ -1213,7 +1213,8 @@
 
             <file category="other"       name="examples/render_tests/bad_apple_320x240_24_a4.lmsk"  attr="config" version="1.0.0"/>
             <file category="other"       name="examples/render_tests/bad_apple_100x75_16_a4.lmsk"   attr="config" version="1.1.0"/>
-            <file category="sourceC"     name="examples/render_tests/bad_apple.c"                   attr="config" version="1.0.0" />
+            <file category="other"       name="examples/render_tests/bad_apple_160x120_20_a4.lmsk"  attr="config" version="1.0.0"/>
+            <file category="sourceC"     name="examples/render_tests/bad_apple.c"                   attr="config" version="1.1.0" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Render_Tests_Large_LMSK
