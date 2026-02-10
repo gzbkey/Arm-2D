@@ -124,7 +124,7 @@ static void __on_scene_large_lmsk_depose(arm_2d_scene_t *ptScene)
     user_scene_large_lmsk_t *ptThis = (user_scene_large_lmsk_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
     
-    arm_lmsk_loader_on_load(&this.tAnimation);
+    arm_lmsk_loader_depose(&this.tAnimation);
 
     arm_foreach(int64_t,this.lTimestamp, ptItem) {
         *ptItem = 0;

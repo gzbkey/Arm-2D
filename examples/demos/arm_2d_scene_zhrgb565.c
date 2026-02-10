@@ -109,7 +109,7 @@ static void __on_scene_zhrgb565_depose(arm_2d_scene_t *ptScene)
     user_scene_zhrgb565_t *ptThis = (user_scene_zhrgb565_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
     
-    arm_zhrgb565_loader_on_load(&this.tAnimation);
+    arm_zhrgb565_loader_depose(&this.tAnimation);
 
     arm_foreach(int64_t,this.lTimestamp, ptItem) {
         *ptItem = 0;
