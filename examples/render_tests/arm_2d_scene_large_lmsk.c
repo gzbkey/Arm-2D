@@ -288,19 +288,20 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
                                 //"../render_tests/bad_apple_320x240_24_a4.lmsk");
                                 "../render_tests/bad_apple_100x75_16_a4.lmsk");
     #else
-        extern const uint8_t c_qoiDogeDance[126958];
+        extern 
+        const uint8_t c_lmskBadApple100x75col16a4[2381132];
 
         
-    #   if 0
+    #   if 1
         arm_loader_io_cache_init(   &this.LoaderIO.tCache, 
-                                    (uintptr_t)c_qoiDogeDance, 
-                                    sizeof(c_qoiDogeDance),
+                                    (uintptr_t)c_lmskBadApple100x75col16a4, 
+                                    sizeof(c_lmskBadApple100x75col16a4),
                                     this.tCachelines,
                                     dimof(this.tCachelines));
     #   else
         arm_loader_io_rom_init( &this.LoaderIO.tROM, 
-                                (uintptr_t)c_qoiDogeDance, 
-                                sizeof(c_qoiDogeDance));
+                                (uintptr_t)c_lmskBadApple100x75col16a4, 
+                                sizeof(c_lmskBadApple100x75col16a4));
     #   endif
     #endif
 
@@ -312,7 +313,7 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
             #if ARM_2D_DEMO_LARGE_LMSK_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
                 .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
-            #elif 0
+            #elif 1
                 .ptIO = &ARM_LOADER_IO_CACHE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tCache,
             #else
@@ -321,7 +322,7 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
             #endif
             },
         #else
-            .pchQOISource = c_qoiDogeDance,
+            .pchLMSKSource = c_lmskBadApple100x75col16a4,
         #endif
         };
 

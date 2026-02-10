@@ -62,7 +62,7 @@ extern "C" {
 #include "arm_2d_utils.h"
 
 #ifndef ARM_2D_DEMO_LARGE_LMSK_USE_FILE
-#   define ARM_2D_DEMO_LARGE_LMSK_USE_FILE  1
+#   define ARM_2D_DEMO_LARGE_LMSK_USE_FILE  0
 #endif
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
