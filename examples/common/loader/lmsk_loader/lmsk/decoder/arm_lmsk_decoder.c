@@ -282,44 +282,87 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
                 }
             }
 
-            uint8_t chStartFloorIndex = 0;
             uint32_t wFloorStart = 0;
 
-            if (iY > this.tFloorContext.iCurrent) {
-                if (this.tFloorContext.iCurrent > 0) {
-                    chStartFloorIndex = this.tFloorContext.chLastFloorIndex + 1;
+            bool bTopDownSearch = false;
+
+            if (    (iY < this.tFloorContext.iCurrent)
+               &&   (this.tFloorContext.iCurrent >= 0)
+               &&   (iY > (this.tFloorContext.iCurrent - iY))) {
+                bTopDownSearch = true;
+            }
+
+            if (bTopDownSearch) {
+                /* top-down search */
+
+                uint8_t chStartFloorIndex = chFloors - 1;
+                
+                uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
+                wFloorStart = (chStartFloorIndex + 1) * wFloorSize;
+
+                this.tFloorContext.iNext = this.tSetting.iHeight;
+
+                do {
+                    int16_t iFloor;
+
+                    if (!arm_lmsk_decoder_seek(ptThis, FLOOR_TABLE_START + chStartFloorIndex * sizeof(uint16_t))) {
+                        return -1;
+                    }
+                    if (sizeof(uint16_t) != arm_lmsk_decoder_read(ptThis, (uint8_t *)&iFloor, sizeof(uint16_t))) {
+                        return -1;
+                    }
+
+                    if (iY >= iFloor) {
+                        this.tFloorContext.iCurrent = iFloor;
+                        this.tFloorContext.chLastFloorIndex = chStartFloorIndex;
+                        break;
+                    }
+
+                    this.tFloorContext.iNext = iFloor;
+                    wFloorStart -= wFloorSize;
+                } while(--chStartFloorIndex);
+
+            } else {
+                /* bottom-up search */
+
+                uint8_t chStartFloorIndex = 0;
+
+                if (iY > this.tFloorContext.iCurrent) {
+                    if (this.tFloorContext.iCurrent > 0) {
+                        chStartFloorIndex = this.tFloorContext.chLastFloorIndex + 1;
+                    }
+                    wFloorStart = this.tFloorContext.wFloorStart;
                 }
-                wFloorStart = this.tFloorContext.wFloorStart;
-            }
 
-            if (!arm_lmsk_decoder_seek(ptThis, FLOOR_TABLE_START + chStartFloorIndex * sizeof(uint16_t))) {
-                return -1;
-            }
-            
-            uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
-            
-            this.tFloorContext.iNext = this.tSetting.iHeight;
-
-            if (chStartFloorIndex == 0) {
-                memset(&this.tFloorContext, 0, sizeof(this.tFloorContext));
-            }
-
-            for (uint_fast8_t n = chStartFloorIndex; n < chFloors; n++) {
-                int16_t iFloor;
-
-                if (sizeof(uint16_t) != arm_lmsk_decoder_read(ptThis, (uint8_t *)&iFloor, sizeof(uint16_t))) {
+                if (!arm_lmsk_decoder_seek(ptThis, FLOOR_TABLE_START + chStartFloorIndex * sizeof(uint16_t))) {
                     return -1;
                 }
+                
+                uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
+                
+                this.tFloorContext.iNext = this.tSetting.iHeight;
 
-                if (iFloor <= iY) {
-                    wFloorStart += wFloorSize;
-                    this.tFloorContext.iCurrent = iFloor;
-                    this.tFloorContext.chLastFloorIndex = n;
+                if (chStartFloorIndex == 0) {
+                    memset(&this.tFloorContext, 0, sizeof(this.tFloorContext));
                 }
 
-                if (iFloor > iY) {
-                    this.tFloorContext.iNext = iFloor;
-                    break;
+                for (uint_fast8_t n = chStartFloorIndex; n < chFloors; n++) {
+                    int16_t iFloor;
+
+                    if (sizeof(uint16_t) != arm_lmsk_decoder_read(ptThis, (uint8_t *)&iFloor, sizeof(uint16_t))) {
+                        return -1;
+                    }
+
+                    if (iFloor <= iY) {
+                        wFloorStart += wFloorSize;
+                        this.tFloorContext.iCurrent = iFloor;
+                        this.tFloorContext.chLastFloorIndex = n;
+                    }
+
+                    if (iFloor > iY) {
+                        this.tFloorContext.iNext = iFloor;
+                        break;
+                    }
                 }
             }
 
