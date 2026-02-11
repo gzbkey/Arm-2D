@@ -323,11 +323,58 @@ void __console_box_remove_top_line(console_box_t *ptThis)
     this.u2RTRefreshMode = REFRESH_MODE_WHOLE;
 }
 
+static
+void __console_box_remove_current_line(console_box_t *ptThis)
+{
+    /*
+     * NOTE:
+     *      The previous line always ends with '\n' if we do have one.
+     *      See reference 01 in __console_box_force_to_write_console_fifo()
+     */
+    
+    uint8_t chChar;
+
+    while(arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, &chChar)) {
+
+        if ('\n' == chChar) {
+            /* put the return back */
+            arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, chChar);
+            break;
+        }
+
+        this.Console.hwCurrentColumn = 0;
+    }
+}
+
+
+
 ARM_NONNULL(1)
 static 
 void __console_box_force_to_write_console_fifo( console_box_t *ptThis, 
                                                 uint8_t chInputChar)
 {
+    do {
+        if (chInputChar != '\r') {
+            uint8_t chChar;
+            if (!arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, &chChar)) {
+                /* EMPTY*/
+                break;
+            }
+            if ('\r' != chChar) {
+                /* send it back */
+                arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, chChar);
+                break;
+            }
+            if ('\n' == chInputChar) {
+                /* it is a new line*/
+                break;
+            }
+            
+            __console_box_remove_current_line(ptThis);
+            this.u2RTRefreshMode = REFRESH_MODE_NEW_LINES;
+        }
+    } while(0);
+
     do {
         if (arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, chInputChar)) {
             /* check the byte written */
@@ -342,10 +389,15 @@ void __console_box_force_to_write_console_fifo( console_box_t *ptThis,
                     break;
                 case '\b':
                     if (this.Console.hwCurrentColumn) { /* delete one byte */
+                        uint8_t chChar;
                         arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, NULL);   // '\b'
-                        arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, NULL);   // previous char
-                        this.u2RTRefreshMode = REFRESH_MODE_NEW_LINES;
+                        arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, &chChar);   // previous char
+                        if ('\t' == chChar) {
+                            arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, '\t');
+                        }
                         this.Console.hwCurrentColumn--;
+
+                        this.u2RTRefreshMode = REFRESH_MODE_NEW_LINES;
                     }
                     break;
                 case '\t':
@@ -357,8 +409,16 @@ void __console_box_force_to_write_console_fifo( console_box_t *ptThis,
                     break;
             }
 
-            if (this.Console.hwCurrentColumn >= this.Console.hwMaxColumn) {
+            if (this.Console.hwCurrentColumn >= (this.Console.hwMaxColumn - 1)) {
                 /* move to next line */
+
+                /* Reference 01: insert a return */
+                if (!arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, '\n')) {
+                    __console_box_remove_top_line(ptThis);
+                    /* try again */
+                    arm_2d_byte_fifo_enqueue(&this.tConsoleFIFO, '\n');
+                }
+
                 bMoveToNextLine = true;
             }
 
