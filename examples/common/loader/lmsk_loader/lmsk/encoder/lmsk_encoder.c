@@ -310,7 +310,7 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
 
         uint32_t wFloorSize = 1 << (16 - this.tHeader.tSetting.u2TagSetBits);
 
-        printf("[Floor Table: %"PRIu8"] %"PRIu32" 0x%08"PRIX32"\r\n", 
+        printf("[Floor Table: %"PRIu8"]\tFloor Size:%"PRIu32" 0x%08"PRIX32"\r\n", 
                 this.tHeader.tSetting.chFloorCount,
                 wFloorSize, wFloorSize);
 
@@ -351,8 +351,6 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
         //if (iY < 10) {
         //    printf("\r\n\r\n");
         //}
-
-        printf("Line Index Table Starts at 0x%08"PRIx32"\r\n", nTotalSize);
 
         /* write line index table */
 

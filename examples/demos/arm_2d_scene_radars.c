@@ -81,7 +81,7 @@
 
 #define LAST_STAND_DEFENCE_RADIUS   40
 
-#define RADAR_BACKGROUND     c_tileRadarBackgroundGRAY8
+#define RADAR_BACKGROUND     this.Background.tLoader.tTile
 
 #if ARM_2D_DEMO_RADAR_SHOW_ANIMATION  
 #   define FILM_TOP_LEFT        this.tFilm[FILM_IDX_TOP_LEFT].tHelper.use_as__arm_2d_tile_t
@@ -177,6 +177,7 @@ static void __on_scene_radars_load(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     spin_zoom_widget_on_load(&this.tScanSector);
+    arm_lmsk_loader_on_load(&this.Background.tLoader);
 
     /* 
      * NOTE: this assignment only works after calling spin_zoom_widget_on_load()
@@ -244,6 +245,7 @@ static void __on_scene_radars_depose(arm_2d_scene_t *ptScene)
     /*--------------------- insert your depose code begin --------------------*/
     
     spin_zoom_widget_depose(&this.tScanSector);
+    arm_lmsk_loader_depose(&this.Background.tLoader);
 
     arm_foreach(__radar_bogey_t, this.tBogeys, ptBogey) {
         arm_2d_helper_dirty_region_remove_items(
@@ -389,6 +391,7 @@ static void __on_scene_radars_frame_start(arm_2d_scene_t *ptScene)
 
     spin_zoom_widget_on_frame_start(&this.tScanSector, nResult, 1.0f);
 
+    arm_lmsk_loader_on_frame_start(&this.Background.tLoader);
     foldable_panel_on_frame_start(&this.tScreen);
 
 #if ARM_2D_DEMO_RADAR_SHOW_ANIMATION
@@ -447,6 +450,7 @@ static void __on_scene_radars_frame_complete(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     spin_zoom_widget_on_frame_complete(&this.tScanSector);
+    arm_lmsk_loader_on_frame_complete(&this.Background.tLoader);
 
     arm_foreach(__radar_bogey_t, this.tBogeys, ptBogey) {
         ptBogey->u2State = ptBogey->u2NextState;
@@ -1442,6 +1446,31 @@ user_scene_radars_t *__arm_2d_scene_radars_init(
             .bUseDirtyRegions = true,
         };
         foldable_panel_init(&this.tScreen, &tCFG);
+    } while(0);
+
+    /* initialize LMSK loader */
+    do {
+        extern const uint8_t c_lmskRadarBackground[12559];
+
+        arm_loader_io_rom_init( &this.Background.LoaderIO.tROM, 
+                                (uintptr_t)c_lmskRadarBackground, 
+                                sizeof(c_lmskRadarBackground));
+
+        arm_lmsk_loader_cfg_t tCFG = {
+            //.bUseHeapForVRES = true,
+            .ptScene = (arm_2d_scene_t *)ptThis,
+
+        #if __ARM_LMSK_USE_LOADER_IO__
+            .ImageIO = {
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.Background.LoaderIO.tROM,
+            },
+        #else
+            .pchLMSKSource = c_lmskRadarBackground,
+        #endif
+        };
+
+        arm_lmsk_loader_init(&this.Background.tLoader, &tCFG);
     } while(0);
 
     /* ------------   initialize members of user_scene_radars_t end   ---------------*/

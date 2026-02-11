@@ -235,7 +235,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
     arm_2d_canvas(ptTile, __top_canvas) {
     /*-----------------------draw the scene begin-----------------------*/
         
-        arm_2d_size_t tImageBoxSize = REFERENCE_MASK.tRegion.tSize;
+        arm_2d_size_t tImageBoxSize = LMSK_MASK.tRegion.tSize;
         arm_2d_size_t tTitleSize = arm_lcd_printf_to_buffer(
                                     (arm_2d_font_t *)&ARM_2D_FONT_LiberationSansRegular14_A4, 
                                     "Reference Mask");
@@ -244,8 +244,9 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
 
         arm_2d_dock_vertical(__top_canvas, tImageBoxSize.iHeight ) {
 
-            arm_2d_layout(__vertical_region, RIGHT_TO_LEFT) {
+            arm_2d_layout(__vertical_region) {
 
+            #if 0
                 __item_line_dock_horizontal(tImageBoxSize.iWidth, 4, 4, 0, 0) {
 
                     arm_2d_layout(__item_region) {
@@ -272,6 +273,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_lmsk_handler)
                         }
                     }
                 }
+            #endif
 
                 __item_line_dock_horizontal(tImageBoxSize.iWidth, 4, 4, 0, 0) {
 
@@ -438,8 +440,8 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
     do {
     #if ARM_2D_DEMO_LMSK_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
         arm_loader_io_file_init(&this.LMSK.LoaderIO.tFile, 
-                                //"../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
-                                "../common/asset/ECGScanMaskSmall.lmsk");
+                                "../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
+                                //"../common/asset/ECGScanMaskSmall.lmsk");
     #else
         extern const uint8_t c_lmskECGScan[913];
 
