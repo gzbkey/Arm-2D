@@ -1403,6 +1403,31 @@ user_scene_radars_t *__arm_2d_scene_radars_init(
         s_tReferencePoints[3].iY = s_tReferencePoints[0].iY - (fRadius * arm_sin_f32(ARM_2D_ANGLE(22.5f)) + 0.5f);
     } while(0);
 
+    /* initialize LMSK loader */
+    do {
+        extern const uint8_t c_lmskRadarBackground[12559];
+
+        arm_loader_io_rom_init( &this.Background.LoaderIO.tROM, 
+                                (uintptr_t)c_lmskRadarBackground, 
+                                sizeof(c_lmskRadarBackground));
+
+        arm_lmsk_loader_cfg_t tCFG = {
+            //.bUseHeapForVRES = true,
+            .ptScene = (arm_2d_scene_t *)ptThis,
+
+        #if __ARM_LMSK_USE_LOADER_IO__
+            .ImageIO = {
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.Background.LoaderIO.tROM,
+            },
+        #else
+            .pchLMSKSource = c_lmskRadarBackground,
+        #endif
+        };
+
+        arm_lmsk_loader_init(&this.Background.tLoader, &tCFG);
+    } while(0);
+
     /* initialize bogeys */
     do {
         int16_t iRadius = RADAR_BACKGROUND.tRegion.tSize.iWidth >> 1;
@@ -1448,30 +1473,6 @@ user_scene_radars_t *__arm_2d_scene_radars_init(
         foldable_panel_init(&this.tScreen, &tCFG);
     } while(0);
 
-    /* initialize LMSK loader */
-    do {
-        extern const uint8_t c_lmskRadarBackground[12559];
-
-        arm_loader_io_rom_init( &this.Background.LoaderIO.tROM, 
-                                (uintptr_t)c_lmskRadarBackground, 
-                                sizeof(c_lmskRadarBackground));
-
-        arm_lmsk_loader_cfg_t tCFG = {
-            //.bUseHeapForVRES = true,
-            .ptScene = (arm_2d_scene_t *)ptThis,
-
-        #if __ARM_LMSK_USE_LOADER_IO__
-            .ImageIO = {
-                .ptIO = &ARM_LOADER_IO_ROM,
-                .pTarget = (uintptr_t)&this.Background.LoaderIO.tROM,
-            },
-        #else
-            .pchLMSKSource = c_lmskRadarBackground,
-        #endif
-        };
-
-        arm_lmsk_loader_init(&this.Background.tLoader, &tCFG);
-    } while(0);
 
     /* ------------   initialize members of user_scene_radars_t end   ---------------*/
 
