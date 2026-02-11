@@ -241,7 +241,7 @@ arm_2d_err_t process_args(int argc, char* argv[])
             continue;
         }
 
-        if (0 == strncmp(argv[n], "--gradient", 2)) {
+        if (0 == strncmp(argv[n], "--gradient", 10)) {
             n++;
             if (n >= argc) {
                 bInputIsValid = false;
@@ -265,6 +265,11 @@ arm_2d_err_t process_args(int argc, char* argv[])
             ||  (0 == strncmp(argv[n], "-h", 2))) {
             bInputIsValid = false;
             return ARM_2D_ERR_MISSING_PARAM;
+        }
+
+        if (0 == strncmp(argv[n], "--no_gradient", 13)) {
+            SYSTEM_CFG.Input.bNoGradient = true;
+            continue;
         }
 
     }
@@ -302,6 +307,7 @@ static void print_help(void)
     printf("\t-o <output file path> The file path for the compressed mask image  (*.lmsk)\r\n");
     printf("\t-a <alpha bits>       The valid alpha MSB count (1~8) \r\n");
     printf("\t--gradient <tolerant> The valid range [0,3]. \r\n");
+    printf("\t--no_gradient         Disable Gradient \r\n");
     printf("\r\n");
 }
 
