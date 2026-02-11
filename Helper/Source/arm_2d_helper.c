@@ -786,6 +786,14 @@ uint_fast16_t arm_2d_helper_film_get_frame_index(arm_2d_helper_film_t *ptThis)
     return this.hwFrameIndex;
 }
 
+ARM_NONNULL(1)
+uint_fast16_t arm_2d_helper_film_get_frame_count(arm_2d_helper_film_t *ptThis)
+{
+    assert(NULL != ptThis);
+
+    return this.hwFrameNum;
+}
+
 #if __ARM_2D_HELPER_CFG_LAYOUT_DEBUG_MODE__
 ARM_NONNULL(1)
 void __arm_2d_helper_layout_debug_print_label(const arm_2d_tile_t *ptTile, 

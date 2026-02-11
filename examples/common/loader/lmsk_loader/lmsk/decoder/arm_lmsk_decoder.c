@@ -266,7 +266,7 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
     if (chFloors > 0) {
         do {
 
-            if (iY >= this.tFloorContext.hwCurrent && iY < this.tFloorContext.hwNext) {
+            if (iY >= this.tFloorContext.iCurrent && iY < this.tFloorContext.iNext) {
                 /* we are still in the same floor */
                 break;
             } else if (NULL != this.tCFG.IO.fnSearchFloorContext) {
@@ -276,7 +276,7 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
                     /* resume floor context */
                     this.tFloorContext = *ptContext;
 
-                    if (iY >= this.tFloorContext.hwCurrent && iY < this.tFloorContext.hwNext) {
+                    if (iY >= this.tFloorContext.iCurrent && iY < this.tFloorContext.iNext) {
                         break;
                     }
                 }
@@ -285,8 +285,8 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
             uint8_t chStartFloorIndex = 0;
             uint32_t wFloorStart = 0;
 
-            if (iY > this.tFloorContext.hwCurrent) {
-                if (this.tFloorContext.hwCurrent > 0) {
+            if (iY > this.tFloorContext.iCurrent) {
+                if (this.tFloorContext.iCurrent > 0) {
                     chStartFloorIndex = this.tFloorContext.chLastFloorIndex + 1;
                 }
                 wFloorStart = this.tFloorContext.wFloorStart;
@@ -298,27 +298,27 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
             
             uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
             
-            this.tFloorContext.hwNext = this.tSetting.iHeight;
+            this.tFloorContext.iNext = this.tSetting.iHeight;
 
             if (chStartFloorIndex == 0) {
                 memset(&this.tFloorContext, 0, sizeof(this.tFloorContext));
             }
 
             for (uint_fast8_t n = chStartFloorIndex; n < chFloors; n++) {
-                uint16_t hwFloor;
+                int16_t iFloor;
 
-                if (sizeof(uint16_t) != arm_lmsk_decoder_read(ptThis, (uint8_t *)&hwFloor, sizeof(uint16_t))) {
+                if (sizeof(uint16_t) != arm_lmsk_decoder_read(ptThis, (uint8_t *)&iFloor, sizeof(uint16_t))) {
                     return -1;
                 }
 
-                if (hwFloor <= iY) {
+                if (iFloor <= iY) {
                     wFloorStart += wFloorSize;
-                    this.tFloorContext.hwCurrent = hwFloor;
+                    this.tFloorContext.iCurrent = iFloor;
                     this.tFloorContext.chLastFloorIndex = n;
                 }
 
-                if (hwFloor > iY) {
-                    this.tFloorContext.hwNext = hwFloor;
+                if (iFloor > iY) {
+                    this.tFloorContext.iNext = iFloor;
                     break;
                 }
             }
@@ -330,8 +330,6 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
             (*this.tCFG.IO.fnReportFloorContext)(this.tCFG.IO.pTarget, &this.tFloorContext);
         }
     }
-
-    
 
     /* get to line index */
     if (!arm_lmsk_decoder_seek( ptThis, 

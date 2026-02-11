@@ -41,8 +41,8 @@ extern "C" {
 typedef int32_t q16_t;
 
 typedef struct __arm_lmsk_floor_context_t {
-    uint16_t hwCurrent;
-    uint16_t hwNext;
+    int16_t iCurrent;
+    int16_t iNext;
     uint32_t wFloorStart;
     uint8_t chLastFloorIndex;
 } __arm_lmsk_floor_context_t;

@@ -284,7 +284,7 @@ __arm_lmsk_floor_context_t *__lmsk_loader_search_context( intptr_t pTarget, int1
 {
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
 
-    if (this.tContext.hwCurrent <= iY) {
+    if (this.tContext.iCurrent <= iY) {
         return &this.tContext;
     }
 
@@ -297,7 +297,7 @@ void __lmsk_loader_report_context(  intptr_t pTarget,
 {
     arm_lmsk_loader_t *ptThis = (arm_lmsk_loader_t *)pTarget;
     if (this.bIsNewFrame) {
-        if (this.tContext.hwCurrent != ptContext->hwCurrent) {
+        if (this.tContext.iCurrent != ptContext->iCurrent) {
             this.tContext = *ptContext;
         }
         this.bIsNewFrame = false;

@@ -514,8 +514,18 @@ void arm_2d_helper_film_set_frame(arm_2d_helper_film_t *ptThis, int32_t nIndex);
  * \param[in] ptThis the target film
  * \return uint_fast16_t the current index
  */
+extern
 ARM_NONNULL(1)
 uint_fast16_t arm_2d_helper_film_get_frame_index(arm_2d_helper_film_t *ptThis);
+
+/*!
+ * \brief get the frame count
+ * \param[in] ptThis the target film
+ * \return uint_fast16_t the frame count
+ */
+extern
+ARM_NONNULL(1)
+uint_fast16_t arm_2d_helper_film_get_frame_count(arm_2d_helper_film_t *ptThis);
 /*----------------------------------------------------------------------------*
  * FIFO Helper Service                                                        *
  *----------------------------------------------------------------------------*/
