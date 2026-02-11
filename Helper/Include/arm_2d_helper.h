@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  Public header file for the all helper services
  *
- * $Date:        07. Feb 2026
- * $Revision:    V.2.5.3
+ * $Date:        11. Feb 2026
+ * $Revision:    V.2.5.4
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -552,6 +552,17 @@ void arm_2d_byte_fifo_drop_all( arm_2d_byte_fifo_t *ptThis);
 extern
 ARM_NONNULL(1)
 bool arm_2d_byte_fifo_enqueue(arm_2d_byte_fifo_t *ptThis, uint8_t chChar);
+
+/*!
+ * \brief remove a byte from the queue tail
+ * \param[in] ptThis the target FIFO control block
+ * \param[in] pchChar a buffer to store the byte, NULL means drop a byte
+ * \retval false the FIFO is EMPTY
+ * \retval true operation is successful
+ */
+extern
+ARM_NONNULL(1)
+bool arm_2d_byte_fifo_vomit(arm_2d_byte_fifo_t *ptThis, uint8_t *pchChar);
 
 /*!
  * \brief enter a byte to the FIFO, if the FIFO is full, drop one from the FIFO

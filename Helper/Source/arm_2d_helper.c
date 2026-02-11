@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  The source code for arm-2d helper utilities
  *
- * $Date:        07. Feb 2026
- * $Revision:    V.2.5.3
+ * $Date:        11. Feb 2026
+ * $Revision:    V.2.5.4
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -1023,6 +1023,43 @@ bool arm_2d_byte_fifo_enqueue(arm_2d_byte_fifo_t *ptThis, uint8_t chChar)
             }
             this.tHead.hwDataAvailable++;
             this.tPeek.hwDataAvailable++;
+
+            bResult = true;
+        } while(0);
+    }
+
+    return bResult;
+}
+
+ARM_NONNULL(1)
+bool arm_2d_byte_fifo_vomit(arm_2d_byte_fifo_t *ptThis, uint8_t *pchChar)
+{
+    assert(NULL != ptThis);
+    bool bResult = false;
+
+    if (NULL == this.pchBuffer) {
+        return false;
+    }
+
+    arm_irq_safe {
+        do {
+            if ((this.hwTail == this.tHead.hwPointer) 
+            &&  (this.tHead.hwDataAvailable == 0)) {
+                /* FIFO is EMPTY */
+                break;
+            }
+
+            if (this.hwTail == 0) {
+                this.hwTail = this.hwSize;
+            }
+            this.hwTail--;
+
+            if (NULL != pchChar) {
+                *pchChar = this.pchBuffer[this.hwTail];
+            }
+
+            this.tHead.hwDataAvailable--;
+            this.tPeek = this.tHead;
 
             bResult = true;
         } while(0);
