@@ -338,15 +338,13 @@ void __console_box_force_to_write_console_fifo( console_box_t *ptThis,
                     bMoveToNextLine = true;
                     break;
                 case '\r':
-                #if 0   /* known issue: only use '\r' without '\n' will have letter-overlapping issue */
-                    if (__byte_fifo_vomit(&this.tConsoleFIFO, this.Console.hwCurrentColumn + 1)) {
-                        assert(false);
-                    }
-                #endif
                     this.Console.hwCurrentColumn = 0;   /* move to start of the line */
                     break;
                 case '\b':
                     if (this.Console.hwCurrentColumn) { /* delete one byte */
+                        arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, NULL);   // '\b'
+                        arm_2d_byte_fifo_vomit(&this.tConsoleFIFO, NULL);   // previous char
+                        this.u2RTRefreshMode = REFRESH_MODE_NEW_LINES;
                         this.Console.hwCurrentColumn--;
                     }
                     break;
