@@ -466,7 +466,6 @@ void foldable_panel_on_frame_complete( foldable_panel_t *ptThis)
 
             arm_irq_safe {
                 if (this.bUnfoldRequest) {
-                    this.bUnfoldRequest = false;
                     bUnfoldRequest = true;
                 }
             }
@@ -497,8 +496,7 @@ void foldable_panel_on_frame_complete( foldable_panel_t *ptThis)
 
             bool bFoldRequest = false;
             arm_irq_safe {
-                if (this.bFoldRequest) {
-                    this.bFoldRequest = false;
+                if (!this.bUnfoldRequest) {
                     bFoldRequest = true;
                 }
             }
@@ -539,7 +537,7 @@ void foldable_panel_fold(foldable_panel_t *ptThis)
     assert(NULL != ptThis);
 
     arm_irq_safe {
-        this.bFoldRequest = true;
+        this.bUnfoldRequest = false;
     }
 }
 
