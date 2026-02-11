@@ -161,6 +161,7 @@ static void __on_scene_large_lmsk_frame_start(arm_2d_scene_t *ptScene)
 
     if (arm_2d_helper_is_time_out( this.tFilm.hwPeriodPerFrame , &this.lTimestamp[0])) {
 
+    #if 1
         uint16_t hwIndex =  arm_2d_helper_film_get_frame_index(&this.tFilm);
         uint16_t hwFrameCount = arm_2d_helper_film_get_frame_count(&this.tFilm);
 
@@ -170,7 +171,9 @@ static void __on_scene_large_lmsk_frame_start(arm_2d_scene_t *ptScene)
             hwIndex--;
         }
         arm_2d_helper_film_set_frame(&this.tFilm, hwIndex);
-        //arm_2d_helper_film_next_frame(&this.tFilm);
+    #else
+        arm_2d_helper_film_next_frame(&this.tFilm);
+    #endif
 
         arm_2d_helper_dirty_region_item_suspend_update(
             &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,

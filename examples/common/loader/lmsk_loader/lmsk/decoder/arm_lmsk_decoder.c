@@ -287,18 +287,27 @@ int32_t __arm_lmsk_decoder_get_line_start_postion(  arm_lmsk_decoder_t *ptThis,
             bool bTopDownSearch = false;
 
             if (    (iY < this.tFloorContext.iCurrent)
-               &&   (this.tFloorContext.iCurrent >= 0)
+               //&&   (this.tFloorContext.iCurrent >= 0)
                &&   (iY > (this.tFloorContext.iCurrent - iY))) {
+                bTopDownSearch = true;
+            } else if ( (iY > this.tFloorContext.iNext)
+                     //&& (this.tFloorContext.iCurrent >= 0)
+                     && (iY > (chFloors - iY))) {
                 bTopDownSearch = true;
             }
 
             if (bTopDownSearch) {
                 /* top-down search */
 
-                uint8_t chStartFloorIndex = chFloors - 1;
-                
+                uint8_t chStartFloorIndex = this.tFloorContext.chLastFloorIndex;
                 uint32_t wFloorSize = 1 << (16 - this.tSetting.u2TagSetBits);
-                wFloorStart = (chStartFloorIndex + 1) * wFloorSize;
+                
+                wFloorStart = this.tFloorContext.wFloorStart;
+
+                if (chStartFloorIndex == 0) {
+                    chStartFloorIndex = chFloors - 1;
+                    wFloorStart = (chStartFloorIndex + 1) * wFloorSize;
+                }
 
                 this.tFloorContext.iNext = this.tSetting.iHeight;
 
