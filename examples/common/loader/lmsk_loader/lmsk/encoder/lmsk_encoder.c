@@ -164,6 +164,12 @@ size_t __arm_lmsk_encoder_line_process( arm_lmsk_encoder_t *ptThis,
             assert(NULL != ptNewLine);
 
             *ptNewLine = *ptOutputLine;
+
+            /* avoid double reference */
+            ptNewLine->pchBuffer = (uint8_t *)malloc(ptNewLine->tSize);
+            assert(NULL != ptNewLine->pchBuffer);
+            memcpy(ptNewLine->pchBuffer, ptOutputLine->pchBuffer, ptNewLine->tSize);
+
             ptNewLine->wPosition = this.wPosition;
             
             /* append new line */
@@ -286,36 +292,21 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
 
     int32_t nTotalSize = 0;
 
-    /* write header */
-    do {
-        if (sizeof(this.tHeader) != fwrite(&this.tHeader, 1, sizeof(this.tHeader), ptOut)) {
-            return -1;
-        }
-        nTotalSize += sizeof(this.tHeader);
-    } while(0);
-
-    /* write palette */
-    do {
-        if (sizeof(this.chPalette) != fwrite(&this.chPalette, 1, sizeof(this.chPalette), ptOut)) {
-            return -1;
-        }
-        nTotalSize += sizeof(this.chPalette);
-    } while(0);
-
     /* write floor table and index table  */
     do {
+        uint16_t *phwFloorTable = NULL;
+        if (this.tHeader.tSetting.chFloorCount) {
+            phwFloorTable = (uint16_t *) malloc(this.tHeader.tSetting.chFloorCount * sizeof(uint16_t));
+        }
 
         uint16_t *phwIndexTable = (uint16_t *)malloc(this.tHeader.tSetting.iHeight * sizeof(uint16_t));
         assert(NULL != phwIndexTable);
 
         uint32_t wFloorSize = 1 << (16 - this.tHeader.tSetting.u2TagSetBits);
 
-        printf("[Floor Table: %"PRIu8"]\tFloor Size:%"PRIu32" 0x%08"PRIX32"\r\n", 
-                this.tHeader.tSetting.chFloorCount,
-                wFloorSize, wFloorSize);
-
         uint32_t wFloorLevel = 0;
         int_fast16_t iY = 0;
+        uint_fast8_t chFoorCount = 0;
         for (; iY < this.tHeader.tSetting.iHeight; iY++) {
 
             if ((int32_t)this.tLineIndexTable.pwReferences[iY] - (int32_t)wFloorLevel < 0) {
@@ -333,10 +324,8 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
                 //        wFloorLevel);
             
 
-                if (1 != fwrite(&iY, sizeof(uint16_t), 1, ptOut)) {
-                    free(phwIndexTable);
-                    return -1;
-                }
+                phwIndexTable[chFoorCount++] = iY;
+
                 nTotalSize += sizeof(uint16_t);
             }
 
@@ -347,20 +336,70 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
             //    printf("\tLine %"PRIi16" Offset 0x%04"PRIx16"\r\n", iY, phwIndexTable[iY]);
             //}
         }
-
         //if (iY < 10) {
         //    printf("\r\n\r\n");
         //}
 
+        /* update actual floor count */
+        this.tHeader.tSetting.chFloorCount = chFoorCount;
+
+
+        printf("[Floor Table: %"PRIu8"]\tFloor Size:%"PRIu32" 0x%08"PRIX32"\r\n", 
+                this.tHeader.tSetting.chFloorCount,
+                wFloorSize, wFloorSize);
+
+
+        /* write header */
+        do {
+            if (sizeof(this.tHeader) != fwrite(&this.tHeader, 1, sizeof(this.tHeader), ptOut)) {
+                if (NULL != phwFloorTable) {
+                    free(phwFloorTable);
+                }
+                free(phwIndexTable);
+                return -1;
+            }
+            nTotalSize += sizeof(this.tHeader);
+        } while(0);
+
+        /* write palette */
+        do {
+            if (sizeof(this.chPalette) != fwrite(&this.chPalette, 1, sizeof(this.chPalette), ptOut)) {
+                if (NULL != phwFloorTable) {
+                    free(phwFloorTable);
+                }
+                free(phwIndexTable);
+                return -1;
+            }
+            nTotalSize += sizeof(this.chPalette);
+        } while(0);
+
+        /* write floor Table */
+        if (NULL != phwFloorTable) {
+            if (this.tHeader.tSetting.chFloorCount 
+            !=  fwrite(phwFloorTable, sizeof(uint16_t), this.tHeader.tSetting.chFloorCount, ptOut)) {
+                free(phwFloorTable);
+                free(phwIndexTable);
+                return -1;
+            }
+            nTotalSize += this.tHeader.tSetting.chFloorCount * sizeof(uint16_t);
+        }
+
+
         /* write line index table */
 
         if (this.tHeader.tSetting.iHeight != fwrite(phwIndexTable, sizeof(uint16_t), this.tHeader.tSetting.iHeight, ptOut)) {
+            if (NULL != phwFloorTable) {
+                free(phwFloorTable);
+            }
             free(phwIndexTable);
             return -1;
         }
 
         nTotalSize += this.tHeader.tSetting.iHeight * sizeof(uint16_t);
 
+        if (NULL != phwFloorTable) {
+            free(phwFloorTable);
+        }
         free(phwIndexTable);
     } while(0);
 
