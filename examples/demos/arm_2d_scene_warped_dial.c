@@ -89,18 +89,7 @@
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 
-extern const arm_2d_tile_t c_tileCMSISLogo;
-extern const arm_2d_tile_t c_tileCMSISLogoMask;
-extern const arm_2d_tile_t c_tileCMSISLogoA2Mask;
-extern const arm_2d_tile_t c_tileCMSISLogoA4Mask;
-extern const arm_2d_tile_t c_tileThreeQuarterRingA4Mask;
-extern const arm_2d_tile_t c_tileRingIndicator;
-extern const arm_2d_tile_t c_tileRingIndicatorMask;
-
 extern const arm_2d_tile_t c_tileDashboardRingMask;
-
-extern const arm_2d_tile_t c_tileWhiteDotMiddleMask;
-extern const arm_2d_tile_t c_tileWhiteDotMask;
 
 extern const
 struct {
@@ -139,11 +128,7 @@ static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
     arm_lmsk_loader_on_load(&this.LMSK.tHelper);
 #endif
 
-    spin_zoom_widget_on_load(&this.tPointer);
     ring_indication_on_load(&this.tIndicator);
-
-    this.tPointer.tHelper.SourceReference.ptPoints = s_tReferencePoints;
-    this.tPointer.tHelper.SourceReference.chCount = dimof(s_tReferencePoints);
 
 }
 
@@ -165,7 +150,6 @@ static void __on_scene_warped_dial_depose(arm_2d_scene_t *ptScene)
 #endif
 
     ring_indication_depose(&this.tIndicator);
-    spin_zoom_widget_depose(&this.tPointer);
     /*---------------------- insert your depose code end  --------------------*/
 
     arm_foreach(int64_t,this.lTimestamp, ptItem) {
@@ -208,21 +192,12 @@ static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
 
     do {
 
-    #if 1
         /* generate a new position every 2000 sec */
         if (arm_2d_helper_is_time_out(4000,  &this.lTimestamp[0])) {
             this.lTimestamp[0] = 0;
             srand(arm_2d_helper_get_system_timestamp());
             this.iTargetNumber = rand() % 1000;
         }
-    #else
-        int32_t nResult;
-        /* simulate a full battery charging/discharge cycle */
-        arm_2d_helper_time_cos_slider(0, 1000, 3000, 0, &nResult, &this.lTimestamp[0]);
-
-        this.iTargetNumber = nResult;
-
-    #endif
 
         if (ring_indication_on_frame_start(&this.tIndicator, this.iTargetNumber)) {
             /* finish moving */
@@ -236,17 +211,6 @@ static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
         }
 
         int32_t nCurrentValue = ring_indication_get_current_value(&this.tIndicator);
-        spin_zoom_widget_on_frame_start(&this.tPointer, nCurrentValue, 1.0f);
-
-    #if 0
-        spin_zoom_widget_set_colour(&this.tPointer,
-                                    arm_2d_pixel_from_brga8888( 
-                                            __arm_2d_helper_colour_slider(
-                                                __RGB32(0x00, 0xFF, 0x00),
-                                                __RGB32(0xFF, 0xFF, 0x00),
-                                                1000,
-                                                nCurrentValue)));
-    #endif
 
     } while(0);
 
@@ -265,7 +229,6 @@ static void __on_scene_warped_dial_frame_complete(arm_2d_scene_t *ptScene)
 #endif
 
     ring_indication_on_frame_complete(&this.tIndicator);
-    spin_zoom_widget_on_frame_complete(&this.tPointer);
 }
 
 static void __before_scene_warped_dial_switching_out(arm_2d_scene_t *ptScene)
@@ -273,28 +236,6 @@ static void __before_scene_warped_dial_switching_out(arm_2d_scene_t *ptScene)
     user_scene_warped_dial_t *ptThis = (user_scene_warped_dial_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
-}
-
-static
-RING_INDICATION_USER_DRAW(__user_draw_pointer)
-{
-    ARM_2D_PARAM(ptTile);
-    ARM_2D_PARAM(ptPivot);
-    ARM_2D_PARAM(pTarget);
-    ARM_2D_PARAM(bIsNewFrame);
-    ARM_2D_PARAM(ptRingIndicator);
-
-    spin_zoom_widget_t *ptHelper = (spin_zoom_widget_t *)pTarget;
-
-    assert(NULL != ptHelper);
-#if 0
-    /* draw circle */
-    spin_zoom_widget_show(  ptHelper, 
-                            ptTile, 
-                            NULL, 
-                            ptPivot, 
-                            255);
-#endif
 }
 
 static
@@ -312,23 +253,21 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
         arm_2d_align_centre(__top_canvas, 
                             ring_indication_get_size(&this.tIndicator)) {
 
-    #if 0
         #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
             arm_2d_fill_colour_with_mask_and_opacity(   
                                     ptTile,
                                     &__centre_region,
-                                    &BACKGROUND_RING_MASK, 
+                                    &INDICATION_IMAGE_MASK, 
                                     (__arm_2d_color_t){ GLCD_COLOR_LIGHT_GREY},
                                     64);
         #else
-            arm_2d_fill_colour_with_a4_mask_and_opacity(   
+            arm_2d_fill_colour_with_mask_and_opacity(   
                                     ptTile,
                                     &__centre_region,
-                                    &BACKGROUND_RING_MASK, 
+                                    &INDICATION_IMAGE_MASK, 
                                     (__arm_2d_color_t){ GLCD_COLOR_LIGHT_GREY},
                                     64);
         #endif
-    #endif
 
             ARM_2D_OP_WAIT_ASYNC();
         }
@@ -350,40 +289,44 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
                     "%03d", 
                     (int)ring_indication_get_current_value(&this.tIndicator));
 
-            tTextSize.iHeight += 16;    /* for "km/h */
+            tTextSize.iHeight += 16; 
 
-            arm_2d_align_centre(__top_canvas,  tTextSize) {
+            arm_2d_align_centre_open(__top_canvas,  tTextSize) {
                 
-                arm_2d_layout(__centre_region) {
-                
-                    arm_lcd_text_set_target_framebuffer(ptTile);
-                    /* print speed */
-                    __item_line_vertical(tTextSize.iWidth, tTextSize.iHeight - 16) {
+                __centre_region.tLocation.iX += 40;
 
-                        arm_lcd_text_set_draw_region(&__item_region);
-                        arm_lcd_text_set_colour( GLCD_COLOR_NIXIE_TUBE, GLCD_COLOR_BLACK);
-                        arm_lcd_text_set_opacity(255 - 64);
-
-                        arm_lcd_text_reset_display_region_tracking();
-                        arm_lcd_printf_buffer(0);
-                        arm_2d_helper_dirty_region_update_item(
-                            &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
-                            ptTile,
-                            &__item_region,
-                            arm_lcd_text_get_last_display_region());
-
-                        arm_lcd_text_set_opacity(255);
-                    }
+                __arm_2d_hint_optimize_for_pfb__(__centre_region) {
+                    arm_2d_layout(__centre_region) {
                     
-                    /* print "FPS" */
-                    __item_line_vertical(tTextSize.iWidth,16) {
-                        arm_lcd_text_set_font((const arm_2d_font_t *)&ARM_2D_FONT_6x8);
-                        arm_lcd_text_set_draw_region(&__item_region);
-                        arm_lcd_text_set_colour( GLCD_COLOR_DARK_GREY, GLCD_COLOR_BLACK);
-                        arm_lcd_printf_label(ARM_2D_ALIGN_BOTTOM_CENTRE, "Setting");
-                    }
+                        arm_lcd_text_set_target_framebuffer(ptTile);
+                        /* print value */
+                        __item_line_vertical(tTextSize.iWidth, tTextSize.iHeight - 16) {
 
-                    arm_lcd_text_set_target_framebuffer(NULL);
+                            arm_lcd_text_set_draw_region(&__item_region);
+                            arm_lcd_text_set_colour( GLCD_COLOR_NIXIE_TUBE, GLCD_COLOR_BLACK);
+                            arm_lcd_text_set_opacity(255 - 64);
+
+                            arm_lcd_text_reset_display_region_tracking();
+                            arm_lcd_printf_buffer(0);
+                            arm_2d_helper_dirty_region_update_item(
+                                &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+                                ptTile,
+                                &__item_region,
+                                arm_lcd_text_get_last_display_region());
+
+                            arm_lcd_text_set_opacity(255);
+                        }
+                        
+                        /* print "Setting" */
+                        __item_line_vertical(tTextSize.iWidth,16) {
+                            arm_lcd_text_set_font((const arm_2d_font_t *)&ARM_2D_FONT_6x8);
+                            arm_lcd_text_set_draw_region(&__item_region);
+                            arm_lcd_text_set_colour( GLCD_COLOR_DARK_GREY, GLCD_COLOR_BLACK);
+                            arm_lcd_printf_label(ARM_2D_ALIGN_BOTTOM_CENTRE, "Setting");
+                        }
+
+                        arm_lcd_text_set_target_framebuffer(NULL);
+                    }
                 }
             }
             
@@ -397,9 +340,9 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
         arm_lcd_text_set_colour(GLCD_COLOR_RED, GLCD_COLOR_WHITE);
         arm_lcd_text_location(0,0);
     #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
-        arm_lcd_puts("Scene Ring Indicator with LMSK");
+        arm_lcd_puts("Scene Warped Dial with LMSK");
     #else
-        arm_lcd_puts("Scene Ring Indicator");
+        arm_lcd_puts("Scene Warped Dial");
     #endif
 
     /*-----------------------draw the scene end  -----------------------*/
@@ -494,53 +437,6 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
         arm_lmsk_loader_init(&this.LMSK.tHelper, &tCFG);
     } while(0);
 #endif
-
-    do {
-        int16_t iRadius = (float)(c_tileWhiteDotMiddleMask.tRegion.tSize.iWidth - 2)
-                        - (float)INDICATION_IMAGE_MASK.tRegion.tSize.iWidth / 2.0f;
-
-        spin_zoom_widget_cfg_t tCFG = {
-            .Indicator = c_tIndicatorValueMapping,
-
-            .ptTransformMode = &SPIN_ZOOM_MODE_FILL_COLOUR,
-
-            .Source = {
-                .ptMask = &c_tileWhiteDotMiddleMask,
-                .tCentreFloat = {
-                    .fX = iRadius,
-                    .fY = (float)(c_tileWhiteDotMiddleMask.tRegion.tSize.iHeight - 1) / 2.0f,
-                },
-                .tColourToFill = GLCD_COLOR_NIXIE_TUBE,
-            },
-            .bUseFloatPointInCentre = true,
-
-            .ptScene = (arm_2d_scene_t *)ptThis,
-        };
-        spin_zoom_widget_init(&this.tPointer, &tCFG);
-
-        s_tReferencePoints[0].iX = -30;
-        s_tReferencePoints[0].iY = 0;
-
-        s_tReferencePoints[1].iX = c_tileWhiteDotMiddleMask.tRegion.tSize.iWidth - 1;
-        s_tReferencePoints[1].iY = 0;
-
-        s_tReferencePoints[2].iX = c_tileWhiteDotMiddleMask.tRegion.tSize.iWidth - 1;
-        s_tReferencePoints[2].iY = c_tileWhiteDotMiddleMask.tRegion.tSize.iHeight - 1;
-
-        s_tReferencePoints[3].iX = -30;
-        s_tReferencePoints[3].iY = c_tileWhiteDotMiddleMask.tRegion.tSize.iHeight - 1;
-
-        /*
-         * NOTE: Reference Point
-         *
-         *              0     +-----1
-         *   +------...-+-----+ DOT |
-         * pivot        3     +-----2
-         * 
-         *   |<--- radius --->|
-         */
-
-    } while(0);
     
     /* initialize scan sector of the indicator*/
     do {
@@ -560,8 +456,6 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
                 },
             },
             .Foreground = {
-                //.ptTile = &INDICATION_IMAGE,
-                //.ptMask = &INDICATION_IMAGE_MASK,
                 .tColourToFill = __RGB(0x20, 0x43, 0xa4),
             },
 
@@ -571,15 +465,6 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
                 .fProportion = 0.0300f,
                 .fIntegration = 0.0020f,
                 .nInterval = 10,
-            },
-
-            /* use external dirty region item */
-            //.ptUserDirtyRegionItem = &this.tPointer.tHelper.tItem,
-
-            /* add a user defined draw handler to draw the pointer */
-            .evtUserDraw = {
-                .fnHandler = &__user_draw_pointer,
-                .pTarget = &this.tPointer,
             },
 
             .ptScene = (arm_2d_scene_t *)ptThis,
