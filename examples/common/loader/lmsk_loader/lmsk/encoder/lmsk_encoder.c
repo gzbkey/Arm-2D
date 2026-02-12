@@ -89,7 +89,7 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_init( arm_lmsk_encoder_t *ptThis,
         assert(NULL != this.tOutput.tLineIndexTable.pwReferences);
     } while(0);
 
-    return NULL;
+    return ptThis;
 }
 
 static
@@ -421,7 +421,7 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_depose(arm_lmsk_encoder_t *ptThis)
 static
 void __arm_lmsk_free_output_lines(__arm_lmsk_output_t *ptThis)
 {
-    if (NULL != ptThis) {
+    if (NULL == ptThis) {
         return ;
     }
 

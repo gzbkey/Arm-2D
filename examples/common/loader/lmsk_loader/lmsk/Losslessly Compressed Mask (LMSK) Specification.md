@@ -52,7 +52,7 @@ typedef struct arm_lmsk_header_t {
 
   > [!NOTE]
   >
-  > The **TAG_INDEX**, **TAG_RADIENT** and **Palette** are not affected by `u3AlphaMSBCount`.
+  > The first alpha in each encoded line, **TAG_INDEX**, **TAG_RADIENT** and **Palette** are not affected by `u3AlphaMSBCount`.
 
 - `bRaw`: 
 
@@ -97,7 +97,7 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 | :------------- | :--------: | :-------------- | :----------------------------------------------------------- |
 | `0b0xxx-xx00` | **8 bits** | **INDEX**       | An index for a constant Palette.                             |
 | `0b1000-0000` | **8bits** | **DO** | The start marker of the **DO / WHILE** loop. |
-| `0b1xxx-xx00` | **8bits** | **WHILE** | The end marker of the DO / WHILE loop. `count = bits[6:2]` (6-bit):<br/> repeat iteration count = `count + 1` |
+| `0b1xxx-xx00` | **8bits** | **WHILE** | The end marker of the DO / WHILE loop. `count = bits[6:2]` (5-bit):<br/> repeat iteration count = `count + 1` |
 | `0bxxxx-xx01` | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0–61`: **REPEAT**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
 | `0bxxxx-xx10` | **8 bits** | **DELTA_SMALL** | Small delta.  Two 3bits delta fields in this tag (i.e. `delta0, delta1`), which encode two pixels, here`deltaN = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
 | `0bxxxx-xx11` | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
