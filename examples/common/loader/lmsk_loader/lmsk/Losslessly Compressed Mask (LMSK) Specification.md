@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.2.2)
+# Losslessly Compressed Mask (LMSK) Specification (1.2.3)
 
 
 
@@ -99,7 +99,7 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
 | `0b1000-0000` | **8bits** | **DO** | The start marker of the **DO / WHILE** loop. |
 | `0b1xxx-xx00` | **8bits** | **WHILE** | The end marker of the DO / WHILE loop. `count = bits[6:2]` (6-bit):<br/> repeat iteration count = `count + 1` |
 | `0bxxxx-xx01` | **8 bits** | **REPEAT**      | Run-length control. `count = bits[7:2]` (6-bit):<br>• `0–61`: **REPEAT**, run length = `count + 1`<br>• `62` (0xF9): **GRADIENT_TAG**<br>• `63` (0xFD): **ALPHA_TAG** |
-| `0bxxxx-xx10` | **8 bits** | **DELTA_SMALL** | Small delta.  Two delta encode two pixels, here`delta = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
+| `0bxxxx-xx10` | **8 bits** | **DELTA_SMALL** | Small delta.  Two 3bits delta fields in this tag (i.e. `delta0, delta1`), which encode two pixels, here`deltaN = sign_extend(bits[3:1], 3)`, range **[-4, +3]**. |
 | `0bxxxx-xx11` | **8 bits** | **DELTA_LARGE** | Large delta. `delta = sign_extend(bits[7:2], 6)`, range **[-32, +31]**. |
 
 ##### Special Tags Details
@@ -129,10 +129,6 @@ previous_alpha = to_alpha;
 > [!IMPORTANT]
 >
 > When using a gradient mode, regardless of `u3AlphaMSBCount`, the start and stop alpha values are treated as 8-bit alpha. If the previous pixel is different from the actual alpha, an **ALPHA_TAG** **MUST**  be inserted to set the start alpha. 
-
-> [!IMPORTANT]
->
-> The encoder **MUST** always emit an even number of consecutive **DELTA_SMALL** tags to maintain **8-bit** alignment. If not possible, please choose **DELTA_LARGE** instead. 
 
 
 
