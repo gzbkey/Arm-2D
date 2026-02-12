@@ -193,7 +193,7 @@ static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
     do {
 
         /* generate a new position every 2000 sec */
-        if (arm_2d_helper_is_time_out(4000,  &this.lTimestamp[0])) {
+        if (arm_2d_helper_is_time_out(3000,  &this.lTimestamp[0])) {
             this.lTimestamp[0] = 0;
             srand(arm_2d_helper_get_system_timestamp());
             this.iTargetNumber = rand() % 1000;
@@ -252,6 +252,28 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
 
         arm_2d_align_centre(__top_canvas, 
                             ring_indication_get_size(&this.tIndicator)) {
+
+        #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
+            arm_2d_fill_colour_with_mask_and_opacity(   
+                                    ptTile,
+                                    &__centre_region,
+                                    &INDICATION_IMAGE_MASK, 
+                                    (__arm_2d_color_t){ GLCD_COLOR_LIGHT_GREY},
+                                    64);
+        #else
+            arm_2d_fill_colour_with_mask_and_opacity(   
+                                    ptTile,
+                                    &__centre_region,
+                                    &INDICATION_IMAGE_MASK, 
+                                    (__arm_2d_color_t){ GLCD_COLOR_LIGHT_GREY},
+                                    64);
+        #endif
+
+            ARM_2D_OP_WAIT_ASYNC();
+        }
+
+        arm_2d_align_centre(__top_canvas, 
+                            INDICATION_IMAGE_MASK.tRegion.tSize) {
 
         #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
             arm_2d_fill_colour_with_mask_and_opacity(   
