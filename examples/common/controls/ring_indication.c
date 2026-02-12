@@ -688,7 +688,7 @@ void ring_indication_show(  ring_indication_t *ptThis,
 
                         do {
                             /* update user dirty region item with extra areas */
-                            if (NULL != this.ptUserDirtyRegionItem && bIsNewFrame) {
+                            if (bIsNewFrame) {
 
                                 float fCurrentAngle = spin_zoom_widget_get_actual_angle(
                                                 &this.tSector.use_as__spin_zoom_widget_t);
@@ -701,12 +701,20 @@ void ring_indication_show(  ring_indication_t *ptThis,
                                     if (this.bNeedAddExtraRegion) {
                                         this.bNeedAddExtraRegion = false;
 
-                                        /* clear extra area*/
-                                        arm_2d_helper_dirty_region_item_set_extra_region(
-                                                this.ptUserDirtyRegionItem,
-                                                &__ring_indicator_panel,
-                                                NULL,
-                                                NULL);
+                                        if (NULL != this.ptUserDirtyRegionItem) {
+                                            /* clear extra area*/
+                                            arm_2d_helper_dirty_region_item_set_extra_region(
+                                                    this.ptUserDirtyRegionItem,
+                                                    &__ring_indicator_panel,
+                                                    NULL,
+                                                    NULL);
+                                        } else {
+                                            arm_2d_helper_dirty_region_item_set_extra_region(
+                                                    &this.tSector.use_as__spin_zoom_widget_t.tHelper.tItem,
+                                                    &__ring_indicator_panel,
+                                                    NULL,
+                                                    NULL);
+                                        }
                                     }
                                     break;
                                 }
@@ -801,11 +809,19 @@ void ring_indication_show(  ring_indication_t *ptThis,
 
                                 this.bNeedAddExtraRegion = true;
 
-                                arm_2d_helper_dirty_region_item_set_extra_region(
-                                            this.ptUserDirtyRegionItem,
-                                            &__ring_indicator_panel,
-                                            NULL,
-                                            &tFinalExtraRegion);
+                                if (NULL != this.ptUserDirtyRegionItem) {
+                                    arm_2d_helper_dirty_region_item_set_extra_region(
+                                        this.ptUserDirtyRegionItem,
+                                        &__ring_indicator_panel,
+                                        NULL,
+                                        &tFinalExtraRegion);
+                                } else {
+                                    arm_2d_helper_dirty_region_item_set_extra_region(
+                                        &this.tSector.use_as__spin_zoom_widget_t.tHelper.tItem,
+                                        &__ring_indicator_panel,
+                                        NULL,
+                                        &tFinalExtraRegion);
+                                }
                             }
                         } while(0);
 
