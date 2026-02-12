@@ -263,6 +263,11 @@ void scene_ring_indicator_loader(void)
     arm_2d_scene_ring_indicator_init(&DISP0_ADAPTER);
 }
 
+void scene_warped_dial_loader(void) 
+{
+    arm_2d_scene_warped_dial_init(&DISP0_ADAPTER);
+}
+
 void scene_mask_generation_loader(void) 
 {
     arm_2d_scene_mask_generation_init(&DISP0_ADAPTER);
@@ -449,6 +454,7 @@ static demo_scene_t const c_SceneLoaders[] = {
     { 30000,    scene_music_player_loader, },
     { 15000,    scene_meter_loader, },
     { 15000,    scene_ring_indicator_loader, },
+    { 15000,    scene_warped_dial_loader, },
     { 30000,    scene_watch_face_01_loader, },
     { 30000,    scene_watch_loader, },
     { 20000,    scene_compass_loader, },
@@ -498,8 +504,9 @@ static demo_scene_t const c_SceneLoaders[] = {
 #else    /* debug list */
     {
         .fnLoader = 
+        scene_warped_dial_loader,
         //scene_hollow_out_list_loader,
-        scene_large_lmsk_loader,
+        //scene_large_lmsk_loader,
         //scene_lmsk_loader,
         //scene_zhrgb565_loader
         //scene_transform_inspection_loader,

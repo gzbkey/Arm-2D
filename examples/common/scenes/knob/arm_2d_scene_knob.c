@@ -651,7 +651,7 @@ user_scene_knob_t *__arm_2d_scene_knob_init(   arm_2d_scene_player_t *ptDispAdap
                 .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
         #else
-            .pchLMSKSource = c_lmskRadialLineCover,
+            .pchLMSKSource = c_lmskRadialLineCoverMask,
         #endif
         };
 
