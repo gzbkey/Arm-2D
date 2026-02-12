@@ -17,6 +17,7 @@
  */
 
 /*============================ INCLUDES ======================================*/
+#define __SPIN_ZOOM_WIDGET_INHERIT__
 #define __RING_INDICATION_IMPLEMENT__
 
 #include "./__common.h"
@@ -80,7 +81,10 @@ void ring_indication_init( ring_indication_t *ptThis,
     assert(NULL != ptThis);
     assert(NULL != ptCFG);
     assert(NULL != ptCFG->ptTransformMode);
-    assert(NULL != ptCFG->Foreground.ptTile);
+
+    assert( NULL != ptCFG->Foreground.ptTile 
+        ||  NULL != ptCFG->Foreground.ptMask
+        ||  NULL != ptCFG->Background.ptMask);
 
     memset(ptThis, 0, sizeof(ring_indication_t));
 
@@ -93,6 +97,7 @@ void ring_indication_init( ring_indication_t *ptThis,
             .Source = {
                 .ptMask = ptCFG->QuarterSector.ptMask,
                 .tCentreFloat = ptCFG->QuarterSector.tCentre,
+                .tColourToFill = ptCFG->Foreground.tColourToFill,
             },
             .Extra = {
                 .ptTile = ptCFG->Foreground.ptTile,
@@ -133,12 +138,19 @@ void ring_indication_init( ring_indication_t *ptThis,
     this.Foreground.ptMask = ptCFG->Foreground.ptMask;
     this.Background.ptMask = ptCFG->Background.ptMask;
 
-    int16_t iMaxDiameter = MAX( this.Foreground.ptTile->tRegion.tSize.iWidth,
-                                this.Foreground.ptTile->tRegion.tSize.iHeight);
-    int16_t iRadius = (iMaxDiameter + 1) >> 1;
-    int16_t iSectorMaskRadius = ptCFG->QuarterSector.ptMask->tRegion.tSize.iWidth - 2;
+    if (NULL != this.Foreground.ptTile) {
+        this.iDiameter = MAX( this.Foreground.ptTile->tRegion.tSize.iWidth,
+                                    this.Foreground.ptTile->tRegion.tSize.iHeight);
+    } else if (NULL != this.Foreground.ptMask) {
+        this.iDiameter = MAX( this.Foreground.ptMask->tRegion.tSize.iWidth,
+                            this.Foreground.ptMask->tRegion.tSize.iHeight);
+    } else if (NULL != this.Background.ptMask) {
+        this.iDiameter = MAX( this.Background.ptMask->tRegion.tSize.iWidth,
+                            this.Background.ptMask->tRegion.tSize.iHeight);
+    }
 
-    this.iDiameter = iMaxDiameter;
+    int16_t iRadius = (this.iDiameter + 1) >> 1;
+    int16_t iSectorMaskRadius = ptCFG->QuarterSector.ptMask->tRegion.tSize.iWidth - 2;
 
     this.fSectorScale = ((float)iRadius / (float)iSectorMaskRadius) + 0.05;
 
@@ -159,7 +171,6 @@ ARM_NONNULL(1)
 arm_2d_size_t ring_indication_get_size(ring_indication_t *ptThis)
 {
     assert(NULL != ptThis);
-    assert(NULL != this.Foreground.ptTile);
 
     return (arm_2d_size_t) {
         .iHeight = this.iDiameter,
@@ -263,7 +274,36 @@ void __ring_indication_draw_quadrant(   ring_indication_t *ptThis,
                                     &tTempCanvas,
                                     &tTemp);
 
-    if (NULL != this.Foreground.ptMask) {
+    if (NULL == this.Foreground.ptTile) {
+        __arm_2d_color_t tColour = {
+            this.tSector.use_as__spin_zoom_widget_t.tCFG.Source.tColourToFill
+        };
+
+        if (NULL != this.Foreground.ptMask) {
+            if (NULL != this.Background.ptMask) {
+                arm_2d_fill_colour_with_masks(  
+                                    ptNewTargetTile,
+                                    NULL,
+                                    this.Foreground.ptMask,
+                                    this.Background.ptMask,
+                                    tColour);
+            } else {
+                arm_2d_fill_colour_with_mask(  
+                                    ptNewTargetTile,
+                                    NULL,
+                                    this.Foreground.ptMask,
+                                    tColour);
+            }
+        } else if (NULL != this.Background.ptMask) {
+            arm_2d_fill_colour_with_mask(  
+                                    ptNewTargetTile,
+                                    NULL,
+                                    this.Background.ptMask,
+                                    tColour);
+        } else {
+            arm_2d_fill_colour(ptNewTargetTile, NULL, tColour.tValue);
+        }
+    } else if (NULL != this.Foreground.ptMask) {
         if (NULL != this.Background.ptMask) {
             arm_2d_tile_copy_with_masks(  
                                 this.Foreground.ptTile,
@@ -326,6 +366,18 @@ void ring_indication_show(  ring_indication_t *ptThis,
         ptTile = arm_2d_get_default_frame_buffer();
     }
 
+    arm_2d_size_t tResourceSize;
+    if (NULL != this.Foreground.ptTile) {
+        tResourceSize = this.Foreground.ptTile->tRegion.tSize;
+    } else if (NULL != this.Foreground.ptMask) {
+        tResourceSize = this.Foreground.ptMask->tRegion.tSize;
+    } else if (NULL != this.Background.ptMask) {
+        tResourceSize = this.Background.ptMask->tRegion.tSize;
+    } else {
+        assert(false);
+        return ;
+    }
+
     arm_2d_container(ptTile, __visible_window, ptRegion) {
 
         arm_2d_align_centre_open(__visible_window_canvas, 
@@ -333,7 +385,7 @@ void ring_indication_show(  ring_indication_t *ptThis,
                             this.iDiameter) {
 
             arm_2d_align_top_centre(__centre_region, 
-                                    this.Foreground.ptTile->tRegion.tSize) {
+                                    tResourceSize) {
 
                 arm_2d_container(   &__visible_window, 
                                     __ring_indicator_panel, 

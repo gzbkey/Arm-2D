@@ -86,6 +86,7 @@ typedef struct ring_indication_cfg_t {
     struct {
         const arm_2d_tile_t *ptTile;
         const arm_2d_tile_t *ptMask;
+        COLOUR_INT     tColourToFill;
     } Foreground;
 
     struct {
