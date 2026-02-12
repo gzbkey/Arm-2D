@@ -324,7 +324,7 @@ int arm_lmsk_write_to_file(__arm_lmsk_output_t *ptThis, FILE *ptOut)
                 //        wFloorLevel);
             
 
-                phwIndexTable[chFoorCount++] = iY;
+                phwFloorTable[chFoorCount++] = iY;
 
                 nTotalSize += sizeof(uint16_t);
             }
