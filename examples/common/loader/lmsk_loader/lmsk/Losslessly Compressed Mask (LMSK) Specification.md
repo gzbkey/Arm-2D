@@ -40,7 +40,7 @@ typedef struct arm_lmsk_header_t {
     int16_t iWidth;
     int16_t iHeight;
   
-    uint8_t u3AlphaMSBCount : 3;  /*! MSB alpha bits = u3AlphaBits + 1 */
+    uint8_t u3AlphaMSBCount : 3;  /*! actual MSB alpha bits = u3AlphaMSBCount + 1 */
     uint8_t bRaw          	: 1;  /*! whether the alpha is compressed or not */
     uint8_t u2TagSetBits    : 2;  /*! must be 0x00, reservef for the future */
     uint8_t                 : 2;  /*! must be 0x00, reserved for the future */
@@ -48,11 +48,12 @@ typedef struct arm_lmsk_header_t {
     uint32_t                : 32; /*! reserved */
 } arm_lmsk_header_t;
 ```
-- `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_bits = value + 1).  Unless otherwise specified,  all operations apply only to these significant high bits.
+- `u3AlphaMSBCount`: Significant alpha bits minus 1 (i.e., effective_alpha_msb_count = `u3AlphaMSBCount` + 1).  Unless otherwise specified,  all operations apply only to these significant high bits.
 
   > [!NOTE]
   >
-  > The first alpha in each encoded line, **TAG_INDEX**, **TAG_RADIENT** and **Palette** are not affected by `u3AlphaMSBCount`.
+  > 1. The first alpha in each encoded line, **TAG_INDEX**, **TAG_RADIENT** and **Palette** are not affected by `u3AlphaMSBCount`.
+  > 2. When `(u3AlphaMSBCount + 1) < 8` , the remaining LSB are **don't-care**, and the decoder can have its own policy to determine the LSB value.  
 
 - `bRaw`: 
 
@@ -71,7 +72,9 @@ The compressed file has a 32-slot palette right after the header. The encoder ca
 
 ### Floor Table and Line Index
 
-The **Floor Table** defines base address partitions for line data. For a line number `L` where `L >= floor_table[i]` (and `L < floor_table[i+1]` if exists), the base address for that line is `(i + 1) * (1 << (16 - u2TagSetBits))` bytes or `(i + 1) * 65536` for the current version.
+The **Floor Table** defines base address partitions for line data. Only when `chFloorCount` is non-zero, the Floor Table will be present. 
+
+When Floor Table is present, for a line number `L` where `L >= floor_table[i]` (and `L < floor_table[i+1]` if exists), the base address for that line is `(i + 1) * (1 << (16 - u2TagSetBits))` bytes or `(i + 1) * 65536` for the current version.
 
 The **Line Index Table** stores **byte offsets** for each line relative to its **base address**. The address in the **data section** is calculated as:
 ```
