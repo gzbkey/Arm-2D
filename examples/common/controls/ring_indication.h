@@ -132,6 +132,8 @@ ARM_PRIVATE(
     uint16_t u2StartFrom                            : 2;
     uint16_t bNeedAddExtraRegion                    : 1;
 
+    arm_2d_size_t tAssetSize;
+
     arm_2d_scene_t *ptScene;
     arm_2d_helper_dirty_region_item_t *ptUserDirtyRegionItem;
 

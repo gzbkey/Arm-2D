@@ -139,15 +139,14 @@ void ring_indication_init( ring_indication_t *ptThis,
     this.Background.ptMask = ptCFG->Background.ptMask;
 
     if (NULL != this.Foreground.ptTile) {
-        this.iDiameter = MAX( this.Foreground.ptTile->tRegion.tSize.iWidth,
-                                    this.Foreground.ptTile->tRegion.tSize.iHeight);
+        this.tAssetSize = this.Foreground.ptTile->tRegion.tSize;
     } else if (NULL != this.Foreground.ptMask) {
-        this.iDiameter = MAX( this.Foreground.ptMask->tRegion.tSize.iWidth,
-                            this.Foreground.ptMask->tRegion.tSize.iHeight);
+        this.tAssetSize = this.Foreground.ptMask->tRegion.tSize;
     } else if (NULL != this.Background.ptMask) {
-        this.iDiameter = MAX( this.Background.ptMask->tRegion.tSize.iWidth,
-                            this.Background.ptMask->tRegion.tSize.iHeight);
+        this.tAssetSize = this.Background.ptMask->tRegion.tSize;
     }
+
+    this.iDiameter = MAX( this.tAssetSize.iWidth, this.tAssetSize.iHeight);
 
     int16_t iRadius = (this.iDiameter + 1) >> 1;
     int16_t iSectorMaskRadius = ptCFG->QuarterSector.ptMask->tRegion.tSize.iWidth - 2;
@@ -366,18 +365,6 @@ void ring_indication_show(  ring_indication_t *ptThis,
         ptTile = arm_2d_get_default_frame_buffer();
     }
 
-    arm_2d_size_t tResourceSize;
-    if (NULL != this.Foreground.ptTile) {
-        tResourceSize = this.Foreground.ptTile->tRegion.tSize;
-    } else if (NULL != this.Foreground.ptMask) {
-        tResourceSize = this.Foreground.ptMask->tRegion.tSize;
-    } else if (NULL != this.Background.ptMask) {
-        tResourceSize = this.Background.ptMask->tRegion.tSize;
-    } else {
-        assert(false);
-        return ;
-    }
-
     arm_2d_container(ptTile, __visible_window, ptRegion) {
 
         arm_2d_align_centre_open(__visible_window_canvas, 
@@ -385,7 +372,7 @@ void ring_indication_show(  ring_indication_t *ptThis,
                             this.iDiameter) {
 
             arm_2d_align_top_centre(__centre_region, 
-                                    tResourceSize) {
+                                    this.tAssetSize) {
 
                 arm_2d_container(   &__visible_window, 
                                     __ring_indicator_panel, 
@@ -759,8 +746,8 @@ void ring_indication_show(  ring_indication_t *ptThis,
                                         
                                         tExtraRegion.tLocation = c_chQuadrantEndPointTable[0][chLastQuadrant & 0x03];
 
-                                        tExtraRegion.tLocation.iX *= iRadius;
-                                        tExtraRegion.tLocation.iY *= iRadius;
+                                        tExtraRegion.tLocation.iX *= this.tAssetSize.iWidth >> 1; 
+                                        tExtraRegion.tLocation.iY *= this.tAssetSize.iHeight >> 1;
 
                                         tExtraRegion.tLocation.iX += (int16_t)tPivot.fX;
                                         tExtraRegion.tLocation.iY += (int16_t)tPivot.fY;
@@ -788,8 +775,8 @@ void ring_indication_show(  ring_indication_t *ptThis,
                                         
                                         tExtraRegion.tLocation = c_chQuadrantEndPointTable[1][chLastQuadrant & 0x03];
 
-                                        tExtraRegion.tLocation.iX *= iRadius;
-                                        tExtraRegion.tLocation.iY *= iRadius;
+                                        tExtraRegion.tLocation.iX *= this.tAssetSize.iWidth >> 1; 
+                                        tExtraRegion.tLocation.iY *= this.tAssetSize.iHeight >> 1;
 
                                         tExtraRegion.tLocation.iX += (int16_t)tPivot.fX;
                                         tExtraRegion.tLocation.iY += (int16_t)tPivot.fY;
