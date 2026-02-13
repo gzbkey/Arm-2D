@@ -147,6 +147,10 @@ static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
     this.Tracking.tDirtyRegionItem.tRegionPatch.tLocation.iY = -12;
 
     ring_indication_on_load(&this.tIndicator);
+
+    this.bDirtyRegionOptimizationStatus 
+        = arm_2d_helper_pfb_disable_dirty_region_optimization(
+            &ptScene->ptPlayer->use_as__arm_2d_helper_pfb_t);
 }
 
 static void __after_scene_warped_dial_switching(arm_2d_scene_t *ptScene)
@@ -317,6 +321,12 @@ static void __before_scene_warped_dial_switching_out(arm_2d_scene_t *ptScene)
     user_scene_warped_dial_t *ptThis = (user_scene_warped_dial_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+    if (this.bDirtyRegionOptimizationStatus) {
+        arm_2d_helper_pfb_enable_dirty_region_optimization(
+            &ptScene->ptPlayer->use_as__arm_2d_helper_pfb_t,
+            NULL, 
+            0);
+    }
 }
 
 static

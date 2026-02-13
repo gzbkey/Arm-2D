@@ -100,6 +100,7 @@ ARM_PRIVATE(
     /* place your private member here, following two are examples */
     int64_t lTimestamp[1];
     bool bUserAllocated;
+    bool bDirtyRegionOptimizationStatus;
     uint16_t iTargetNumber;
 
 #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK

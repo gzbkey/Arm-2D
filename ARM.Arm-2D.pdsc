@@ -952,11 +952,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Warped Dial" Cversion="1.2.0" condition="Arm-2D-Demos">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Warped Dial" Cversion="1.2.1" condition="Arm-2D-Demos">
           <description>An example for a ring indicator with a complex foreground. </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_warped_dial.c" attr="config" version="1.2.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_warped_dial.h" attr="config" version="1.2.0" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_warped_dial.c" attr="config" version="1.2.1" />
+            <file category="header"      name="examples/demos/arm_2d_scene_warped_dial.h" attr="config" version="1.2.1" />
 
             <file category="sourceC"     name="examples/demos/dashboard_ring_small.c"     attr="config" version="1.0.0" />
           </files>
