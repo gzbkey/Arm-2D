@@ -242,7 +242,7 @@ extern "C" {
  * \brief a helper class to represent a GIF-like resource
  */
 typedef struct arm_2d_helper_film_t {
-    implement(arm_2d_tile_t);                                                   /*!< derived from arm_2d_tile_t */
+    implement_ex(arm_2d_tile_t, tTile);                                                   /*!< derived from arm_2d_tile_t */
     uint16_t hwColumn;                                                          /*!< number of frames per row in a sprite tile */
     uint16_t hwFrameNum;                                                        /*!< the total number of frames */
     uint16_t hwPeriodPerFrame;                                                  /*!< the period per frame (optional, used as a reference) */
