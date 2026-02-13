@@ -136,8 +136,6 @@ static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
     arm_lmsk_loader_on_load(&this.LMSK.tHelper);
 #endif
 
-    ring_indication_on_load(&this.tIndicator);
-
     arm_2d_helper_dirty_region_add_items(   
                                 &this.use_as__arm_2d_scene_t.tDirtyRegionHelper,
                                 &this.Tracking.tDirtyRegionItem, 
@@ -148,6 +146,7 @@ static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
     this.Tracking.tDirtyRegionItem.tRegionPatch.tLocation.iX = -12;
     this.Tracking.tDirtyRegionItem.tRegionPatch.tLocation.iY = -12;
 
+    ring_indication_on_load(&this.tIndicator);
 }
 
 static void __after_scene_warped_dial_switching(arm_2d_scene_t *ptScene)
