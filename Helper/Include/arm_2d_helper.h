@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  Public header file for the all helper services
  *
- * $Date:        11. Feb 2026
- * $Revision:    V.2.5.4
+ * $Date:        13. Feb 2026
+ * $Revision:    V.2.5.5
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -229,7 +229,7 @@ extern "C" {
                     __frame_count,                                              \
                     __period)                                                   \
     {                                                                           \
-        .use_as__arm_2d_tile_t =                                                \
+        .tTile =                                                                \
             impl_child_tile((__sprites_tile), 0, 0, (__width), (__height)),     \
         .hwColumn = (__column),                                                 \
         .hwFrameNum = (__frame_count),                                          \
@@ -242,7 +242,10 @@ extern "C" {
  * \brief a helper class to represent a GIF-like resource
  */
 typedef struct arm_2d_helper_film_t {
-    implement_ex(arm_2d_tile_t, tTile);                                                   /*!< derived from arm_2d_tile_t */
+    union {
+        arm_2d_tile_t tTile;
+        implement(arm_2d_tile_t);                                               /*!< derived from arm_2d_tile_t */
+    };
     uint16_t hwColumn;                                                          /*!< number of frames per row in a sprite tile */
     uint16_t hwFrameNum;                                                        /*!< the total number of frames */
     uint16_t hwPeriodPerFrame;                                                  /*!< the period per frame (optional, used as a reference) */

@@ -85,8 +85,9 @@
 #define RADAR_FILM_MASK         this.LMSK[RADAR_LMSK_FILM_MASK].tLoader.tTile
 
 #if ARM_2D_DEMO_RADAR_SHOW_ANIMATION  
-#   define FILM_TOP_LEFT        this.tFilm[FILM_IDX_TOP_LEFT].tHelper.use_as__arm_2d_tile_t
-#   define FILM_BOTTOM_RIGHT    this.tFilm[FILM_IDX_BOTTOM_RIGHT].tHelper.use_as__arm_2d_tile_t
+#   define FILM_TOP_LEFT        this.tFilm[FILM_IDX_TOP_LEFT].tHelper.tTile
+#   define FILM_BOTTOM_RIGHT    this.tFilm[FILM_IDX_BOTTOM_RIGHT].tHelper.tTile
+
 #endif
 
 #ifndef ARM_2D_DEMO_RADAR_DEBUG

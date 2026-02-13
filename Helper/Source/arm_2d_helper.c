@@ -21,8 +21,8 @@
  * Title:        #include "arm_2d_helper.h"
  * Description:  The source code for arm-2d helper utilities
  *
- * $Date:        11. Feb 2026
- * $Revision:    V.2.5.4
+ * $Date:        13. Feb 2026
+ * $Revision:    V.2.5.5
  *
  * Target Processor:  Cortex-M cores
  * -------------------------------------------------------------------- */
@@ -730,7 +730,7 @@ bool arm_2d_helper_film_next_frame(arm_2d_helper_film_t *ptThis)
     bool bReachTheEnd = false;
     assert(NULL != ptThis);
     
-    arm_2d_tile_t *ptFrame = &this.use_as__arm_2d_tile_t;
+    arm_2d_tile_t *ptFrame = &this.tTile;
                 
     ptFrame->tRegion.tLocation.iX += ptFrame->tRegion.tSize.iWidth;
     if (ptFrame->tRegion.tLocation.iX >= ptFrame->tRegion.tSize.iWidth * this.hwColumn) {
@@ -752,7 +752,7 @@ ARM_NONNULL(1)
 void arm_2d_helper_film_reset(arm_2d_helper_film_t *ptThis)
 {
     assert(NULL != ptThis);
-    arm_2d_tile_t *ptFrame = &this.use_as__arm_2d_tile_t;
+    arm_2d_tile_t *ptFrame = &this.tTile;
 
     ptFrame->tRegion.tLocation.iX = 0;
     ptFrame->tRegion.tLocation.iY = 0;
@@ -764,7 +764,7 @@ ARM_NONNULL(1)
 void arm_2d_helper_film_set_frame(arm_2d_helper_film_t *ptThis, int32_t nIndex)
 {
     assert(NULL != ptThis);
-    arm_2d_tile_t *ptFrame = &this.use_as__arm_2d_tile_t;
+    arm_2d_tile_t *ptFrame = &this.tTile;
 
     nIndex %= this.hwFrameNum;
     if (nIndex < 0) {

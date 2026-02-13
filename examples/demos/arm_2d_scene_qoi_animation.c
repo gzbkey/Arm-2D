@@ -121,7 +121,7 @@ static void __on_scene_qoi_animation_depose(arm_2d_scene_t *ptScene)
 }
 
 /*----------------------------------------------------------------------------*
- * Scene qoi_animation                                                                    *
+ * Scene qoi_animation                                                        *
  *----------------------------------------------------------------------------*/
 
 static void __on_scene_qoi_animation_background_start(arm_2d_scene_t *ptScene)
@@ -193,7 +193,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_qoi_animation_handler)
         
 
         arm_2d_align_centre(__top_canvas, 
-                            this.tFilm.use_as__arm_2d_tile_t.tRegion.tSize ) {
+                            this.tFilm.tTile.tRegion.tSize ) {
             
             arm_2d_tile_copy_only(  (const arm_2d_tile_t *)&this.tFilm,
                                     ptTile,
