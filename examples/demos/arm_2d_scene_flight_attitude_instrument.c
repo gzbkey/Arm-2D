@@ -588,7 +588,7 @@ user_scene_flight_attitude_instrument_t *__arm_2d_scene_flight_attitude_instrume
                 .pTarget = (uintptr_t)&this.LMSK.LoaderIO.tROM,
             },
         #else
-            .pchLMSKSource = c_lmskDashboardRing,
+            .pchLMSKSource = c_lmskRoundedSquare,
         #endif
         };
 
