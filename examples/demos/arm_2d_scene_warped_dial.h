@@ -112,6 +112,10 @@ ARM_PRIVATE(
         } LoaderIO;
     } LMSK;
 #endif
+    struct {
+        arm_2d_location_t tBox;
+        arm_2d_helper_dirty_region_item_t tDirtyRegionItem;
+    } Tracking;
 
     ring_indication_t tIndicator;
 )

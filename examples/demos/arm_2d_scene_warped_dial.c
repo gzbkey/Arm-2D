@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #if defined(__clang__)
 #   pragma clang diagnostic push
@@ -82,10 +83,14 @@
 #   define INDICATION_IMAGE_MASK    c_tileDashboardRingMask
 #endif
 
-/*============================ MACROFIED FUNCTIONS ===========================*/
 #undef this
 #define this (*ptThis)
 
+#define WARPED_CIRCLE_WIDTH     (INDICATION_IMAGE_MASK.tRegion.tSize.iWidth - 20)        
+#define WARPED_CIRCLE_R         ((INDICATION_IMAGE_MASK.tRegion.tSize.iHeight - 10) >> 1)
+#define WARPED_CIRCLE_THETA     ARM_2D_ANGLE(90.0f - 8.0f)
+
+/*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 
@@ -117,6 +122,9 @@ __spin_zoom_widget_indication_t c_tIndicatorValueMapping = {
         .fAngle = 0.0f,  //! 0.0f means very smooth, 1.0f looks like mech watches, 6.0f looks like wall clocks
     },
 };
+
+static float s_fCosTheta;
+static float s_fSinTheta;
 /*============================ IMPLEMENTATION ================================*/
 
 static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
@@ -129,6 +137,16 @@ static void __on_scene_warped_dial_load(arm_2d_scene_t *ptScene)
 #endif
 
     ring_indication_on_load(&this.tIndicator);
+
+    arm_2d_helper_dirty_region_add_items(   
+                                &this.use_as__arm_2d_scene_t.tDirtyRegionHelper,
+                                &this.Tracking.tDirtyRegionItem, 
+                                1);
+
+    this.Tracking.tDirtyRegionItem.tRegionPatch.tSize.iWidth = 24;
+    this.Tracking.tDirtyRegionItem.tRegionPatch.tSize.iHeight = 24;
+    this.Tracking.tDirtyRegionItem.tRegionPatch.tLocation.iX = -12;
+    this.Tracking.tDirtyRegionItem.tRegionPatch.tLocation.iY = -12;
 
 }
 
@@ -148,6 +166,11 @@ static void __on_scene_warped_dial_depose(arm_2d_scene_t *ptScene)
 #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
     arm_lmsk_loader_depose(&this.LMSK.tHelper);
 #endif
+
+    arm_2d_helper_dirty_region_remove_items(   
+                                &this.use_as__arm_2d_scene_t.tDirtyRegionHelper,
+                                &this.Tracking.tDirtyRegionItem, 
+                                1);
 
     ring_indication_depose(&this.tIndicator);
     /*---------------------- insert your depose code end  --------------------*/
@@ -180,6 +203,49 @@ static void __on_scene_warped_dial_background_complete(arm_2d_scene_t *ptScene)
 }
 #endif
 
+static
+arm_2d_point_float_t __get_rotated_ellipse_point(   user_scene_warped_dial_t *ptThis, 
+                                                    float_t fPhi)
+{
+
+#undef A
+#undef B
+#undef A_SQUARED
+#undef B_SQUARED
+#undef AB
+
+#define A           (WARPED_CIRCLE_R)
+#define B           (WARPED_CIRCLE_WIDTH / 2.0f)
+#define AB          (A * B)
+
+    arm_2d_point_float_t tPoint;
+    float fCosDelta, fSinDelta;
+    float fDenominator;
+    float fRho;
+    float fTemp;
+    
+    float_t fCosPhi, fSinPhi;
+    fCosPhi = arm_cos_f32(fPhi);
+    fSinPhi = arm_sin_f32(fPhi);
+    
+    /* cos(phi-theta) = cos(phi)cos(theta) + sin(phi)sin(theta) */
+    /* sin(phi-theta) = sin(phi)cos(theta) - cos(phi)sin(theta) */
+    
+    fCosDelta = fCosPhi * s_fCosTheta + fSinPhi * s_fSinTheta;
+    fSinDelta = fSinPhi * s_fCosTheta - fCosPhi * s_fSinTheta;
+    
+    float fBCos = B * fCosDelta;
+    float fASin = A * fSinDelta;
+    fTemp = (fBCos * fBCos) + (fASin * fASin);
+    arm_sqrt_f32(fTemp, &fDenominator);
+    fRho = AB / fDenominator;
+    
+    tPoint.fX = fRho * fCosPhi;
+    tPoint.fY = fRho * fSinPhi;
+    
+    return tPoint;
+}
+
 
 static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
 {
@@ -193,7 +259,7 @@ static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
     do {
 
         /* generate a new position every 2000 sec */
-        if (arm_2d_helper_is_time_out(3000,  &this.lTimestamp[0])) {
+        if (arm_2d_helper_is_time_out(4000,  &this.lTimestamp[0])) {
             this.lTimestamp[0] = 0;
             srand(arm_2d_helper_get_system_timestamp());
             this.iTargetNumber = rand() % 1000;
@@ -204,15 +270,31 @@ static void __on_scene_warped_dial_frame_start(arm_2d_scene_t *ptScene)
             arm_2d_helper_dirty_region_item_suspend_update(
                 &ptScene->tDirtyRegionHelper.tDefaultItem,
                 true);
+            
+            arm_2d_helper_dirty_region_item_suspend_update(
+                                                &this.Tracking.tDirtyRegionItem,
+                                                true);
         } else {
             arm_2d_helper_dirty_region_item_suspend_update(
                 &ptScene->tDirtyRegionHelper.tDefaultItem,
                 false);
+
+            arm_2d_helper_dirty_region_item_suspend_update(
+                                                &this.Tracking.tDirtyRegionItem,
+                                                false);
         }
 
-        int32_t nCurrentValue = ring_indication_get_current_value(&this.tIndicator);
+        arm_2d_point_float_t tPosition = 
+            __get_rotated_ellipse_point(ptThis,
+                ARM_2D_ANGLE(
+                    spin_zoom_widget_get_actual_angle(
+                        &this.tIndicator.tSector.use_as__spin_zoom_widget_t)));
+
+        this.Tracking.tBox.iX = tPosition.fX;
+        this.Tracking.tBox.iY = tPosition.fY;
 
     } while(0);
+
 
 #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
     arm_lmsk_loader_on_frame_start(&this.LMSK.tHelper);
@@ -292,6 +374,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
         #endif
 
             ARM_2D_OP_WAIT_ASYNC();
+
         }
 
         ring_indication_show(   &this.tIndicator, 
@@ -299,6 +382,16 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_warped_dial_handler)
                                 NULL,
                                 bIsNewFrame);
 
+        arm_2d_align_centre_open(__top_canvas, 1, 1) {
+            arm_2d_region_t tTrackingBox = __centre_region;
+            tTrackingBox.tLocation.iX += this.Tracking.tBox.iX;
+            tTrackingBox.tLocation.iY += this.Tracking.tBox.iY;
+
+            arm_2d_helper_dirty_region_update_item( &this.Tracking.tDirtyRegionItem, 
+                                                    ptTile,
+                                                    NULL,
+                                                    &tTrackingBox);
+        }
 
         arm_lcd_text_force_char_use_same_width(true);
         /* draw 3 digits numbers */
@@ -489,6 +582,8 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
                 .nInterval = 10,
             },
 
+            .ptUserDirtyRegionItem = &this.Tracking.tDirtyRegionItem,
+
             .ptScene = (arm_2d_scene_t *)ptThis,
         };
 
@@ -496,6 +591,9 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
 
         this.iTargetNumber = 0;
     } while(0);
+
+    s_fCosTheta = arm_cos_f32(WARPED_CIRCLE_THETA);  // 或者用 arm_cos_f32 预先计算
+    s_fSinTheta = arm_sin_f32(WARPED_CIRCLE_THETA);  // 同上
 
     /* ------------   initialize members of user_scene_warped_dial_t end   ---------------*/
 

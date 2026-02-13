@@ -113,8 +113,9 @@ enum {
 
 
 struct ring_indication_t {
+    implement_ex(meter_pointer_t, tSector);
 ARM_PRIVATE(
-    meter_pointer_t tSector;
+    
     struct {
         const arm_2d_tile_t *ptTile;
         const arm_2d_tile_t *ptMask;
