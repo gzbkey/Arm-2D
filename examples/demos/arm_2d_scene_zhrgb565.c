@@ -309,7 +309,7 @@ user_scene_zhrgb565_t *__arm_2d_scene_zhrgb565_init(   arm_2d_scene_player_t *pt
 
     /* ------------   initialize members of user_scene_zhrgb565_t begin ---------------*/
 
-    /* initialize Zjpgdec loader */
+    /* initialize zhRGB565 loader */
     do {
         extern const uint16_t c_zhrgbDogeDance[51166];
 
