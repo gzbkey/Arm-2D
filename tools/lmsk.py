@@ -504,6 +504,8 @@ def main():
                         help="Disable gradient detection algorithm. (Repeat>62 still uses GRADIENT tag like C encoder.)")
     parser.add_argument("--gradient-tolerant", type=int, default=1, choices=[0, 1, 2, 3],
                         help="Gradient tolerant (0~3). Default: 1.")
+    parser.add_argument("--alpha-bits", type=int, default=8, choices=[1, 2, 3, 4, 5, 6, 7, 8],
+                        help="Alpha Bits (1~8). Default: 8.")
     args = parser.parse_args()
 
     in_path = Path(args.image)
@@ -517,7 +519,7 @@ def main():
     mask, w, h, has_alpha = load_mask_from_image(in_path)
 
     # For your current requirements, keep alpha_bits=8 (true lossless for 8-bit alpha/grayscale)
-    alpha_bits = 8
+    alpha_bits = args.alpha_bits
 
     blob = encode_lmsk(mask,
                        width=w,
