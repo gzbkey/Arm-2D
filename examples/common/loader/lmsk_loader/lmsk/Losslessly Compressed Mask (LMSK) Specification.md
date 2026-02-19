@@ -124,10 +124,13 @@ The data stream (a.k.a **data section**) is organised by scanlines. Each line be
   Followed by **3 bytes**: `uint8_t to_alpha`, `int16_t count`.  Linearly interpolates from current alpha to target alpha using **Q15.16 fixed-point** arithmetic over `count + 1` pixels:
 
 ```c
-q16_step = ((to_alpha - previous_alpha) << 16) / (count + 1);
-for (i = 0; i < count; i++)
-    out[i] = current + ((q16_step * i) >> 16);
-out[count] = to_alpha;  /* Force endpoint alignment */
+steps = count + 1;
+q16_step = ((to_alpha - previous_alpha) << 16) / steps;
+
+for (i = 1; i < steps; i++)
+    out[i-1] = prev + ((q16_step * i) >> 16);
+
+out[steps-1] = to_alpha;
 previous_alpha = to_alpha;
 ```
 
