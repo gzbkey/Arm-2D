@@ -1,4 +1,4 @@
-# Losslessly Compressed Mask (LMSK) Specification (1.2.4)
+# Losslessly Compressed Mask (LMSK) Specification (1.2.5)
 
 
 
@@ -33,8 +33,8 @@
 typedef struct arm_lmsk_header_t {
     uint8_t chName[5];					 /*! {'L','M','S','K',0} Losslessly compressed MaSK */
     struct {
-        uint8_t u4Major : 4;
         uint8_t u4Minor : 4;
+        uint8_t u4Major : 4;
     } Version;
   
     int16_t iWidth;
