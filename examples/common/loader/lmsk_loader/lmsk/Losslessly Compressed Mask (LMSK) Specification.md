@@ -22,6 +22,10 @@
 [End Mark: 4 bytes]
 ```
 
+#### Limitations
+
+* The image width and height should **NOT** exceed 32767. 
+
 
 
 ## 2 Data Structures
