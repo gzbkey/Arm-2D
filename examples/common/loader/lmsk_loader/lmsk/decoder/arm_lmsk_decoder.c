@@ -225,12 +225,12 @@ int arm_lmsk_decoder_init(  arm_lmsk_decoder_t *ptThis,
             return -1;
         }
 
+        this.tSetting = tHeader.tSetting;
+
         /* unsupported in this version */
         if (this.tSetting.u2TagSetBits > 0) {
             return -1;
         }
-
-        this.tSetting = tHeader.tSetting;
 
         if (sizeof(this.chPalette) 
         !=  arm_lmsk_decoder_read(ptThis, this.chPalette, sizeof(this.chPalette))) {
