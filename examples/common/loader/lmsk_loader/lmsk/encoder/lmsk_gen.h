@@ -17,6 +17,8 @@
  */
 
 /*============================ INCLUDES ======================================*/
+#if defined(__ENCODER_COMPILATION__)
+
 #ifndef __LMSK_GEN_H__
 #   define __LMSK_GEN_H__
 
@@ -673,6 +675,8 @@ static inline uint8_t __arm_2d_gray8_pack(__arm_2d_color_fast_rgb_t * ptRGB)
 
 #ifdef   __cplusplus
 }
+#endif
+
 #endif
 
 #endif

@@ -17,6 +17,9 @@
  */
 
 /*============================ INCLUDES ======================================*/
+
+#if defined(__ENCODER_COMPILATION__)
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -517,6 +520,8 @@ int main(int argc, char* argv[])
 
 #if defined(__clang__)
 #   pragma clang diagnostic pop
+#endif
+
 #endif
 
 

@@ -17,6 +17,8 @@
  */
 
 /*============================ INCLUDES ======================================*/
+#if defined(__ENCODER_COMPILATION__)
+
 #ifndef __LMSK_ENCODER_H__
 #define __LMSK_ENCODER_H__   1
 
@@ -125,6 +127,8 @@ arm_lmsk_encoder_t * arm_lmsk_encoder_depose(arm_lmsk_encoder_t *ptThis);
 
 #ifdef   __cplusplus
 }
+#endif
+
 #endif
 
 #endif

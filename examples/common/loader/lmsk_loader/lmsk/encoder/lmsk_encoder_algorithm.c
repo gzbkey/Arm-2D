@@ -17,6 +17,8 @@
  */
 
 /*============================ INCLUDES ======================================*/
+#if defined(__ENCODER_COMPILATION__)
+
 #include "lmsk_encoder.h"
 
 #include <string.h>
@@ -787,6 +789,8 @@ label_exit:
 
 #ifdef   __cplusplus
 }
+#endif
+
 #endif
 
 

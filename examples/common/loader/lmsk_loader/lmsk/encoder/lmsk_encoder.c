@@ -17,6 +17,8 @@
  */
 
 /*============================ INCLUDES ======================================*/
+#if defined(__ENCODER_COMPILATION__)
+
 #include "lmsk_encoder.h"
 
 #include <string.h>
@@ -522,4 +524,5 @@ uint32_t crc32_calculate(const void *pData, size_t nLength)
 }
 #endif
 
+#endif
 

@@ -7,6 +7,7 @@ CC_INC  := .
 CC_DEF  := ARM_SECTION\(x\)=
 CC_DEF  += __va_list=va_list
 CC_DEF  += _RTE_=1
+CC_DEF  += __ENCODER_COMPILATION__
 
 #======================================================================================================================#
 ifeq ($(OS),Windows_NT)
