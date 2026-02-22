@@ -25,7 +25,7 @@ Today, for IoT endpoint devices, white goods, handheld devices and wearables, Ar
 - **Arm-2D is NOT designed as a GUI.**
   - No content creation, complex shape drawing or Scalable Vector Graphics (SVG) support
 - **Arm-2D is used as a facto GUI in the community**
-  - It is used as an optimal (and sometimes the only) solution for resource-constrained platforms, given its nature and the rich toolbox. 
+  - Given its high performance, low memory footprint nature and rich toolbox, it is used as an optimal (and sometimes the only) solution for resource-constrained platforms, 
 
 - **Provide conveniences for Arm eco-partners to create value through differentiation.**
   - Provide default implementations of commonly used 2.5D operations and enable 3rd parties to accelerate application-specific algorithms.
