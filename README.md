@@ -28,7 +28,7 @@ Today, for IoT endpoint devices, white goods, handheld devices and wearables, Ar
   - It is used as an optimal (and sometimes the only) solution for resource-constrained platforms, given its nature and the rich toolbox. 
 
 - **Provide conveniences for Arm eco-partners to create value through differentiation.**
-  - Provide default implementations of commonly used 2.5D operations and enable 3rd parties to accelerate application-specific algorithms.**
+  - Provide default implementations of commonly used 2.5D operations and enable 3rd parties to accelerate application-specific algorithms.
 
 **Focus and Objectives:**
 
