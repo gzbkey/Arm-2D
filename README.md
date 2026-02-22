@@ -26,7 +26,8 @@ Today, for IoT endpoint devices, white goods, handheld devices and wearables, Ar
   - No content creation, complex shape drawing or Scalable Vector Graphics (SVG) support
 - **Arm-2D is used as a facto GUI in the community**
   - Given its high performance, low memory footprint nature and rich toolbox, it is used as an optimal (and sometimes the only) solution for resource-constrained platforms, 
-
+  - **With the same performance and efficiency as the built-in APIs**, Arm-2D enables customers to add their own shape-drawing algorithms and load customised image formats easily using a generic loader (or its derived classes).
+  
 - **Provide conveniences for Arm eco-partners to create value through differentiation.**
   - Provide default implementations of commonly used 2.5D operations and enable 3rd parties to accelerate application-specific algorithms.
 
