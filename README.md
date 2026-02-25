@@ -404,7 +404,7 @@ There is no public 2D image processing benchmark available for microcontrollers.
 
 Arm-2D aims to bridge the gap between **low-cost, resource-constrained devices** and **high-performance, feature-rich embedded IoT edge devices** by providing **a unified and user-friendly programming model**. Our goal is to facilitate the seamless and easy migration of GUI applications across Cortex-M, Cortex-R, and Cortex-A platforms. We hope that Arm-2D will inspire more initiatives and engineering practices in this field.
 
-Your thoughts and feedback are invaluable to us. If you can spend some time trying out the library, please feel free to share your insights. It would be helpful to cover the following perspectives:
+Your thoughts and feedback are important to us. If you can spend some time trying out the library, please feel free to share your insights. It would be helpful to cover the following perspectives:
 
 - The industrial segments where you plan to introduce a GUI using Cortex processors.
 - The resources of your platform, such as the size of the RAM, ROM, system frequency, and average power consumption.
