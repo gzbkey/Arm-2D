@@ -36,7 +36,7 @@ Today, for IoT endpoint devices, white goods, handheld devices and wearables, Ar
 - **Help industry partners with technology adoption**
   - Guidance for the integration of Arm-2D into graphic stacks
 - **Optimisation for ultra-small memory footprint**
-  - Enable existing Cortex-M processors to use a modernised GUI with minimal or no additional cost.
+  - Enable Deep Embedded microcontrollers to use modernised GUIs.
   - Helping customers to cost-down
 
 ## Key Messages for You
