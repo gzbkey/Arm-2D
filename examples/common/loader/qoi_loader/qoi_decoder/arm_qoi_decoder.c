@@ -276,7 +276,7 @@ arm_2d_err_t arm_qoi_dec_resume_context(arm_qoi_dec_t *ptThis,
 
 
 #if __ARM_QOI_USE_LOADER_IO__ && ARM_QOI_IO_BUFF_SIZE > 0
-    if (this.ptWorking->hwSize > 0) {
+    if (this.ptWorking->hwSize > 0 && this.ptWorking->hwTail > 0) {
         /* refill the buffer */
         if (this.ptWorking->hwTail
          >  this.tCFG.IO.fnRead(this.tCFG.pTarget, 
