@@ -408,7 +408,7 @@ arm_2d_size_t zhRGB565_get_image_size(arm_generic_loader_t *ptLoader)
     return tSize;
 }
 
-#if (__ARM_2D_ZHRGB565_USE_LOADER_IO__ == 0)
+#if 1 //(__ARM_2D_ZHRGB565_USE_LOADER_IO__ == 0)
 // x0,y0:(x0,y0) top-left coordinates of the selected area in the image
 // width，height：dimensions of the region to extract from the image
 // src：compressed data
@@ -608,7 +608,7 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 }
 #endif
 
-#if __ARM_2D_ZHRGB565_USE_LOADER_IO__
+#if 0 //__ARM_2D_ZHRGB565_USE_LOADER_IO__
 
 /**
  * @brief Manage cache read
