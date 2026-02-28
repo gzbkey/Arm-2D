@@ -311,7 +311,7 @@ user_scene_zhrgb565_t *__arm_2d_scene_zhrgb565_init(   arm_2d_scene_player_t *pt
 
     /* initialize zhRGB565 loader */
     do {
-        extern const uint16_t c_zhrgbDogeDance[51166];
+        extern const uint16_t c_zhrgbDogeDance[51167];;
 
     #if __ARM_2D_ZHRGB565_USE_LOADER_IO__
         
