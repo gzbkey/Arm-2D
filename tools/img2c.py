@@ -40,7 +40,7 @@ if script_dir not in sys.path:
 
 # Import zhRGB565 compression modules
 try:
-    from zhRGB565 import (
+    from __img2c_zhRGB565 import (
         encode_rgb565_rle_only,
         generate_c_array as generate_rle_c_array,
         encode_rgb565_rle_diff,
@@ -305,7 +305,7 @@ tail="""
 
 def main(argv):
 
-    parser = argparse.ArgumentParser(description='image to C array converter (v1.4.0)')
+    parser = argparse.ArgumentParser(description='image to C array converter (v2.0.0)')
 
     parser.add_argument('-i', nargs='?', type = str,  required=False, help="Input file (png, bmp, etc..)")
     parser.add_argument('-o', nargs='?', type = str,  required=False, help="output C file containing RGB56/RGB888/Gray8 and alpha values arrays")
