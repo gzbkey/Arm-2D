@@ -100,16 +100,18 @@ void zhRGB565_decompress_baseversion(uint16_t x0, uint16_t y0, uint16_t width, u
     {
         /************************* Process upgrade table *************************/
         if(sjb_length != 0){        // upgrade table present
+            line_pos_base = 0;
             for(i=0; i<sjb_length; i++){
-                if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i))
-                {
-                    line_pos_base = 0;
-                }
-                else
+                if(pic_line >= GET_RGB565_ENCODER_SJB_DATA(src, i))
                 {
                     line_pos_base = 65536*(i+1);
                     if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
                         break;
+                }
+                else
+                {
+                    line_pos_base = 0;
+                    break;
                 }
             }
         }
@@ -268,13 +270,11 @@ void zhRGB565_decompress_baseversion(uint16_t x0, uint16_t y0, uint16_t width, u
 __STATIC_FORCEINLINE
 void zhRGB565_read_u16_array_from_loader(uintptr_t ptLoader,
                                          uint8_t *phwBuffer,
-                                         size_t tSize)
+                                         uint32_t Count)
 {
-    if (tSize) {
-        arm_generic_loader_io_read( (arm_generic_loader_t *)ptLoader,
-                                    (uint8_t *)phwBuffer,
-                                    tSize * sizeof(uint16_t));
-    }
+    arm_generic_loader_io_read( (arm_generic_loader_t *)ptLoader,
+                                (uint8_t *)phwBuffer,
+                                Count * sizeof(uint16_t));
 }
 
 __STATIC_FORCEINLINE
@@ -283,7 +283,7 @@ void zhRGB565_read_u16_array_from_loader_with_offset(uintptr_t ptLoader, uintptr
     arm_generic_loader_io_seek( (arm_generic_loader_t *)ptLoader,
                                 nOffset * sizeof(uint16_t),
                                 SEEK_SET);
-    zhRGB565_read_u16_array_from_loader(ptLoader, (uint8_t *)phwBuffer, Count);
+     zhRGB565_read_u16_array_from_loader(ptLoader, (uint8_t *)phwBuffer, Count);
 }
 
 /* Get image data */
@@ -431,7 +431,6 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     COLOUR_INT *buf_base;
     buf_base = (COLOUR_INT *)buf;
     
-    uint16_t g_sjb_cur = 0;
     uint16_t ref_color, len, pixl_len;
     
     // Boundary check
@@ -443,16 +442,18 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     {
         /************************* Process upgrade table *************************/
         if(sjb_length != 0){  // upgrade table present
+            line_pos_base = 0;
             for(uint16_t i=0; i<sjb_length; i++){
-                if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i))
+                if(pic_line >= GET_RGB565_ENCODER_SJB_DATA(src, i))
                 {
-                    line_pos_base = 0;
+                    line_pos_base += 65536;
+                    if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
+                        break;
                 }
                 else
                 {
-                    line_pos_base = 65536*(i+1);
-                    if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
-                        break;
+                    line_pos_base = 0;
+                    break;
                 }
             }
         }
@@ -610,49 +611,28 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 
 #if __ARM_2D_ZHRGB565_USE_LOADER_IO__
 
-/**
- * @brief Manage cache read
- */
-static inline void manage_flash_cache(
-    uint16_t *pic_col,
-    uint16_t *pic_col_cc,
-    uint16_t *cache_cnt,
-    uint32_t *line_addr,
-    uint16_t *compressed_num,
-    uint16_t *cache,
-    uint16_t cache_size,
-    const uint16_t *src)
-{
-    if (*cache_cnt > 0)
-    {
-        (*cache_cnt)--;
-        if (*cache_cnt == 0)
-        {
-            *pic_col_cc = *pic_col + 1;
-            *line_addr += cache_size;
-            if (*compressed_num <= cache_size)
-            {
-                GET_RGB565_ENCODER_DATA(cache, src, *line_addr, *compressed_num);
-                *cache_cnt = 0;
-                *compressed_num = 0;
-            }
-            else
-            {
-                GET_RGB565_ENCODER_DATA(cache, src, *line_addr, cache_size);
-                *compressed_num -= cache_size;
-                *cache_cnt = cache_size;
-            }
-        }
-    }
-}
+#ifndef __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__
+#   define __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__     32
+#endif
 
-// At least 40 pixel cache
-#define     zhRGB565_cache_MAX        (40)    
+#if __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__ < 6
+#   undef __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__
+#   define __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__ 6
+#endif
 
-// Read cache version
+#define FLUSH_RGB565_CACHE(cache, idx, src, addr)    \
+    do { \
+        if ((idx) == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__) {    \
+            (addr) += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__; \
+            GET_RGB565_ENCODER_DATA((cache), (src), (addr), __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__); \
+            (idx) = 0; \
+        } \
+    } while(0)
+
 void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, const uint16_t *src, COLOUR_INT *buf, int16_t iTargetStride)
 {
-    uint16_t cache_u16[zhRGB565_cache_MAX];
+    uint16_t cache_index;
+    uint16_t cache_u16[__ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__];
     GET_RGB565_ENCODER_DATA(cache_u16, src, 0, 6);
 
     uint16_t pic_width = cache_u16[0];
@@ -671,9 +651,6 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 
     uint16_t ref_color, len, pixl_len;
 
-    uint16_t compressed_num;        // Calculate how much compressed data this line has
-    uint16_t cache_cnt = 0, pic_col_cc = 0;
-
     // Boundary check
     if (x0 >= pic_width || y0 >= pic_height) return;
     if (x0 + width > pic_width) width = pic_width - x0;
@@ -681,84 +658,78 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 
     for(pic_line=y0; pic_line<(y0+height); pic_line++)
     {
-        /************************* Processing the Level-up table *************************/
         if(sjb_length != 0)
         {
-            if (sjb_length <= zhRGB565_cache_MAX)
+            line_pos_base = 0;
+            if (sjb_length <= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
             {
                 GET_RGB565_ENCODER_DATA(cache_u16, src, 6, sjb_length);
                 for(uint16_t i=0; i<sjb_length; i++)
                 {
-                    if(pic_line < cache_u16[i])
+                    if(pic_line >= cache_u16[i])
                     {
-                        line_pos_base = 0;
+                        line_pos_base += 65536;
+                        if ((i + 1) != sjb_length)
+                        {
+                            if(pic_line < cache_u16[i+1])
+                                break;
+                        }
                     }
                     else
-                    {
-                        line_pos_base = 65536*(i+1);
-                        if(pic_line < cache_u16[i+1])
-                            break;
-                    }
-                }
-            }
-            else 
-            {
-                uint32_t sjb_addr;
-                uint16_t sjb_length_tmp = sjb_length;
-                uint16_t pos_tmp = 0;
-                uint16_t cache_valid;
-
-                // First read the first cache full
-                cache_valid = (sjb_length_tmp > zhRGB565_cache_MAX)?(zhRGB565_cache_MAX) : sjb_length_tmp;
-                GET_RGB565_ENCODER_DATA(cache_u16, src, 6, cache_valid);
-                sjb_length_tmp -= cache_valid;
-                sjb_addr = (6 + cache_valid);
-
-                for(uint16_t i = 0; i < sjb_length; i++)
-                {
-                    uint16_t local_idx = i - pos_tmp;
-
-                    if (local_idx >= cache_valid)
-                    {
-                        pos_tmp += cache_valid;
-                        local_idx = i - pos_tmp;
-
-                        cache_valid = (sjb_length_tmp > zhRGB565_cache_MAX)? (zhRGB565_cache_MAX):(sjb_length_tmp);
-                        GET_RGB565_ENCODER_DATA(cache_u16, src, sjb_addr, cache_valid);
-                        sjb_length_tmp -= cache_valid;
-                        sjb_addr += (cache_valid);
-                    }
-
-                    if(pic_line < cache_u16[local_idx])
                     {
                         line_pos_base = 0;
                         break;
                     }
-                    else
+                }
+            }
+            else
+            {
+                uint32_t sjb_addr = 6;
+                uint16_t sjb_length_tmp = sjb_length;
+                cache_index = 0;
+                GET_RGB565_ENCODER_DATA(cache_u16, src, 6, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
+                for(uint16_t i=0; i<sjb_length; i++)
+                {
+                    sjb_length_tmp--;
+                    uint16_t sjb_val_tmp = cache_u16[cache_index++];
+                    if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
                     {
-                        line_pos_base = 65536UL * (i + 1);
+                        sjb_addr += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__;
 
-                        if (i + 1 < sjb_length)
+                        if (sjb_length_tmp >= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
                         {
-                            uint16_t next_local = (i + 1) - pos_tmp;
-                            uint16_t next_val;
-
-                            if (next_local < cache_valid)
-                            {
-                                next_val = cache_u16[next_local];
-                            }
-                            else
-                            {
-                                GET_RGB565_ENCODER_DATA(&next_val, src, sjb_addr, 1);
-                            }
-
-                            if(pic_line < next_val)
-                                break;
+                            GET_RGB565_ENCODER_DATA(cache_u16, src, sjb_addr, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
                         }
                         else
                         {
-                            break;
+                            GET_RGB565_ENCODER_DATA(cache_u16, src, sjb_addr, sjb_length_tmp);
                         }
+                        cache_index = 0;
+                    }
+//                    if(pic_line < sjb_val_tmp)
+//                    {
+//                        line_pos_base = 0;
+//                        break;
+//                    }
+//                    else
+//                    {
+//                        line_pos_base += 65536;
+//                        sjb_val_tmp = cache_u16[cache_index];
+//                        if(pic_line < sjb_val_tmp)
+//                            break;
+//                    }
+
+                    if(pic_line >= sjb_val_tmp)
+                    {
+                        line_pos_base += 65536;
+                        sjb_val_tmp = cache_u16[cache_index];
+                        if(pic_line < sjb_val_tmp)
+                            break;
+                    }
+                    else
+                    {
+                        line_pos_base = 0;
+                        break;
                     }
                 }
             }
@@ -767,48 +738,39 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
         uint32_t tmpAddr = row_offset_addr_start + pic_line;
         GET_RGB565_ENCODER_DATA(cache_u16, src, tmpAddr, 2);
 
-        // Calculate how much compressed data the current line has
-        compressed_num = cache_u16[1] - cache_u16[0];
-        // Compute the first address of the compressed data of the current line
+        uint16_t compressed_num = cache_u16[1] - cache_u16[0];
         line_addr = encoder_addr + cache_u16[0] + line_pos_base;
 
-        if (compressed_num <= zhRGB565_cache_MAX)        // Compressed data size is less than or equal to the cache size, read all out
+        if (compressed_num <= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
         {
             GET_RGB565_ENCODER_DATA(cache_u16, src, line_addr, compressed_num);
-            cache_cnt = 0;
-            compressed_num = 0;
         }
         else
         {
-            GET_RGB565_ENCODER_DATA(cache_u16, src, line_addr, zhRGB565_cache_MAX);
-            compressed_num -= zhRGB565_cache_MAX;
-            cache_cnt = zhRGB565_cache_MAX;
+            GET_RGB565_ENCODER_DATA(cache_u16, src, line_addr, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
         }
 
-        pic_col_cc = 0;
+        cache_index = 0;
         x00 = 0;
-        real_width = width;        // Actual picture width
+        real_width = width;
         for(pic_col = 0; pic_col<pic_width; pic_col++)
         {
-            uint16_t EncodeData = cache_u16[pic_col - pic_col_cc];
+            uint16_t EncodeData = cache_u16[cache_index++];
             uint16_t tmpdata = EncodeData & 0xff80;
+            FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-            manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
-
-            /********************************* RLE decoder  **********************************/
             if(tmpdata == ecoder_rle_Flag)
             {
-                pic_col++;        // point to the reference color
-                ref_color = cache_u16[pic_col - pic_col_cc];
-                manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
+                ref_color = cache_u16[cache_index++];
+                FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                if (EncodeData == ecoder_rle_Flag)        // Long code
+                if (EncodeData == ecoder_rle_Flag)
                 {
-                    pic_col++;        // point to length data
-                    pixl_len = cache_u16[pic_col - pic_col_cc];
-                    manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
+                    pixl_len = cache_u16[cache_index++];
+                    FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
+
                 }
-                else    // Short code
+                else
                 {
                     pixl_len = EncodeData & 0x007f;
                 }
@@ -837,19 +799,14 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                 {
                     zhRGB565_RLE_decoder(ref_color, real_width, buf);
                     buf += real_width;
+
                     buf_base += iTargetStride;
                     buf = buf_base;
                     break;
                 }
             }
-            /********************************* Difference decoding  **********************************/
             else if(tmpdata == ecoder_diff_Flag)
             {
-                line_addr -= cache_cnt;
-                cache_cnt = 1;
-                manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
-                compressed_num += zhRGB565_cache_MAX;
-
                 len = EncodeData & 0x007f;
                 pixl_len = len*2 + 1;
 
@@ -861,27 +818,40 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                     if (x00 + pixl_len < x0)
                     {
                         x00 += pixl_len;
-                        pic_col += len + 1;
-                        cache_cnt -= (len + 1);
+                        for (uint16_t ii = (len + 1); ii > 0; ii--)
+                        {
+                            cache_index++;
+                            if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__) 
+                            {
+                                cache_index = 0; 
+                                line_addr += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__;
+                                if (ii > __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__) 
+                                {
+                                    continue;
+                                }
+                                GET_RGB565_ENCODER_DATA(cache_u16, src, line_addr, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
+                            }
+                        }
                         continue;
                     }
-                    else
+                    else 
                     {
-                        real_pixl_len = x00 + pixl_len - x0;
+                        real_pixl_len = x00 + pixl_len - x0; 
                         x00 = x0 + real_pixl_len;
                         skip_cnt = pixl_len - real_pixl_len;
                     }
                 }
 
                 uint16_t pix1, pix2, encdata;
-                pic_col++;
-                ref_color = cache_u16[pic_col - pic_col_cc];
-                manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
 
-                if(skip_cnt == 0){
+                ref_color = cache_u16[cache_index++];
+                FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
+
+                if(skip_cnt == 0) { 
                     *buf++ = ref_color;
                     real_width--;
-                    if(real_width == 0){
+
+                    if(real_width == 0){ 
                         buf_base += iTargetStride;
                         buf = buf_base;
                         break;
@@ -892,22 +862,23 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 
                 for(uint16_t i=0; i<len; i++)
                 {
-                    pic_col++;
-                    encdata = cache_u16[pic_col - pic_col_cc];
-                    manage_flash_cache(&pic_col,&pic_col_cc,&cache_cnt,&line_addr,&compressed_num, cache_u16, zhRGB565_cache_MAX, src);
+                    encdata = cache_u16[cache_index++];
+                    FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                    zhRGB565_DIFF_decoder(ref_color, encdata, &pix1, &pix2);
-                    if(skip_cnt == 0){
-                        *buf++ = pix1;
+                    zhRGB565_DIFF_decoder(ref_color, encdata, &pix1, &pix2); 
+                    if(skip_cnt == 0){ 
+                        *buf++ = pix1; 
                         real_width--;
-                        if(real_width == 0){ break; }
+
+                        if(real_width == 0){ break; } 
                     }
                     else
                         skip_cnt--;
 
-                    if(skip_cnt == 0){
-                        *buf++ = pix2;
+                    if(skip_cnt == 0){ 
+                        *buf++ = pix2; 
                         real_width--;
+
                         if(real_width == 0){ break; }
                     }
                     else
