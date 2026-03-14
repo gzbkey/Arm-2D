@@ -84,9 +84,8 @@ void zhRGB565_decompress_baseversion(uint16_t x0, uint16_t y0, uint16_t width, u
     uint32_t sjb_length = GET_RGB565_ENCODER_SJB_LENGHT(src);               // upgrade table length
     uint32_t encoder_addr = GET_RGB565_ENCODER_DATA_ADDR(src);              // Starting coordinates of encoded data
     
-    uint16_t pic_line, pic_col, i;
-    uint32_t line_pos_base = 0;
-    uint32_t real_width;
+    uint16_t pic_line, pic_col;
+    uint32_t line_pos_base = 0, real_width;
     uint32_t x00, line_addr;
     
     uint16_t ref_color, len, pixl_len;
@@ -99,21 +98,39 @@ void zhRGB565_decompress_baseversion(uint16_t x0, uint16_t y0, uint16_t width, u
     for(pic_line=y0; pic_line<(y0+height); pic_line++)
     {
         /************************* Process upgrade table *************************/
-        if(sjb_length != 0){        // upgrade table present
-            line_pos_base = 0;
-            for(i=0; i<sjb_length; i++){
-                if(pic_line >= GET_RGB565_ENCODER_SJB_DATA(src, i))
+        if(sjb_length != 0)    // Upgrade table exists
+        {
+            // Linear search method affects performance when decoding ultra-large images
+//            line_pos_base = 0;
+//            for(uint16_t i=0; i<sjb_length; i++){
+//                if(pic_line >= GET_RGB565_ENCODER_SJB_DATA(src, i))
+//                {
+//                    line_pos_base += 65536;
+//                    if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
+//                        break;
+//                }
+//                else
+//                {
+//                    line_pos_base = 0;
+//                    break;
+//                }
+//            }
+            
+            //  Binary search algorithm
+            uint16_t low = 0, high = sjb_length;
+            while (low < high)
+            {
+                uint16_t mid = (low + high)>>1;
+                if (pic_line < GET_RGB565_ENCODER_SJB_DATA(src, mid))
                 {
-                    line_pos_base = 65536*(i+1);
-                    if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
-                        break;
+                    high = mid;
                 }
                 else
                 {
-                    line_pos_base = 0;
-                    break;
+                    low = mid + 1;
                 }
             }
+            line_pos_base = (uint32_t)low << 16;
         }
         /********************** upgrade table processing complete **********************/
         
@@ -422,7 +439,7 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     // delta encoding produces far fewer data, so it never uses the “long-code” variant.
     uint16_t ecoder_diff_Flag = ecoder_rle_Flag |0x0080;
     uint32_t sjb_length = GET_RGB565_ENCODER_SJB_LENGHT(src);           // upgrade table length
-    uint32_t encoder_addr = GET_RGB565_ENCODER_DATA_ADDR(src);            // Starting coordinates of encoded data
+    uint32_t encoder_addr = GET_RGB565_ENCODER_DATA_ADDR(src);          // Starting coordinates of encoded data
     
     uint16_t pic_line, pic_col;
     uint32_t line_pos_base = 0, real_width;
@@ -441,21 +458,23 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     for(pic_line=y0; pic_line<(y0+height); pic_line++)
     {
         /************************* Process upgrade table *************************/
-        if(sjb_length != 0){  // upgrade table present
-            line_pos_base = 0;
-            for(uint16_t i=0; i<sjb_length; i++){
-                if(pic_line >= GET_RGB565_ENCODER_SJB_DATA(src, i))
+        if(sjb_length != 0)    // Upgrade table exists
+        {
+            // Binary search algorithm
+            uint16_t low = 0, high = sjb_length;
+            while (low < high)
+            {
+                uint16_t mid = (low + high)>>1;
+                if (pic_line < GET_RGB565_ENCODER_SJB_DATA(src, mid))
                 {
-                    line_pos_base += 65536;
-                    if(pic_line < GET_RGB565_ENCODER_SJB_DATA(src, i+1))
-                        break;
+                    high = mid;
                 }
                 else
                 {
-                    line_pos_base = 0;
-                    break;
+                    low = mid + 1;
                 }
             }
+            line_pos_base = (uint32_t)low << 16;
         }
         /********************** upgrade table processing complete **********************/
 
@@ -629,11 +648,111 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
         } \
     } while(0)
 
+//  Static cache variables used to accelerate upgrade table calculation
+static uint32_t last_ext_addr = 0xFFFFFFFF;
+static uint16_t last_pic_line = 0xFFFF;
+static int16_t  last_sjb_index = -1;
+static uint32_t last_line_pos_base = 0;
+
+/*   Fast upgrade table calculation algorithm with caching */
+uint32_t calc_line_pos_base_flash(uint16_t pic_line, uint32_t ExtAddr, uint16_t sjb_length)
+{
+    uint16_t low, high, mid;
+    uint16_t mid_val;
+    uint16_t next_sjb_val;
+    uint32_t line_pos_base;
+    uint8_t cache_valid;
+    
+    // Detect whether the image resource has been changed.
+    if (ExtAddr != last_ext_addr) {
+        last_ext_addr = ExtAddr;
+        last_pic_line = 0xFFFF;
+        last_sjb_index = -1;      // Invalid
+        last_line_pos_base = 0;
+        cache_valid = 0;
+    } else {
+        cache_valid = (last_pic_line != 0xFFFF) && (last_sjb_index >= -1);
+    }
+    
+    // Fast path 1: Same row as last time, return the previous upgrade value directly
+    if (cache_valid && pic_line == last_pic_line) {
+        return last_line_pos_base;
+    }
+    
+    // Fast path 2: Next row
+    if (cache_valid && pic_line == last_pic_line + 1) {
+        if (last_sjb_index == -1) {
+            GET_RGB565_ENCODER_DATA(&next_sjb_val, ExtAddr, 6, 1);  // read sjb[0]
+            if (pic_line >= next_sjb_val) {
+                last_sjb_index = 0;
+            }
+        }
+        else if (last_sjb_index + 1 < sjb_length) {
+            GET_RGB565_ENCODER_DATA(&next_sjb_val, ExtAddr, 6 + last_sjb_index + 1, 1);
+            if (pic_line >= next_sjb_val) {
+                last_sjb_index++;
+            }
+        }
+        
+        last_pic_line = pic_line;
+        last_line_pos_base = ((uint32_t)(last_sjb_index + 1)) << 16;
+        return last_line_pos_base;
+    }
+    
+    // Fast path 2: Previous row
+    if (cache_valid && pic_line == last_pic_line - 1 && last_pic_line != 0) {
+        if (last_sjb_index == -1) {
+            // Already at the beginning, keep -1.
+        }
+        else if (last_sjb_index == 0) {
+            GET_RGB565_ENCODER_DATA(&mid_val, ExtAddr, 6, 1);  // read sjb[0]
+            if (pic_line < mid_val) {
+                last_sjb_index = -1;
+            }
+        }
+        else {
+            // 检查是否退到上一个区间
+            GET_RGB565_ENCODER_DATA(&mid_val, ExtAddr, 6 + last_sjb_index, 1);
+            if (pic_line < mid_val) {
+                last_sjb_index--;
+            }
+        }
+        
+        last_pic_line = pic_line;
+        last_line_pos_base = ((uint32_t)(last_sjb_index + 1)) << 16;
+        return last_line_pos_base;
+    }
+    
+    // Slow path: Binary search, only entered during first decode or when switching decoding resources
+    low = 0;
+    high = sjb_length;
+    
+    while (low < high) {
+        mid = (low + high) >> 1;
+        GET_RGB565_ENCODER_DATA(&mid_val, ExtAddr, 6 + mid, 1);
+        
+        if (pic_line < mid_val) {
+            high = mid;
+        } else {
+            low = mid + 1;
+        }
+    }
+    
+    last_sjb_index = (int16_t)low - 1;
+    line_pos_base = ((uint32_t)(last_sjb_index + 1)) << 16;
+    
+    last_pic_line = pic_line;
+    last_line_pos_base = line_pos_base;
+    
+    return line_pos_base;
+}
+    
+// External Flash data read version
 void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, const uint16_t *src, COLOUR_INT *buf, int16_t iTargetStride)
 {
     uint16_t cache_index;
     uint16_t cache_u16[__ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__];
-    GET_RGB565_ENCODER_DATA(cache_u16, src, 0, 6);
+    GET_RGB565_ENCODER_DATA(cache_u16, src, 0, 6);            // read image info
 
     uint16_t pic_width = cache_u16[0];
     uint16_t pic_height = cache_u16[1];
@@ -656,90 +775,84 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     if (x0 + width > pic_width) width = pic_width - x0;
     if (y0 + height > pic_height) height = pic_height - y0;
 
-    for(pic_line=y0; pic_line<(y0+height); pic_line++)
+    for(pic_line=y0; pic_line<(y0+height); pic_line++)        //  Line-by-line decoding
     {
-        if(sjb_length != 0)
+        /************************* Process upgrade table *************************/
+        if(sjb_length != 0)        // Upgrade table exists
         {
-            line_pos_base = 0;
-            if (sjb_length <= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
+            if (sjb_length <= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)        //   Upgrade table length is smaller than cache length.
             {
-                GET_RGB565_ENCODER_DATA(cache_u16, src, 6, sjb_length);
-                for(uint16_t i=0; i<sjb_length; i++)
+                //  Binary search algorithm
+                uint16_t low = 0, high = sjb_length;
+                GET_RGB565_ENCODER_DATA(cache_u16, src, 6, sjb_length);        //  Read the entire Upgrade table data.
+                while (low < high)
                 {
-                    if(pic_line >= cache_u16[i])
+                    uint16_t mid = (low + high)>>1;
+                    if (pic_line < cache_u16[mid])
                     {
-                        line_pos_base += 65536;
-                        if ((i + 1) != sjb_length)
-                        {
-                            if(pic_line < cache_u16[i+1])
-                                break;
-                        }
+                        high = mid;
                     }
-                    else
+                    else 
                     {
-                        line_pos_base = 0;
-                        break;
+                        low = mid + 1;
                     }
                 }
+                line_pos_base = (uint32_t)low << 16;
             }
-            else
+            else    // Upgrade table length is greater than cache length.
             {
-                uint32_t sjb_addr = 6;
-                uint16_t sjb_length_tmp = sjb_length;
-                cache_index = 0;
-                GET_RGB565_ENCODER_DATA(cache_u16, src, 6, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
-                for(uint16_t i=0; i<sjb_length; i++)
-                {
-                    sjb_length_tmp--;
-                    uint16_t sjb_val_tmp = cache_u16[cache_index++];
-                    if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
-                    {
-                        sjb_addr += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__;
+                // Linear search method: when the lookup table has many elements, decoding data towards the end will impact performance.
+//                uint32_t sjb_addr = 6;
+//                uint16_t sjb_length_tmp = sjb_length;
+//                cache_index = 0;
+//                GET_RGB565_ENCODER_DATA(cache_u16, ExtAddr, 6, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
+//                for(uint32_t i=0; i<sjb_length; i++)
+//                {
+//                    sjb_length_tmp--;
+//                    uint16_t sjb_val_tmp = cache_u16[cache_index++];
+//                    if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
+//                    {
+//                        sjb_addr += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__;
 
-                        if (sjb_length_tmp >= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
-                        {
-                            GET_RGB565_ENCODER_DATA(cache_u16, src, sjb_addr, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
-                        }
-                        else
-                        {
-                            GET_RGB565_ENCODER_DATA(cache_u16, src, sjb_addr, sjb_length_tmp);
-                        }
-                        cache_index = 0;
-                    }
-//                    if(pic_line < sjb_val_tmp)
-//                    {
-//                        line_pos_base = 0;
-//                        break;
+//                        if (sjb_length_tmp >= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
+//                        {
+//                            GET_RGB565_ENCODER_DATA(cache_u16, ExtAddr, sjb_addr, __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__);
+//                        }
+//                        else
+//                        {
+//                            GET_RGB565_ENCODER_DATA(cache_u16, ExtAddr, sjb_addr, sjb_length_tmp);
+//                        }
+//                        cache_index = 0;
 //                    }
-//                    else
+
+//                    if(pic_line >= sjb_val_tmp)
 //                    {
-//                        line_pos_base += 65536;
+//                        line_pos_base = (i+1)<<16;
 //                        sjb_val_tmp = cache_u16[cache_index];
 //                        if(pic_line < sjb_val_tmp)
 //                            break;
 //                    }
+//                    else
+//                    {
+//                        line_pos_base = 0;
+//                        break;
+//                    }
+//                }
 
-                    if(pic_line >= sjb_val_tmp)
-                    {
-                        line_pos_base += 65536;
-                        sjb_val_tmp = cache_u16[cache_index];
-                        if(pic_line < sjb_val_tmp)
-                            break;
-                    }
-                    else
-                    {
-                        line_pos_base = 0;
-                        break;
-                    }
-                }
+                // Binary search + cache memory, fast upgrade value calculation
+                line_pos_base = calc_line_pos_base_flash(pic_line, (uintptr_t)(src), sjb_length);
             }
         }
 
-        uint32_t tmpAddr = row_offset_addr_start + pic_line;
-        GET_RGB565_ENCODER_DATA(cache_u16, src, tmpAddr, 2);
+        // Calculate the flash address of the current row's offset table.
+        uint32_t tmpAddr = (uint32_t)row_offset_addr_start + (uint32_t)pic_line;
+        GET_RGB565_ENCODER_DATA(cache_u16, src, tmpAddr, 2);        // Read the offset table of the specified row and its next row.
 
+        // Calculate the amount of compressed data for the current row.
         uint16_t compressed_num = cache_u16[1] - cache_u16[0];
-        line_addr = encoder_addr + cache_u16[0] + line_pos_base;
+        
+        // Calculate the starting address of the current row's compressed data.
+        line_addr = encoder_addr + (uint32_t)cache_u16[0] + line_pos_base;
 
         if (compressed_num <= __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
         {
@@ -752,68 +865,71 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
 
         cache_index = 0;
         x00 = 0;
-        real_width = width;
+        real_width = width;        // Actual image width
         for(pic_col = 0; pic_col<pic_width; pic_col++)
         {
             uint16_t EncodeData = cache_u16[cache_index++];
             uint16_t tmpdata = EncodeData & 0xff80;
             FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
+            /********************************* RLE  **********************************/
             if(tmpdata == ecoder_rle_Flag)
             {
+                // Point to ref_color
                 ref_color = cache_u16[cache_index++];
                 FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                if (EncodeData == ecoder_rle_Flag)
+                if (EncodeData == ecoder_rle_Flag)        // Long-code encoding
                 {
-                    pixl_len = cache_u16[cache_index++];
+                    pixl_len = cache_u16[cache_index++];        // Point to length data
                     FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
                 }
-                else
+                else    // short-code encoding
                 {
-                    pixl_len = EncodeData & 0x007f;
+                    pixl_len = EncodeData & 0x007f;        // Fetch encoded length
                 }
 
-                if(x00 < x0)
+                if(x00 < x0)        // x00 Cursor is to the left of the target start
                 {
-                    if (x00 + pixl_len < x0)
+                    if (x00 + pixl_len < x0)    // x00 Cursor still left of target after adding decode length, skip
                     {
                         x00 += pixl_len;
-                        continue;
+                        continue;                // Continue to fetch next data segment
                     }
                     else
                     {
-                        pixl_len = x00 + pixl_len - x0;
+                        pixl_len = x00 + pixl_len - x0;        // Valid length starting from x0 coordinate
                         x00 = x0 + pixl_len;
                     }
                 }
 
-                if (real_width > pixl_len)
+                if (real_width > pixl_len)    // Required pixel length exceeds encoded length, decode entire run
                 {
                     zhRGB565_RLE_decoder(ref_color, pixl_len, buf);
                     buf += pixl_len;
                     real_width -= pixl_len;
                 }
                 else
-                {
+                {// Remaining data length to decode is less than the encoded length; directly decode the remaining length of data.
                     zhRGB565_RLE_decoder(ref_color, real_width, buf);
                     buf += real_width;
-
+                    // Buffer line feed
                     buf_base += iTargetStride;
                     buf = buf_base;
                     break;
                 }
             }
-            else if(tmpdata == ecoder_diff_Flag)
+            /********************************* Delta decode  **********************************/
+            else if(tmpdata == ecoder_diff_Flag)    // Delta encoding flag
             {
-                len = EncodeData & 0x007f;
-                pixl_len = len*2 + 1;
+                len = EncodeData & 0x007f;            // Fetch encoded length; delta encoding uses short-length format
+                pixl_len = len*2 + 1;                // Total decompressed pixel length
 
                 uint16_t real_pixl_len = pixl_len;
                 uint16_t skip_cnt = 0;
 
-                if(x00 < x0)
+                if(x00 < x0)        // x00 Cursor is to the left of the target start
                 {
                     if (x00 + pixl_len < x0)
                     {
@@ -821,11 +937,11 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                         for (uint16_t ii = (len + 1); ii > 0; ii--)
                         {
                             cache_index++;
-                            if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__) 
+                            if (cache_index == __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
                             {
-                                cache_index = 0; 
+                                cache_index = 0;
                                 line_addr += __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__;
-                                if (ii > __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__) 
+                                if (ii > __ARM_2D_ZHRGB565_PIXEL_CACHE_SIZE__)
                                 {
                                     continue;
                                 }
@@ -834,28 +950,25 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                         }
                         continue;
                     }
-                    else 
+                    else    // If fully decoded, length can reach the start coordinate
                     {
-                        real_pixl_len = x00 + pixl_len - x0; 
+                        // Calculate new coordinate and decode length
+                        real_pixl_len = x00 + pixl_len - x0;
                         x00 = x0 + real_pixl_len;
-                        skip_cnt = pixl_len - real_pixl_len;
+                        skip_cnt = pixl_len - real_pixl_len;    // Number of leading pixels to skip
                     }
                 }
 
                 uint16_t pix1, pix2, encdata;
-
+                // Point to ref_color
                 ref_color = cache_u16[cache_index++];
                 FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                if(skip_cnt == 0) { 
-                    *buf++ = ref_color;
+                if(skip_cnt == 0){            // No skip needed, decode directly
+                    *buf++ = ref_color;        // Reference color stored as-is, retrieved as-is
                     real_width--;
-
-                    if(real_width == 0){ 
-                        buf_base += iTargetStride;
-                        buf = buf_base;
-                        break;
-                    }
+                    // Buffer line feed
+                    if(real_width == 0){ buf_base += iTargetStride;    buf = buf_base;    break; }
                 }
                 else
                     skip_cnt--;
@@ -865,20 +978,18 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                     encdata = cache_u16[cache_index++];
                     FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                    zhRGB565_DIFF_decoder(ref_color, encdata, &pix1, &pix2); 
-                    if(skip_cnt == 0){ 
-                        *buf++ = pix1; 
+                    zhRGB565_DIFF_decoder(ref_color, encdata, &pix1, &pix2);    // One data unit can decode into 2 pixels.
+                    if(skip_cnt == 0){        // No skip needed, decode directly
+                        *buf++ = pix1;        // First pixel
                         real_width--;
-
-                        if(real_width == 0){ break; } 
+                        if(real_width == 0){ break; }
                     }
                     else
                         skip_cnt--;
 
-                    if(skip_cnt == 0){ 
-                        *buf++ = pix2; 
+                    if(skip_cnt == 0){        // No skip needed, decode directly
+                        *buf++ = pix2;        // Second pixel
                         real_width--;
-
                         if(real_width == 0){ break; }
                     }
                     else
@@ -887,6 +998,7 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                     ref_color = pix2;
                 }
 
+                // Buffer line feed
                 if(real_width == 0){ buf_base += iTargetStride; buf = buf_base; break; }
             }
             else
@@ -899,6 +1011,7 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                 *buf++ = EncodeData;
                 real_width--;
 
+                // Buffer line feed
                 if(real_width == 0){ buf_base += iTargetStride; buf = buf_base; break; }
             }
         }
