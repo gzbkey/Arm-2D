@@ -224,8 +224,9 @@ Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply
 - **CMSIS-Pack is available.**
 - **Ready and Welcome 3rd party adoption**
 
-  - Accelerating [LVGL](https://lvgl.io/) as [soft-GPU](https://docs.lvgl.io/master/details/integration/renderers/arm2d.html) when Helium is ready
-  - Accelerating [CrankSoftware](https://www.cranksoftware.com/) as [soft-GPU](https://info.cranksoftware.com/platforms/demo-images/renesas/ra8d1) when Helium is ready
+  - Accelerating [LVGL](https://lvgl.io/) as [soft-GPU](https://docs.lvgl.io/master/details/integration/renderers/arm2d.html)
+  - Accelerating [CrankSoftware](https://www.cranksoftware.com/) as [soft-GPU](https://info.cranksoftware.com/platforms/demo-images/renesas/ra8d1)
+  - Accelerating [emWin](https://www.segger.com/products/user-interface/emwin/technology/about-emwin-technology/) as [soft-GPU](https://doc.segger.com/UM03001_emWin.html#GUI_GPU_Arm2D_Arm_2D_driver)
 
 ### New Features Planned in the Future
 
@@ -420,4 +421,4 @@ Thank you for your time.
 
 ***Arm-2D Development Team.***
 
-22 February 2026
+14 March 2026
