@@ -35,7 +35,7 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 | --rot ***angle***         | Rotate the image with the given angle in degrees.            | Optional |
 | --a1, --a2, --a4, --a8    | introduce extra A1 / A2 / A4 / A8 masks when it is possible. | Optional |
 | --border                  | Add a 1-pixel-width border to the target asset. It is necessary when the asset is used in the transform operation. | Optional |
-| --alpha-bits **count**    | Valid Alpha Most Significant Bits (1~8). Default: 7          | Optional |
+| --alpha-bits **count**    | Valid Alpha Most Significant Bits (1~8). Default: 6          | Optional |
 | --no-gradient             | Disable gradient detection algorithm.                        | Optional |
 | --gradient-tolerant       | Gradient tolerant (0~3) in gradient detection algorithm. Default: 2 | Optional |
 
@@ -49,7 +49,7 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 >
 >    b. Disable the **gradient detection algorithm** using the `--no-gradient` option, or
 >
->    c. Increase the **alpha-bits** using the `--alpha-bits` option. 
+>    c. Try different **alpha-bits** using the `--alpha-bits` option. 
 
 
 

@@ -538,7 +538,7 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
 #if ARM_2D_DEMO_WARPED_DIAL_USE_LMSK
     /* initialize LMSK loader */
     do {
-        extern const uint8_t c_lmskDashboardRing[3844];
+        extern const uint8_t c_lmskDashboardRing[3581];
 
         arm_loader_io_rom_init( &this.LMSK.LoaderIO.tROM, 
                                 (uintptr_t)c_lmskDashboardRing, 

@@ -321,7 +321,7 @@ def main(argv):
     parser.add_argument('--border', action='store_true', help="Add a 1pix border")
     parser.add_argument("--no-gradient", action="store_true", help="Disable gradient detection algorithm. (Repeat>62 still uses GRADIENT tag like C encoder.)")
     parser.add_argument("--gradient-tolerant", type=int, default=2, choices=[0, 1, 2, 3], help="Gradient tolerant (0~3). Default: 2.")
-    parser.add_argument("--alpha-bits", type=int, default=7, choices=[1, 2, 3, 4, 5, 6, 7, 8], help="Alpha Bits (1~8). Default: 7.")
+    parser.add_argument("--alpha-bits", type=int, default=6, choices=[1, 2, 3, 4, 5, 6, 7, 8], help="Alpha Bits (1~8). Default: 6.")
 
     args = parser.parse_args()
 
