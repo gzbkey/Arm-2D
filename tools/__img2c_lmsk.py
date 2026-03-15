@@ -501,7 +501,7 @@ def main():
     parser.add_argument("--raw", action="store_true",
                         help="Enable RAW mode (no compression, no palette/tables). Default: off.")
     parser.add_argument("--no-gradient", action="store_true",
-                        help="Disable gradient detection algorithm. (Repeat>62 still uses GRADIENT tag like C encoder.)")
+                        help="Disable gradient detection algorithm.")
     parser.add_argument("--gradient-tolerant", type=int, default=1, choices=[0, 1, 2, 3],
                         help="Gradient tolerant (0~3). Default: 1.")
     parser.add_argument("--alpha-bits", type=int, default=8, choices=[1, 2, 3, 4, 5, 6, 7, 8],

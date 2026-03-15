@@ -440,10 +440,11 @@ user_scene_lmsk_t *__arm_2d_scene_lmsk_init(   arm_2d_scene_player_t *ptDispAdap
     do {
     #if ARM_2D_DEMO_LMSK_USE_FILE && __ARM_LMSK_USE_LOADER_IO__
         arm_loader_io_file_init(&this.LMSK.LoaderIO.tFile, 
-                                "../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
-                                //"../common/asset/ECGScanMaskSmall.lmsk");
+                                //"../../tools/RadialGradientSmall.lmsk");
+                                //"../common/loader/lmsk_loader/lmsk/encoder/Test.lmsk");
+                                "../common/asset/ECGScanMaskSmall.lmsk");
     #else
-        extern const uint8_t c_lmskECGScan[913];
+        extern const uint8_t c_lmskECGScan[686];
 
         arm_loader_io_rom_init( &this.LMSK.LoaderIO.tROM, 
                                 (uintptr_t)c_lmskECGScan, 

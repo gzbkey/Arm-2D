@@ -52,7 +52,7 @@ except ImportError:
 
 # Import LMSK compression modules
 try:
-    from .lmsk import (
+    from __img2c_lmsk import (
         load_mask_from_image,
         encode_lmsk,
     )
@@ -305,13 +305,13 @@ tail="""
 
 def main(argv):
 
-    parser = argparse.ArgumentParser(description='image to C array converter (v2.0.0)')
+    parser = argparse.ArgumentParser(description='image to C array converter (v2.1.0)')
 
     parser.add_argument('-i', nargs='?', type = str,  required=False, help="Input file (png, bmp, etc..)")
     parser.add_argument('-o', nargs='?', type = str,  required=False, help="output C file containing RGB56/RGB888/Gray8 and alpha values arrays")
 
     parser.add_argument('--name', nargs='?',type = str, required=False, help="A specified array name")
-    parser.add_argument('--format', nargs='?',type = str, default="all", help="RGB Format (rgb565, rgb32, gray8, mask, zhRGB565, all)")
+    parser.add_argument('--format', nargs='?',type = str, default="all", help="RGB Format (rgb565, rgb32, gray8, mask, zhRGB565, lmsk, all)")
     parser.add_argument('--dim', nargs=2,type = int, help="Resize the image with the given width and height")
     parser.add_argument('--rot', nargs='?',type = float, default=0.0, help="Rotate the image with the given angle in degrees")
     parser.add_argument('--a1', action='store_true', help="Generate 1bit alpha-mask")
@@ -319,6 +319,9 @@ def main(argv):
     parser.add_argument('--a4', action='store_true', help="Generate 4bit alpha-mask")
     parser.add_argument('--a8', action='store_true', help="Generate 8bit alpha-mask")
     parser.add_argument('--border', action='store_true', help="Add a 1pix border")
+    parser.add_argument("--no-gradient", action="store_true", help="Disable gradient detection algorithm. (Repeat>62 still uses GRADIENT tag like C encoder.)")
+    parser.add_argument("--gradient-tolerant", type=int, default=2, choices=[0, 1, 2, 3], help="Gradient tolerant (0~3). Default: 2.")
+    parser.add_argument("--alpha-bits", type=int, default=7, choices=[1, 2, 3, 4, 5, 6, 7, 8], help="Alpha Bits (1~8). Default: 7.")
 
     args = parser.parse_args()
 
@@ -342,6 +345,7 @@ def main(argv):
         args.format != 'gray8' and \
         args.format != 'mask' and \
         args.format != 'zhRGB565' and \
+        args.format != 'lmsk' and \
         args.format != 'all':
         parser.print_help()
         exit(1)
@@ -418,6 +422,8 @@ def main(argv):
     # BGR;32 (32-bit reversed true colour)
 
     # handle {P, LA, RGB, RGBA} for now
+    origin_image = image
+
     if mode == 'P' or mode == 'LA':
         image = image.convert('RGBA')
         mode = 'RGBA'
@@ -618,6 +624,48 @@ def main(argv):
             print('};', file=o)
             buffStr='phwBuffer'
             typStr='uint16_t'
+
+        # Lossless Compressed Mask (lmsk)
+        if (args.format == 'lmsk') or (args.format == 'all'):
+            if not LMSK_AVAILABLE:
+                print("Warning: LMSK compression library not available, skipping LMSK format", file=sys.stderr)
+            else:
+                # Detect alpha presence robustly
+                has_alpha = ("A" in origin_image.mode) or (origin_image.mode == "P" and "transparency" in origin_image.info)
+
+                if has_alpha:
+                    img = origin_image.convert("RGBA")
+                    alpha = img.getchannel("A")
+                    mask_raw = alpha.tobytes()
+                else:
+                    img = origin_image.convert("L")
+                    mask_raw = img.tobytes()
+
+                mask_compressed = encode_lmsk(mask_raw,
+                    width=img.width,
+                    height=img.height,
+                    raw=False,
+                    no_gradient=args.no_gradient,
+                    tolerant=args.gradient_tolerant,
+                    alpha_bits=args.alpha_bits)
+
+                print('',file=o)
+                print('extern const uint8_t c_lmsk%s[%d];\n' % (arr_name, len(mask_compressed)), file=o)
+                print('ARM_ALIGN(4) ARM_SECTION(\"arm2d.asset.c_lmsk%s\")' % (arr_name), file=o)
+                print('const uint8_t c_lmsk%s[%d] = {' % (arr_name, len(mask_compressed)), file=o)
+
+                for i in range(0, len(mask_compressed), 16):
+                    chunk = mask_compressed[i:i+16]
+                    
+                    hex_strings = [f"0x{b:02x}" for b in chunk]
+                    
+                    line = ", ".join(hex_strings)
+
+                    o.write("    ")
+                    o.write(line)
+                    o.write(",\n")
+
+                print('};', file=o)
 
         # zhRGB565 compressed format
         if (args.format == 'zhRGB565') or (args.format == 'all'):

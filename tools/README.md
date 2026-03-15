@@ -28,13 +28,16 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 | ------------------------- | ------------------------------------------------------------ | -------- |
 | ***-h, --help***          | show help information                                        |          |
 | -i ***Input File Path***  | Input file (png, bmp, etc..)                                 |          |
-| -o ***Output File Path*** | output C file containing RGB56/RGB888 and alpha values arrays | Optional |
+| -o ***Output File Path*** | output C file containing RGB56/RGB888 and alpha values arrays. | Optional |
 | --name ***Name***         | A specified array name.                                      | Optional |
-| --format ***Format***     | RGB Format, i.e. rgb565, rgb32, zhRGB565 and all (***default***) | Optional |
-| --dim ***Width Height***  | Resize the image with the given width and height             | Optional |
-| --rot ***angle***         | Rotate the image with the given angle in degrees             | Optional |
+| --format ***Format***     | RGB Format, i.e. rgb565, rgb32, zhRGB565, lmsk and all (***default***) | Optional |
+| --dim ***Width Height***  | Resize the image with the given width and height.            | Optional |
+| --rot ***angle***         | Rotate the image with the given angle in degrees.            | Optional |
 | --a1, --a2, --a4, --a8    | introduce extra A1 / A2 / A4 / A8 masks when it is possible. | Optional |
 | --border                  | Add a 1-pixel-width border to the target asset. It is necessary when the asset is used in the transform operation. | Optional |
+| --alpha-bits **count**    | Valid Alpha Most Significant Bits (1~8). Default: 7          | Optional |
+| --no-gradient             | Disable gradient detection algorithm.                        | Optional |
+| --gradient-tolerant       | Gradient tolerant (0~3) in gradient detection algorithm. Default: 2 | Optional |
 
 ## Example
 
