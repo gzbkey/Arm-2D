@@ -572,7 +572,7 @@ user_scene_flight_attitude_instrument_t *__arm_2d_scene_flight_attitude_instrume
 #if ARM_2D_DEMO_FAI_USE_LMSK
     /* initialize LMSK loader */
     do {
-        extern const uint8_t c_lmskRoundedSquare[1223];
+        extern const uint8_t c_lmskRoundedSquare[1195];
 
         arm_loader_io_rom_init( &this.LMSK.LoaderIO.tROM, 
                                 (uintptr_t)c_lmskRoundedSquare, 
