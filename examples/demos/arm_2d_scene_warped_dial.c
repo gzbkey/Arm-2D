@@ -601,8 +601,8 @@ user_scene_warped_dial_t *__arm_2d_scene_warped_dial_init(
         this.iTargetNumber = 0;
     } while(0);
 
-    s_fCosTheta = arm_cos_f32(WARPED_CIRCLE_THETA);  // 或者用 arm_cos_f32 预先计算
-    s_fSinTheta = arm_sin_f32(WARPED_CIRCLE_THETA);  // 同上
+    s_fCosTheta = arm_cos_f32(WARPED_CIRCLE_THETA); 
+    s_fSinTheta = arm_sin_f32(WARPED_CIRCLE_THETA);
 
     /* ------------   initialize members of user_scene_warped_dial_t end   ---------------*/
 
