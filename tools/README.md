@@ -27,7 +27,7 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 | Arguments                 | Description                                                  | NOTE     |
 | ------------------------- | ------------------------------------------------------------ | -------- |
 | ***-h, --help***          | show help information                                        |          |
-| -i ***Input File Path***  | Input file (png, bmp, etc..)                                 |          |
+| -i ***Input File Path***  | Input file (png, bmp, etc.)                                  |          |
 | -o ***Output File Path*** | output C file containing RGB56/RGB888 and alpha values arrays. | Optional |
 | --name ***Name***         | A specified array name.                                      | Optional |
 | --format ***Format***     | RGB Format, i.e. rgb565, rgb32, zhRGB565, lmsk and all (***default***) | Optional |
@@ -38,6 +38,20 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 | --alpha-bits **count**    | Valid Alpha Most Significant Bits (1~8). Default: 7          | Optional |
 | --no-gradient             | Disable gradient detection algorithm.                        | Optional |
 | --gradient-tolerant       | Gradient tolerant (0~3) in gradient detection algorithm. Default: 2 | Optional |
+
+> [!IMPORTANT]
+>
+> 1. There is a known issue in LMSK generation: if you see small **black stripes** in the generated mask, please set the **alpha bits** to `8` using the `--alpha-bits 8` option. 
+>
+> 2. If you see obvious differences between the original mask and the compressed mask, please try some combination of the following:
+>
+>    a. Reduce the **gradient-tolerant** till `0` using the `--gradient-tolerant` option, or
+>
+>    b. Disable the **gradient detection algorithm** using the `--no-gradient` option, or
+>
+>    c. Increase the **alpha-bits** using the `--alpha-bits` option. 
+
+
 
 ## Example
 
