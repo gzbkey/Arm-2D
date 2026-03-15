@@ -53,6 +53,105 @@ extern "C" {
 #endif
 #include "arm_2d_utils.h"
 /*============================ MACROS ========================================*/
+
+#define ARM_LMSK_GROUP_DEF(__COUNT, ...)                                        \
+    struct {                                                                    \
+        arm_lmsk_loader_t tLoader;                                              \
+        union {                                                                 \
+            arm_loader_io_file_t tFILE;                                         \
+            arm_loader_io_binary_t tBINARY;                                     \
+            arm_loader_io_rom_t tROM;                                           \
+            arm_loader_io_cache_t tCACHE;                                       \
+            __VA_ARGS__                                                         \
+        } LoaderIO;                                                             \
+    } LMSK[__COUNT]
+
+#define ARM_LMSK_GROUP_ON_LOAD()                                                \
+    do {arm_foreach(this.LMSK) {                                                \
+        arm_lmsk_loader_on_load(&_->tLoader);                                   \
+    }} while(0)
+
+#define ARM_LMSK_GROUP_DEPOSE()                                                 \
+    do {arm_foreach(this.LMSK) {                                                \
+        arm_lmsk_loader_depose(&_->tLoader);                                    \
+    }} while(0)
+
+#define ARM_LMSK_GROUP_ON_FRAME_START()                                         \
+    do {arm_foreach(this.LMSK) {                                                \
+        arm_lmsk_loader_on_frame_start(&_->tLoader);                            \
+    }} while(0)
+
+#define ARM_LMSK_GROUP_ON_FRAME_COMPLETE()                                      \
+    do {arm_foreach(this.LMSK) {                                                \
+        arm_lmsk_loader_on_frame_complete(&_->tLoader);                         \
+    }} while(0)
+
+#if __ARM_LMSK_USE_LOADER_IO__
+#   define __ARM_LMSK_ITEM_INIT(__IDX, __IO_NAME, __LMSK_SRC, ...)              \
+    do {                                                                        \
+        arm_lmsk_loader_cfg_t tCFG = {                                          \
+            .ptScene = (arm_2d_scene_t *)ptThis,                                \
+            .ImageIO = {                                                        \
+                .ptIO = &ARM_LOADER_IO_##__IO_NAME,                             \
+                .pTarget = (uintptr_t)&this.LMSK[__IDX].LoaderIO.t##__IO_NAME,  \
+            },                                                                  \
+            __VA_ARGS__                                                         \
+        };                                                                      \
+                                                                                \
+        arm_lmsk_loader_init(&this.LMSK[__IDX].tLoader, &tCFG);                 \
+    } while(0)
+#else
+#   define __ARM_LMSK_ITEM_INIT(__IDX, __IO_NAME, __LMSK_SRC, ...)              \
+    do {                                                                        \
+        arm_lmsk_loader_cfg_t tCFG = {                                          \
+            .ptScene = (arm_2d_scene_t *)ptThis,                                \
+            .pchLMSKSource = (const uint8_t *)(__LMSK_SRC),                     \
+            __VA_ARGS__                                                         \
+        };                                                                      \
+                                                                                \
+        arm_lmsk_loader_init(&this.LMSK[__IDX].tLoader, &tCFG);                 \
+    } while(0)
+#endif
+
+#define ARM_LMSK_ITEM_INIT(__IDX, __IO_NAME, __LMSK_SRC, ...)                   \
+            __ARM_LMSK_ITEM_INIT(  (__IDX),                                     \
+                                    __IO_NAME,                                  \
+                                    (__LMSK_SRC), ##__VA_ARGS__)
+
+
+#define ARM_LMSK_ITEM_INIT_WITH_ROM(__IDX, __LMSK_SRC, __SIZE)                  \
+        do {                                                                    \
+            extern const uint8_t __LMSK_SRC[__SIZE];                            \
+                                                                                \
+            arm_loader_io_rom_init( &this.LMSK[__IDX].LoaderIO.tROM,            \
+                                    (uintptr_t)(__LMSK_SRC),                    \
+                                    sizeof(__LMSK_SRC));                        \
+                                                                                \
+            ARM_LMSK_ITEM_INIT((__IDX), ROM, (__LMSK_SRC));                     \
+        } while(0)
+
+#define ARM_LMSK_ITEM_INIT_WITH_BINARY(__IDX, __LMSK_SRC, __SIZE)               \
+        do {                                                                    \
+            extern const uint8_t __LMSK_SRC[__SIZE];                            \
+                                                                                \
+            arm_loader_io_binary_init(  &this.LMSK[__IDX].LoaderIO.tBINARY,     \
+                                        (uint8_t *)(__LMSK_SRC),                \
+                                        sizeof(__LMSK_SRC));                    \
+                                                                                \
+            ARM_LMSK_ITEM_INIT((__IDX), BINARY, (__LMSK_SRC));                  \
+        } while(0)
+
+#define ARM_LMSK_ITEM_INIT_WITH_FILE(__IDX, __FILE_PATH)                        \
+        do {                                                                    \
+            arm_loader_io_file_init(&this.LMSK[0].LoaderIO.tFILE,               \
+                                    (__FILE_PATH));                             \
+                                                                                \
+            ARM_LMSK_ITEM_INIT((__IDX), FILE, NULL);                            \
+        } while(0)
+
+#define ARM_LMSK_ITEM(__IDX)    this.LMSK[__IDX]
+#define ARM_LMSK_TILE(__IDX)    this.LMSK[__IDX].tLoader.tTile
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 

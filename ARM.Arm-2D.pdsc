@@ -492,7 +492,7 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Loaders" Cversion="5.6.9" condition="Arm-2D-Loaders">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Loaders" Cversion="5.6.11" condition="Arm-2D-Loaders">
           <description>A helper service for loading various resource, e.g. loading baseline jpg files using TJpgDec, ZJpgDec, loading Lossless Compressed images (*.QOI) and loading font files using FreeType etc.</description>
           <files>
             <file category="include"     name="examples/common/loader/" />
@@ -928,11 +928,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Radars" Cversion="4.2.0" condition="Arm-2D-Demos">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Demos" Csub="Radars" Cversion="4.3.0" condition="Arm-2D-Demos">
           <description>An example for showing different styles of radar panels. </description>
           <files>
-            <file category="sourceC"     name="examples/demos/arm_2d_scene_radars.c" attr="config" version="4.2.0" />
-            <file category="header"      name="examples/demos/arm_2d_scene_radars.h" attr="config" version="4.2.0" />
+            <file category="sourceC"     name="examples/demos/arm_2d_scene_radars.c" attr="config" version="4.3.0" />
+            <file category="header"      name="examples/demos/arm_2d_scene_radars.h" attr="config" version="4.3.0" />
 
             <file category="sourceC"     name="examples/demos/girl_dance.c" attr="config" version="4.1.0" />
             <file category="sourceC"     name="examples/demos/film_mask.c"  attr="config" version="2.0.0" />
@@ -1209,11 +1209,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Lossless Compressed Mask(LMSK)" Cversion="1.0.2" condition="Arm-2D-Render-Test">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Lossless Compressed Mask(LMSK)" Cversion="1.1.0" condition="Arm-2D-Render-Test">
           <description>A demo for the tile filling rendering test.</description>
           <files>
-            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_lmsk.c" attr="config" version="1.0.2" />
-            <file category="header"      name="examples/render_tests/arm_2d_scene_lmsk.h" attr="config" version="1.0.2" />
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_lmsk.c" attr="config" version="1.1.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_lmsk.h" attr="config" version="1.1.0" />
           </files>
           <RTE_Components_h>
 #define RTE_Acceleration_Arm_2D_Render_Tests_LMSK
