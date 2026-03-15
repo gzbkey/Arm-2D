@@ -240,7 +240,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene%Instance%_handler)
         }
 
 
-    #if #if __USER_SCENE%Instance%_USE_LMSK__
+    #if __USER_SCENE%Instance%_USE_LMSK__
         /* draw the cmsis logo in the centre of the screen */
         arm_2d_align_centre(__top_canvas, c_tileCMSISLogo.tRegion.tSize) {
             arm_2d_tile_copy_with_src_mask( &c_tileCMSISLogo,
