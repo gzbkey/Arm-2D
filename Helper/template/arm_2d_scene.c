@@ -75,6 +75,12 @@
 #   error Unsupported colour depth!
 #endif
 
+#if __USER_SCENE%Instance%_USE_LMSK__
+#   define CMSIS_LOGO_MASK          ARM_LMSK_TILE(SCENE%Instance%_LMSK_CMSIS)
+#else
+#   define CMSIS_LOGO_MASK          c_tileCMSISLogoMask
+#endif
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 #undef this
 #define this (*ptThis)
@@ -120,6 +126,9 @@ static void __on_scene%Instance%_load(arm_2d_scene_t *ptScene)
     user_scene_%Instance%_t *ptThis = (user_scene_%Instance%_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+#if __USER_SCENE%Instance%_USE_LMSK__ 
+    ARM_LMSK_GROUP_ON_LOAD();
+#endif
 }
 
 static void __after_scene%Instance%_switching(arm_2d_scene_t *ptScene)
@@ -136,6 +145,9 @@ static void __on_scene%Instance%_depose(arm_2d_scene_t *ptScene)
     
     /*--------------------- insert your depose code begin --------------------*/
     
+#if __USER_SCENE%Instance%_USE_LMSK__ 
+    ARM_LMSK_GROUP_DEPOSE();
+#endif
 
     /*---------------------- insert your depose code end  --------------------*/
 
@@ -175,6 +187,9 @@ static void __on_scene%Instance%_frame_start(arm_2d_scene_t *ptScene)
     user_scene_%Instance%_t *ptThis = (user_scene_%Instance%_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+#if __USER_SCENE%Instance%_USE_LMSK__ 
+    ARM_LMSK_GROUP_ON_FRAME_START();
+#endif
 }
 
 static void __on_scene%Instance%_frame_complete(arm_2d_scene_t *ptScene)
@@ -182,6 +197,9 @@ static void __on_scene%Instance%_frame_complete(arm_2d_scene_t *ptScene)
     user_scene_%Instance%_t *ptThis = (user_scene_%Instance%_t *)ptScene;
     ARM_2D_UNUSED(ptThis);
 
+#if __USER_SCENE%Instance%_USE_LMSK__ 
+    ARM_LMSK_GROUP_ON_FRAME_COMPLETE();
+#endif
 }
 
 static void __before_scene%Instance%_switching_out(arm_2d_scene_t *ptScene)
@@ -222,11 +240,11 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene%Instance%_handler)
         }
 
 
-    #if 0
+    #if #if __USER_SCENE%Instance%_USE_LMSK__
         /* draw the cmsis logo in the centre of the screen */
         arm_2d_align_centre(__top_canvas, c_tileCMSISLogo.tRegion.tSize) {
             arm_2d_tile_copy_with_src_mask( &c_tileCMSISLogo,
-                                            &c_tileCMSISLogoMask,
+                                            &CMSIS_LOGO_MASK,
                                             ptTile,
                                             &__centre_region,
                                             ARM_2D_CP_MODE_COPY);
@@ -327,6 +345,9 @@ user_scene_%Instance%_t *__arm_2d_scene%Instance%_init(   arm_2d_scene_player_t 
 
     /* ------------   initialize members of user_scene_%Instance%_t begin ---------------*/
 
+#if __USER_SCENE%Instance%_USE_LMSK__ 
+    ARM_LMSK_ITEM_INIT_WITH_ROM(SCENE%Instance%_LMSK_CMSIS, c_lmskCMSISLogo, 1881);
+#endif
 
     /* ------------   initialize members of user_scene_%Instance%_t end   ---------------*/
 

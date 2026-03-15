@@ -59,6 +59,10 @@ extern "C" {
 #endif
 #include "arm_2d_utils.h"
 
+#ifndef __USER_SCENE_<NAME>_USE_LMSK__
+#   define __USER_SCENE_<NAME>_USE_LMSK__       0
+#endif
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 
 /*!
@@ -74,6 +78,14 @@ extern "C" {
             __arm_2d_scene_<name>_init((__DISP_ADAPTER_PTR), (NULL, ##__VA_ARGS__))
 
 /*============================ TYPES =========================================*/
+
+#if __USER_SCENE_<NAME>_USE_LMSK__ 
+enum {
+    <NAME>_LMSK_CMSIS       = 0,
+    __<NAME>_LMSK_COUNT,
+};
+#endif
+
 /*!
  * \brief a user class for scene <name>
  */
@@ -87,9 +99,15 @@ ARM_PRIVATE(
     int64_t lTimestamp[1];
     bool bUserAllocated;
 
-)
+
+#if __USER_SCENE_<NAME>_USE_LMSK__ 
     /* place your public member here */
-    
+    ARM_LMSK_GROUP_DEF(__<NAME>_LMSK_COUNT);
+#endif
+
+)
+
+
 };
 
 /*============================ GLOBAL VARIABLES ==============================*/
