@@ -41,7 +41,7 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 
 > [!IMPORTANT]
 >
-> 1. There is a known issue in LMSK generation: if you see small **black stripes** in the generated mask, please set the **alpha bits** to `8` using the `--alpha-bits 8` option. 
+> 1. There is a known issue in LMSK **python** generation: if you see small **black stripes** in the generated mask, please set the **alpha bits** to `8` using the `--alpha-bits 8` option. 
 >
 > 2. If you see obvious differences between the original mask and the compressed mask, please try some combination of the following:
 >
@@ -50,6 +50,8 @@ img2c.py [-h] [--format <FORMAT>] [--name <NAME\>] [--dim <Width> <Height>] [--r
 >    b. Disable the **gradient detection algorithm** using the `--no-gradient` option, or
 >
 >    c. Try different **alpha-bits** using the `--alpha-bits` option. 
+>    
+>    If none of the methods above can solve the problem, please generate a local executable encoder using the VSCode workspace `examples/common/loader/lmsk_loader/lmsk/encoder/encoder.code-workspace`.
 
 
 
