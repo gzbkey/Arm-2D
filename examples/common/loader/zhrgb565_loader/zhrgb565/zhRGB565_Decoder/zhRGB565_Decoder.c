@@ -711,7 +711,6 @@ uint32_t calc_line_pos_base_flash(uint16_t pic_line, uint32_t ExtAddr, uint16_t 
             }
         }
         else {
-            // 检查是否退到上一个区间
             GET_RGB565_ENCODER_DATA(&mid_val, ExtAddr, 6 + last_sjb_index, 1);
             if (pic_line < mid_val) {
                 last_sjb_index--;
@@ -765,7 +764,7 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
     uint16_t pic_line, pic_col;
     uint32_t line_pos_base = 0, real_width;
     uint32_t x00, line_addr;
-    uint16_t *buf_base;
+    COLOUR_INT *buf_base;
     buf_base = buf;
 
     uint16_t ref_color, len, pixl_len;
@@ -964,8 +963,10 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                 ref_color = cache_u16[cache_index++];
                 FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
-                if(skip_cnt == 0){            // No skip needed, decode directly
-                    *buf++ = ref_color;        // Reference color stored as-is, retrieved as-is
+                if(skip_cnt == 0){                              // No skip needed, decode directly
+
+                    zhRGB565_save_pixel(buf++, ref_color);      // Reference color stored as-is, retrieved as-is
+                    //*buf++ = ref_color;        
                     real_width--;
                     // Buffer line feed
                     if(real_width == 0){ buf_base += iTargetStride;    buf = buf_base;    break; }
@@ -979,16 +980,18 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                     FLUSH_RGB565_CACHE(cache_u16, cache_index, src, line_addr);
 
                     zhRGB565_DIFF_decoder(ref_color, encdata, &pix1, &pix2);    // One data unit can decode into 2 pixels.
-                    if(skip_cnt == 0){        // No skip needed, decode directly
-                        *buf++ = pix1;        // First pixel
+                    if(skip_cnt == 0){                          // No skip needed, decode directly
+                        zhRGB565_save_pixel(buf++, pix1);       // First pixel
+                        //*buf++ = pix1;        
                         real_width--;
                         if(real_width == 0){ break; }
                     }
                     else
                         skip_cnt--;
 
-                    if(skip_cnt == 0){        // No skip needed, decode directly
-                        *buf++ = pix2;        // Second pixel
+                    if(skip_cnt == 0){                          // No skip needed, decode directly
+                        zhRGB565_save_pixel(buf++, pix2);       // Second pixel
+                        //*buf++ = pix2;        
                         real_width--;
                         if(real_width == 0){ break; }
                     }
@@ -1008,7 +1011,8 @@ void zhRGB565_decompress_for_arm2d(uint16_t x0, uint16_t y0, uint16_t width, uin
                     x00++;
                     continue;
                 }
-                *buf++ = EncodeData;
+                zhRGB565_save_pixel(buf++, EncodeData);
+                //*buf++ = EncodeData;
                 real_width--;
 
                 // Buffer line feed
