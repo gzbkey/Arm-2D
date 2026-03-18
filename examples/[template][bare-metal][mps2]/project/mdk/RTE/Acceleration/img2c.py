@@ -32,7 +32,33 @@ import time;
 import argparse
 import os
 
+# Add current script directory to path for imports
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+    sys.path.insert(0, '.')  # Also add current directory
 
+# Import zhRGB565 compression modules
+try:
+    from __img2c_zhRGB565 import (
+        encode_rgb565_rle_only,
+        generate_c_array as generate_rle_c_array,
+        encode_rgb565_rle_diff,
+        generate_c_array as generate_diff_c_array
+    )
+    ZHRGB565_AVAILABLE = True
+except ImportError:
+    ZHRGB565_AVAILABLE = False
+
+# Import LMSK compression modules
+try:
+    from __img2c_lmsk import (
+        load_mask_from_image,
+        encode_lmsk,
+    )
+    LMSK_AVAILABLE = True
+except ImportError:
+    LMSK_AVAILABLE = False
 
 hdr="""
 /* Generated on {0} from {1} */
@@ -146,6 +172,8 @@ const arm_2d_tile_t c_tile{0}CCCA8888 = {{
 }};
 
 """
+
+
 
 tailAlpha="""
 
@@ -277,19 +305,23 @@ tail="""
 
 def main(argv):
 
-    parser = argparse.ArgumentParser(description='image to C array converter (v1.3.0)')
+    parser = argparse.ArgumentParser(description='image to C array converter (v2.1.0)')
 
     parser.add_argument('-i', nargs='?', type = str,  required=False, help="Input file (png, bmp, etc..)")
     parser.add_argument('-o', nargs='?', type = str,  required=False, help="output C file containing RGB56/RGB888/Gray8 and alpha values arrays")
 
     parser.add_argument('--name', nargs='?',type = str, required=False, help="A specified array name")
-    parser.add_argument('--format', nargs='?',type = str, default="all", help="RGB Format (rgb565, rgb32, gray8, mask, all)")
+    parser.add_argument('--format', nargs='?',type = str, default="all", help="RGB Format (rgb565, rgb32, gray8, mask, zhRGB565, lmsk, all)")
     parser.add_argument('--dim', nargs=2,type = int, help="Resize the image with the given width and height")
     parser.add_argument('--rot', nargs='?',type = float, default=0.0, help="Rotate the image with the given angle in degrees")
     parser.add_argument('--a1', action='store_true', help="Generate 1bit alpha-mask")
     parser.add_argument('--a2', action='store_true', help="Generate 2bit alpha-mask")
     parser.add_argument('--a4', action='store_true', help="Generate 4bit alpha-mask")
+    parser.add_argument('--a8', action='store_true', help="Generate 8bit alpha-mask")
     parser.add_argument('--border', action='store_true', help="Add a 1pix border")
+    parser.add_argument("--no-gradient", action="store_true", help="Disable gradient detection algorithm. (Repeat>62 still uses GRADIENT tag like C encoder.)")
+    parser.add_argument("--gradient-tolerant", type=int, default=2, choices=[0, 1, 2, 3], help="Gradient tolerant (0~3). Default: 2.")
+    parser.add_argument("--alpha-bits", type=int, default=6, choices=[1, 2, 3, 4, 5, 6, 7, 8], help="Alpha Bits (1~8). Default: 6.")
 
     args = parser.parse_args()
 
@@ -312,9 +344,23 @@ def main(argv):
         args.format != 'rgb32' and \
         args.format != 'gray8' and \
         args.format != 'mask' and \
+        args.format != 'zhRGB565' and \
+        args.format != 'lmsk' and \
         args.format != 'all':
         parser.print_help()
         exit(1)
+
+    if args.a1:
+        args.format = ''
+
+    if args.a2:
+        args.format = ''
+
+    if args.a4:
+        args.format = ''
+
+    if args.a8:
+        args.format = ''
 
     try:
         image = Image.open(inputfile)
@@ -376,6 +422,8 @@ def main(argv):
     # BGR;32 (32-bit reversed true colour)
 
     # handle {P, LA, RGB, RGBA} for now
+    origin_image = image
+
     if mode == 'P' or mode == 'LA':
         image = image.convert('RGBA')
         mode = 'RGBA'
@@ -397,23 +445,24 @@ def main(argv):
         print(hdr.format(time.asctime( time.localtime(time.time())), argv[0], resized, args.rot), file=o)
 
         if mode == "RGBA":
-            print('ARM_ALIGN(4) ARM_SECTION(\"arm2d.asset.c_bmp%sAlpha\")' % (arr_name), file=o)
-            # alpha channel array available
-            print('static const uint8_t c_bmp%sAlpha[%d*%d] = {' % (arr_name, row, col),file=o)
-            cnt = 0
-            for eachRow in data:
-                lineWidth=0
-                print("/* -%d- */" % (cnt), file=o)
-                for eachPix in eachRow:
-                    alpha = eachPix[3]
-                    if lineWidth % WIDTH_ALPHA == (WIDTH_ALPHA - 1):
-                        print("0x%02x," %(alpha) ,file=o)
-                    else:
-                        print("0x%02x" %(alpha), end =", ",file=o)
-                    lineWidth+=1
-                cnt+=1
-                print('',file=o)
-            print('};\r\n', file=o)
+            if args.format == 'all' or args.format == 'mask':
+                print('ARM_ALIGN(4) ARM_SECTION(\"arm2d.asset.c_bmp%sAlpha\")' % (arr_name), file=o)
+                # alpha channel array available
+                print('static const uint8_t c_bmp%sAlpha[%d*%d] = {' % (arr_name, row, col),file=o)
+                cnt = 0
+                for eachRow in data:
+                    lineWidth=0
+                    print("/* -%d- */" % (cnt), file=o)
+                    for eachPix in eachRow:
+                        alpha = eachPix[3]
+                        if lineWidth % WIDTH_ALPHA == (WIDTH_ALPHA - 1):
+                            print("0x%02x," %(alpha) ,file=o)
+                        else:
+                            print("0x%02x" %(alpha), end =", ",file=o)
+                        lineWidth+=1
+                    cnt+=1
+                    print('',file=o)
+                print('};\r\n', file=o)
 
             # 1-bit Alpha channel
             if args.a1 or args.format == 'all' or args.format == 'mask':
@@ -576,6 +625,110 @@ def main(argv):
             buffStr='phwBuffer'
             typStr='uint16_t'
 
+        # Lossless Compressed Mask (lmsk)
+        if (args.format == 'lmsk') or (args.format == 'all'):
+            if not LMSK_AVAILABLE:
+                print("Warning: LMSK compression library not available, skipping LMSK format", file=sys.stderr)
+            else:
+                # Detect alpha presence robustly
+                has_alpha = ("A" in origin_image.mode) or (origin_image.mode == "P" and "transparency" in origin_image.info)
+
+                if has_alpha:
+                    img = origin_image.convert("RGBA")
+                    alpha = img.getchannel("A")
+                    mask_raw = alpha.tobytes()
+                else:
+                    img = origin_image.convert("L")
+                    mask_raw = img.tobytes()
+
+                mask_compressed = encode_lmsk(mask_raw,
+                    width=img.width,
+                    height=img.height,
+                    raw=False,
+                    no_gradient=args.no_gradient,
+                    tolerant=args.gradient_tolerant,
+                    alpha_bits=args.alpha_bits)
+
+                print('',file=o)
+                print('extern const uint8_t c_lmsk%s[%d];\n' % (arr_name, len(mask_compressed)), file=o)
+                print('ARM_ALIGN(4) ARM_SECTION(\"arm2d.asset.c_lmsk%s\")' % (arr_name), file=o)
+                print('const uint8_t c_lmsk%s[%d] = {' % (arr_name, len(mask_compressed)), file=o)
+
+                for i in range(0, len(mask_compressed), 16):
+                    chunk = mask_compressed[i:i+16]
+                    
+                    hex_strings = [f"0x{b:02x}" for b in chunk]
+                    
+                    line = ", ".join(hex_strings)
+
+                    o.write("    ")
+                    o.write(line)
+                    o.write(",\n")
+
+                print('};', file=o)
+
+        # zhRGB565 compressed format
+        if (args.format == 'zhRGB565') or (args.format == 'all'):
+            if not ZHRGB565_AVAILABLE:
+                print("Warning: zhRGB565 compression library not available, skipping zhRGB565 format", file=sys.stderr)
+            else:
+                # Convert to RGB565 first
+                R = (data[...,0]>>3).astype(np.uint16) << 11
+                G = (data[...,1]>>2).astype(np.uint16) << 5
+                B = (data[...,2]>>3).astype(np.uint16)
+                RGB = R | G | B
+                
+                # Use RLE+DIFF compression for better gradient compression
+                compressed_data, compressed_size, compression_ratio = encode_rgb565_rle_diff(RGB.flatten(), row, col)
+                compression_method = "RLE+DIFF"
+                
+                if compressed_data is not None:
+                    print('',file=o)
+                    print('/* ============================================ */', file=o)
+                    print('/* zhRGB565 compressed data (%s) */' % compression_method, file=o)
+                    print('/* Original size: %d bytes */' % (row * col * 2), file=o)
+                    print('/* Compressed size: %d bytes */' % (compressed_size * 2), file=o)
+                    print('/* Compression ratio: %.2f%% */' % compression_ratio, file=o)
+                    print('/* ============================================ */', file=o)
+                    print('',file=o)
+                    
+                    # Generate compressed C array
+                    c_code = generate_rle_c_array(compressed_data, compressed_size, row, col, compression_ratio, inputfile, arr_name)
+                    
+                    # Write the compressed data (extract just the array part)
+                    lines = c_code.split('\n')
+                    in_array = False
+                    for line in lines:
+                        if 'const uint16_t' in line and '[' in line:
+                            in_array = True
+                            # Add ARM_SECTION directive and extern declaration for zhRGB565
+                            # Extract the original array name and convert to ARM format
+                            import re
+                            match = re.search(r'const uint16_t (\w+)\[(.*?)\]', line)
+
+                            if match:
+                                original_name = match.group(1)
+                                # Convert to ARM format: c_zhRGB565_ + name
+                                arm_name = f'c_zhrgb{arr_name}'
+                                array_size = match.group(2) if match.group(2) else ''
+                                # Generate extern declaration
+                                extern_decl = f"extern const uint16_t {arm_name}[{array_size}];"
+                                print(extern_decl, file=o)
+                                print('ARM_SECTION("arm2d.asset.c_zhrgb%s")' % (arr_name), file=o)
+                                # Generate the actual array definition with modified name
+                                modified_line = line.replace(original_name, arm_name)
+                                print(modified_line, file=o)
+
+                            continue
+                        elif line.strip() == '};':
+                            if in_array:
+                                print(line, file=o)
+                                break
+                        elif in_array:
+                            print(line, file=o)
+                else:
+                    print("Warning: RLE compression failed for zhRGB565 format", file=sys.stderr)
+
 
 
         if args.format == 'rgb32' or args.format == 'all':
@@ -626,6 +779,8 @@ def main(argv):
             typStr='uint16_t'
             print(tailDataRGB565.format(arr_name, str(row), str(col), "."+buffStr+" = ("+typStr+"*)"), file=o)
 
+        
+
         if args.format == 'rgb32' or args.format == 'all':
             buffStr='pwBuffer'
             typStr='uint32_t'
@@ -637,7 +792,8 @@ def main(argv):
 
 
         if mode == "RGBA":
-            print(tailAlpha.format(arr_name, str(row), str(col)), file=o)
+            if args.format == 'all' or args.format == 'mask':
+                print(tailAlpha.format(arr_name, str(row), str(col)), file=o)
 
             if args.a1 or args.format == 'all' or args.format == 'mask':
                 print(tail1BitAlpha.format(arr_name, str(row), str(col)), file=o)

@@ -22,6 +22,17 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+#if defined(__clang__)
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wunknown-warning-option"
+#   pragma clang diagnostic ignored "-Wreserved-identifier"
+#   pragma clang diagnostic ignored "-Wmissing-variable-declarations"
+#   pragma clang diagnostic ignored "-Wunused-variable"
+#   pragma clang diagnostic ignored "-Wunused-function"
+#   pragma clang diagnostic ignored "-Wunused-parameter"
+#   pragma clang diagnostic ignored "-Wsign-compare"
+#endif
+
 #ifdef   __cplusplus
 extern "C" {
 #endif

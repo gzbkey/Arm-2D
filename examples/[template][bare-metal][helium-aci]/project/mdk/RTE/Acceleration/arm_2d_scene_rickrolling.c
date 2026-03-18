@@ -162,6 +162,14 @@ static void __on_scene_rickrolling_frame_start(arm_2d_scene_t *ptScene)
     if (arm_2d_helper_is_time_out( this.tFilm.hwPeriodPerFrame , &this.lTimestamp[0])) {
 
         arm_2d_helper_film_next_frame(&this.tFilm);
+
+        arm_2d_helper_dirty_region_item_suspend_update(
+            &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+            false);
+    } else {
+        arm_2d_helper_dirty_region_item_suspend_update(
+            &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
+            true);
     }
 #if ARM_2D_DEMO_USE_ZJPGD
     arm_zjpgd_loader_on_frame_start(&this.tAnimation);
@@ -329,11 +337,13 @@ user_scene_rickrolling_t *__arm_2d_scene_rickrolling_init(   arm_2d_scene_player
     #else
         extern const uint8_t c_chRickRolling75[104704];
 
-        arm_loader_io_binary_init(&this.LoaderIO.tBinary, c_chRickRolling75, sizeof(c_chRickRolling75));
+        arm_loader_io_rom_init( &this.LoaderIO.tROM, 
+                                (uintptr_t)c_chRickRolling75, 
+                                sizeof(c_chRickRolling75));
     #endif
 
         arm_zjpgd_loader_cfg_t tCFG = {
-            .bUseHeapForVRES = true,
+            .bUseHeapForVRES = false,
             .ptScene = (arm_2d_scene_t *)ptThis,
             .u2WorkMode = ARM_ZJPGD_MODE_PARTIAL_DECODED,
             //.tColourInfo.chScheme = ARM_2D_COLOUR_GRAY8,
@@ -346,8 +356,8 @@ user_scene_rickrolling_t *__arm_2d_scene_rickrolling_init(   arm_2d_scene_player
             },
         #else
             .ImageIO = {
-                .ptIO = &ARM_LOADER_IO_BINARY,
-                .pTarget = (uintptr_t)&this.LoaderIO.tBinary,
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
         #endif
 
@@ -363,11 +373,13 @@ user_scene_rickrolling_t *__arm_2d_scene_rickrolling_init(   arm_2d_scene_player
     #else
         extern const uint8_t c_chRickRolling75[104704];
 
-        arm_loader_io_binary_init(&this.LoaderIO.tBinary, c_chRickRolling75, sizeof(c_chRickRolling75));
+        arm_loader_io_rom_init( &this.LoaderIO.tROM, 
+                                (uintptr_t)c_chRickRolling75, 
+                                sizeof(c_chRickRolling75));
     #endif
 
         arm_tjpgd_loader_cfg_t tCFG = {
-            .bUseHeapForVRES = true,
+            .bUseHeapForVRES = false,
             .ptScene = (arm_2d_scene_t *)ptThis,
             .u2WorkMode = ARM_TJPGD_MODE_PARTIAL_DECODED,
         
@@ -378,8 +390,8 @@ user_scene_rickrolling_t *__arm_2d_scene_rickrolling_init(   arm_2d_scene_player
             },
         #else
             .ImageIO = {
-                .ptIO = &ARM_LOADER_IO_BINARY,
-                .pTarget = (uintptr_t)&this.LoaderIO.tBinary,
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
         #endif
 

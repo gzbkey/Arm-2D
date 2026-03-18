@@ -200,9 +200,19 @@ static void __on_scene_progress_status_frame_start(arm_2d_scene_t *ptScene)
 
     #if ARM_2D_DEMO_PROGRESS_STATUS_USE_QOI
         arm_2d_helper_film_next_frame(&s_tileWIFISignalFilm);
+
+        arm_2d_helper_dirty_region_item_suspend_update(
+            &this.tDirtyRegionItems[DIRTY_REGION_WIFI],
+            false);
     #else
         arm_2d_helper_film_next_frame(&s_tileWIFISignalFilm);
         arm_2d_helper_film_next_frame(&s_tileWIFISignalFilmMask);
+    #endif
+    } else {
+    #if ARM_2D_DEMO_PROGRESS_STATUS_USE_QOI
+        arm_2d_helper_dirty_region_item_suspend_update(
+            &this.tDirtyRegionItems[DIRTY_REGION_WIFI],
+            true);
     #endif
     }
 #endif
@@ -269,7 +279,7 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_progress_status_handler)
     arm_2d_canvas(ptTile, __canvas) {
 
     #if PROGRESS_STATUS_DEMO_SHOW_WIFI_ANIMATION
-        arm_2d_size_t tWiFiLogoSize = s_tileWIFISignalFilm.use_as__arm_2d_tile_t.tRegion.tSize;
+        arm_2d_size_t tWiFiLogoSize = s_tileWIFISignalFilm.tTile.tRegion.tSize;
 
         arm_2d_dock_vertical(__canvas, 
                             180 + tWiFiLogoSize.iHeight) {
@@ -503,11 +513,13 @@ user_scene_progress_status_t *__arm_2d_scene_progress_status_init(   arm_2d_scen
                 .ptIO = &ARM_QOI_IO_FILE_LOADER,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
                 .ptIO = &ARM_QOI_IO_BINARY_LOADER,
                 .pTarget = (uintptr_t)&this.LoaderIO.tBinary,
             },
+        #else
+            .pchQOISource = c_qoiWifiSignal,
         #endif
         };
 
