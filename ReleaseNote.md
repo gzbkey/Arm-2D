@@ -1,5 +1,58 @@
 # Release Note
 
+
+
+## Golden Release v1.2.6 (18 March 2026) 
+
+### Core and Library
+
+* Fixes some minor issues in **transform** operations.
+* Improves the performance of **colour-filling** operations.
+* Improves the performance of **copy-with-masks** operations.
+* Improves the performance of **tile-copy-with-src-mask/target-mask** operations.
+
+### Helper Services
+
+* Enhances the PFB and the Display Adapter services.
+  * Adds a **Nano-Only** mode for **resource-ultra-constraint** system (32K Flash, 8K RAM).
+  * Enhances the dynamic dirty region scheme.
+* Replaces `uint32_t` with `int64_t` in `arm_2d_helper_convert_ms_to_ticks()`.
+* Adds a new API `arm_2d_byte_fifo_vomit()` to the byte-fifo. 
+* Fixes **only-redraw-current-line** issue in the simple list.
+
+### Examples and Templates
+
+* Enhances example controls
+  * Reduces memory footprint
+  * Improves the display quality of the progress wheel
+  * Fixes the support for backspace `'\b'` and `'\r'` in console. 
+  * Fixes the dirty region support in the foldable panel. 
+  * Removes the redundant flags in the foldable panel. 
+* Enhances Demos
+  * Use PFB (other than) Heap in rick-rolling. 
+  * Adds a new demo for **zhRGB565**.
+  * Adds a new demo: warped Dial
+  * Replaces old loader IOs with the unified IOs.
+  * Applies LMSK to some existing demos to reduce the ROM footprint.
+  * Fixes the demo: ruler.
+  * Some minor fixes.
+* Adds a new category: **Render Tests**
+  * Adds a new render test for showing large LMSK.
+  * Adds a new render test for the LMSK decoding.
+
+* Enhances Loaders
+  * Adds a loader for **zhRGB565** (Lossless compression for RGB565 images).
+  * Adds **ARM_LOADER_IO_CACHE** to introduce software caches for the slow external storage system.
+  * Adds a loader for **LMSK** (Lossless compression for masks). It is the optimal solution for mid- to large-sized masks. 
+  * Improves the QOI decoder performance.
+  * Improves the IOs.
+  * Some minor fixes.
+* Updates documents.
+* Updates scripts
+  * Adds **zhRGB565** and **LMSK** encoding to **img2c.py**
+
+
+
 ## Release v1.2.5 (06 January 2026)
 
 ### Core and Library
