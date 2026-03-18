@@ -320,12 +320,14 @@ user_scene_qoi_t *__arm_2d_scene_qoi_init(   arm_2d_scene_player_t *ptDispAdapte
     /* initialize QOI loader */
     do {
     #if ARM_2D_DEMO_QOI_USE_FILE
-        arm_qoi_io_file_loader_init(&this.LoaderIO.tFile, "../common/asset/radar_background.qoi");
+        arm_loader_io_file_init(&this.LoaderIO.tFile, "../common/asset/MeterPanel.qoi");
     #else
         extern const uint8_t c_qoiMeterPanel[20394];
         extern const uint8_t c_qoiRadarBackground[45557];
 
-        arm_qoi_io_binary_loader_init(&this.LoaderIO.tBinary, c_qoiMeterPanel, sizeof(c_qoiMeterPanel));
+        arm_loader_io_rom_init( &this.LoaderIO.tROM, 
+                                (uintptr_t)c_qoiMeterPanel, 
+                                sizeof(c_qoiMeterPanel));
     #endif
         arm_qoi_loader_cfg_t tCFG = {
             //.bUseHeapForVRES = true,
@@ -338,17 +340,19 @@ user_scene_qoi_t *__arm_2d_scene_qoi_init(   arm_2d_scene_player_t *ptDispAdapte
 
             //.bInvertColour = true,
             //.bForceDisablePreBlendwithBG = true,
-            .tBackgroundColour.wColour = GLCD_COLOR_WHITE,
+            .tBackgroundColour.wColour = this.use_as__arm_2d_scene_t.tCanvas.wColour,
         #if ARM_2D_DEMO_QOI_USE_FILE
             .ImageIO = {
-                .ptIO = &ARM_QOI_IO_FILE_LOADER,
+                .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
-                .ptIO = &ARM_QOI_IO_BINARY_LOADER,
-                .pTarget = (uintptr_t)&this.LoaderIO.tBinary,
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
+        #else
+            .pchQOISource = c_qoiMeterPanel,
         #endif
         };
 

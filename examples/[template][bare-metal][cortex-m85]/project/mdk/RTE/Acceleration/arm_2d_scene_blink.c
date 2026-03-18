@@ -567,7 +567,9 @@ user_scene_blink_t *__arm_2d_scene_blink_init(   arm_2d_scene_player_t *ptDispAd
     #else
         extern const uint8_t c_qoiEyeball[16840];
 
-        arm_qoi_io_binary_loader_init(&this.LoaderIO.tBinary, c_qoiEyeball, sizeof(c_qoiEyeball));
+        arm_loader_io_rom_init( &this.LoaderIO.tROM, 
+                                (uintptr_t)c_qoiEyeball, 
+                                sizeof(c_qoiEyeball));
     #endif
         arm_qoi_loader_cfg_t tCFG = {
             //.bUseHeapForVRES = true,
@@ -585,14 +587,16 @@ user_scene_blink_t *__arm_2d_scene_blink_init(   arm_2d_scene_player_t *ptDispAd
             .tBackgroundColour.wColour = GLCD_COLOR_WHITE,
         #if ARM_2D_DEMO_QOI_USE_FILE
             .ImageIO = {
-                .ptIO = &ARM_QOI_IO_FILE_LOADER,
+                .ptIO = &ARM_LOADER_IO_FILE,
                 .pTarget = (uintptr_t)&this.LoaderIO.tFile,
             },
-        #else
+        #elif __ARM_QOI_USE_LOADER_IO__
             .ImageIO = {
-                .ptIO = &ARM_QOI_IO_BINARY_LOADER,
-                .pTarget = (uintptr_t)&this.LoaderIO.tBinary,
+                .ptIO = &ARM_LOADER_IO_ROM,
+                .pTarget = (uintptr_t)&this.LoaderIO.tROM,
             },
+        #else
+            .pchQOISource = c_qoiEyeball,
         #endif
         };
 
@@ -619,7 +623,7 @@ user_scene_blink_t *__arm_2d_scene_blink_init(   arm_2d_scene_player_t *ptDispAd
         #if ARM_2D_DEMO_BLINK_USE_QOI
             .ptTransformMode = &SPIN_ZOOM_MODE_EXTRA_TILE_COPY_WITH_TRANSFORMED_MASK,
         #else
-            .ptTransformMode = &SPIN_ZOOM_MODE_EXTRA_TILE_COPY_WITH_TRANSFORMED_MASK_SOURCE_MASK_AND_TARGET_MASK,
+            .ptTransformMode = &SPIN_ZOOM_MODE_EXTRA_TILE_COPY_WITH_TRANSFORMED_MASK_AND_SOURCE_MASK,
         #endif
             .Source = {
                 .ptMask = &c_tileLeftEyeMask,
@@ -634,12 +638,10 @@ user_scene_blink_t *__arm_2d_scene_blink_init(   arm_2d_scene_player_t *ptDispAd
             #if ARM_2D_DEMO_BLINK_USE_QOI
                 .ptTile = &this.tQOIEyeball.vres.tTile,
             #else
-                .ptTile = &c_tileEyeball,//&c_tileEyeballCCCA8888,//&c_tileEyeball,
+                .ptTile = &c_tileEyeball,
                 .ptMask = &c_tileEyeballMask,
             #endif
             },
-            
-            .Target.ptMask = &c_tileEyeballMask,
 
             .ptScene = (arm_2d_scene_t *)ptThis,
         };

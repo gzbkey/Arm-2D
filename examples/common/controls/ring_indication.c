@@ -733,7 +733,8 @@ void ring_indication_show(  ring_indication_t *ptThis,
                                     },
                                 };
 
-                                int16_t iRadius = (this.iDiameter >> 1) + 1;
+                                //int16_t iRadius = (this.iDiameter >> 1) + 1;
+                                //ARM_2D_UNUSED(iRadius);
 
                                 if (fCurrentAngle > this.fLastAngle) {
 

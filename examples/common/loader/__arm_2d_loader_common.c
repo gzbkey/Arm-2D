@@ -1003,7 +1003,7 @@ void __arm_loader_io_cache_preload(arm_loader_io_cache_t *ptThis, uintptr_t wAdd
 
     }
 
-label_finish_searching:
+//label_finish_searching:
     assert(NULL != ptVictim);
 
     arm_irq_safe {
