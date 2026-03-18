@@ -36,6 +36,10 @@
 
 #define RTE_Acceleration_Arm_2D_Extra_QOI_Loader
 
+#define RTE_Acceleration_Arm_2D_Extra_LMSK_Loader
+
+#define RTE_Acceleration_Arm_2D_Extra_zhRGB565_Loader
+
 #define RTE_Acceleration_Arm_2D_Helper_Disp_Adapter0
 
 #define RTE_Acceleration_Arm_2D_Helper_PFB

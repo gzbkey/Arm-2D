@@ -38,7 +38,6 @@
 #   pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #   pragma clang diagnostic ignored "-Wmissing-prototypes"
 #   pragma clang diagnostic ignored "-Wunused-variable"
-#   pragma clang diagnostic ignored "-Wunused-function"
 #   pragma clang diagnostic ignored "-Wgnu-statement-expression"
 #   pragma clang diagnostic ignored "-Wdouble-promotion"
 #   pragma clang diagnostic ignored "-Wembedded-directive"
@@ -118,8 +117,15 @@ IMPL_ARM_2D_REGION_LIST(s_tNavDirtyRegionList, static)
 END_IMPL_ARM_2D_REGION_LIST(s_tNavDirtyRegionList)
 #endif
 
+#if __DISP0_CFG_NANO_ONLY__
+ARM_NOINIT
+struct disp_adapter0_t DISP0_ADAPTER;
+#else
+
 ARM_NOINIT 
 arm_2d_scene_player_t DISP0_ADAPTER;
+
+#endif
 
 #if __DISP0_CFG_ENABLE_3FB_HELPER_SERVICE__
 ARM_NOINIT
@@ -158,15 +164,14 @@ IMPL_PFB_ON_DRAW(__pfb_draw_handler)
     ARM_2D_PARAM(ptTile);
 
     arm_2d_canvas(ptTile, __top_container) {
-    
-#if __DISP0_CFG_COLOR_SOLUTION__ != 1              /* as long as it is not monochrome */
+    #if __DISP0_CFG_COLOR_SOLUTION__ != 1
         arm_2d_align_centre(__top_container, 100, 100) {
             draw_round_corner_box(  ptTile,
                                     &__centre_region,
                                     GLCD_COLOR_BLACK,
                                     64);
         }
-#endif
+    #endif
 
         busy_wheel2_show(ptTile, bIsNewFrame);
     }
@@ -238,6 +243,7 @@ IMPL_PFB_ON_DRAW(__disp_adapter0_draw_navigation)
 
     arm_2d_canvas(ptTile, __navigation_canvas) {
 
+        
         arm_2d_align_top_left(  __navigation_canvas, 
                                 __DISP0_CONSOLE_WIDTH__ + 8, 
                                 __DISP0_CONSOLE_HEIGHT__ + 8) {
@@ -253,6 +259,7 @@ IMPL_PFB_ON_DRAW(__disp_adapter0_draw_navigation)
                             bIsNewFrame,
                             DISP0_CONSOLE.chOpacity);
         }
+        
     }
 
 #endif
@@ -348,7 +355,7 @@ IMPL_PFB_ON_DRAW(__disp_adapter0_draw_navigation)
 #else
         arm_lcd_printf( 
             "LCD:%2"PRIu32"ms",
-            (uint32_t)arm_2d_helper_convert_ticks_to_ms(DISP0_ADAPTER.Benchmark.wLCDLatency) );
+            (uint_fast64_t)arm_2d_helper_convert_ticks_to_ms(DISP0_ADAPTER.Benchmark.wLCDLatency) );
 #endif
     }
 
@@ -484,11 +491,9 @@ IMPL_PFB_ON_LOW_LV_RENDERING(__disp_adapter0_pfb_render_handler)
 #endif
 
 __WEAK 
-void __disp_adapter0_user_on_frame_complete(void *ptTarget, 
-                                                     bool bIsFrameSkipped)
+void __disp_adapter0_user_on_frame_complete(void *ptTarget, bool bIsFrameSkipped)
 {
-    ARM_2D_UNUSED(ptTarget);
-    ARM_2D_UNUSED(bIsFrameSkipped);
+    ARM_2D_PARAM(ptTarget);
 
 }
 
@@ -585,7 +590,7 @@ static bool __on_each_frame_complete(void *ptTarget)
 #endif
     
     __disp_adapter0_user_on_frame_complete(ptTarget, bIsFrameSkipped);
-    
+
     return true;
 }
 
@@ -715,6 +720,7 @@ static void __user_scene_player_init(void)
     extern arm_2d_helper_2d_copy_handler_t __disp_adapter0_request_2d_copy;
     extern arm_2d_helper_dma_copy_handler_t __disp_adapter0_request_dma_copy;
     
+    
         arm_2d_helper_3fb_cfg_t tCFG = {
             .tScreenSize = {
 #if     __DISP0_CFG_ROTATE_SCREEN__ == 1\
@@ -747,13 +753,11 @@ static void __user_scene_player_init(void)
     } while(0);
 #endif
 
-#if defined(RTE_Acceleration_Arm_2D_Extra_LCD_printf)
     arm_lcd_text_init((arm_2d_region_t []) {
                         { .tSize = {
                             .iWidth = __DISP0_CFG_SCEEN_WIDTH__,
                             .iHeight = __DISP0_CFG_SCEEN_HEIGHT__,
                         }}});
-#endif
 
     DISP0_ADAPTER.Benchmark.wMin = UINT32_MAX;
     DISP0_ADAPTER.Benchmark.hwIterations = __DISP0_CFG_ITERATION_CNT__;
@@ -764,6 +768,7 @@ static void __user_scene_player_init(void)
 __WEAK 
 void disp_adapter0_navigator_init(void)
 {
+
     static const arm_2d_region_t tScreen = {
         .tSize = {
             .iWidth = __DISP0_CFG_SCEEN_WIDTH__,
@@ -774,8 +779,6 @@ void disp_adapter0_navigator_init(void)
     ARM_2D_UNUSED(tScreen);
 
 #if __DISP0_CFG_NAVIGATION_LAYER_MODE__ == 2
-    
-
     
     arm_2d_align_bottom_centre(tScreen, s_tNavDirtyRegionList[0].tRegion.tSize) {
         s_tNavDirtyRegionList[0].tRegion = __bottom_centre_region;
@@ -803,7 +806,7 @@ void disp_adapter0_navigator_init(void)
     do {
 
     #if __DISP0_CFG_CONSOLE_INPUT_BUFFER__
-        static uint8_t s_chInputBuffer[__DISP0_CFG_CONSOLE_INPUT_BUFFER__];
+        static uint8_t s_chInputBuffer[256];
     #endif
         static uint8_t s_chConsoleBuffer[   (__DISP0_CONSOLE_WIDTH__ / 6) 
                                         *   (__DISP0_CONSOLE_HEIGHT__ / 8)];
@@ -852,12 +855,24 @@ void disp_adapter0_navigator_init(void)
     DISP0_CONSOLE.Signature = ARM_2D_VERSION;
 #endif
 
+#if __DISP0_CFG_NANO_ONLY__
+    arm_2d_helper_pfb_dependency_t tDependency = {
+        .Navigation.evtOnDrawing.fnHandler = &__disp_adapter0_draw_navigation,
+        .Navigation.evtOnDrawing.pTarget = &DISP0_ADAPTER,
+        .Navigation.ptDirtyRegion = (arm_2d_region_list_item_t *)s_tNavDirtyRegionList,
+    }; 
+
+    arm_2d_helper_pfb_update_dependency(&DISP0_ADAPTER.use_as__arm_2d_helper_pfb_t, 
+                                        ARM_2D_PFB_DEPEND_ON_NAVIGATION,
+                                        &tDependency);
+#else
     /* register event handler for evtOnDrawNavigation */
     arm_2d_scene_player_register_on_draw_navigation_event_handler(
                     &DISP0_ADAPTER,
                     __disp_adapter0_draw_navigation,
                     NULL,
                     (arm_2d_region_list_item_t *)s_tNavDirtyRegionList);
+#endif
 }
 #else
 __WEAK 
@@ -913,6 +928,7 @@ bool disp_adapter0_putchar(uint8_t chChar)
 /*----------------------------------------------------------------------------*
  * Display Adapter Entry                                                      *
  *----------------------------------------------------------------------------*/
+
 static arm_2d_scene_t s_tDefaultScene = {
 #if __DISP0_CFG_COLOR_SOLUTION__ == 1
     /* the canvas colour */
@@ -934,6 +950,19 @@ arm_2d_scene_t *disp_adapter0_get_default_scene(void)
     return &s_tDefaultScene;
 }
 
+#if __DISP0_CFG_NANO_ONLY__
+static arm_2d_scene_t *s_ptCurrentScene = &s_tDefaultScene;
+#endif
+
+arm_2d_scene_t *disp_adapter0_get_current_scene(void)
+{
+#if __DISP0_CFG_NANO_ONLY__
+    return s_ptCurrentScene;
+#else
+    return arm_2d_scene_player_get_the_current_scene(&DISP0_ADAPTER);
+#endif
+}
+
 void disp_adapter0_init(void)
 {
     __user_scene_player_init();
@@ -951,7 +980,7 @@ void disp_adapter0_init(void)
 
     DISP0_ADAPTER.Benchmark.lTimestamp = arm_2d_helper_get_system_timestamp();
 
-#if !__DISP0_CFG_DISABLE_DEFAULT_SCENE__
+#if !__DISP0_CFG_DISABLE_DEFAULT_SCENE__ && !__DISP0_CFG_NANO_ONLY__
     do {
         arm_2d_scene_player_append_scenes( 
                                         &DISP0_ADAPTER,
@@ -961,23 +990,92 @@ void disp_adapter0_init(void)
 #endif
 }
 
+#if __DISP0_CFG_NANO_ONLY__
+static
+IMPL_PFB_ON_DRAW(__pfb_draw_scene_handler)
+{
+    ARM_2D_PARAM(pTarget);
+    ARM_2D_PARAM(ptTile);
+    ARM_2D_PARAM(bIsNewFrame);
+
+    arm_2d_scene_player_t *ptThis = (arm_2d_scene_player_t *)pTarget;
+    arm_fsm_rt_t tResult = arm_fsm_rt_cpl;
+
+ARM_PT_BEGIN(DISP0_ADAPTER.chPT)
+
+    arm_2d_scene_t *ptScene = disp_adapter0_get_current_scene();
+    
+    if (NULL != ptScene->fnScene) {
+        tResult = ptScene->fnScene(ptScene, ptTile, bIsNewFrame);
+    } else {
+ARM_PT_YIELD((arm_fsm_rt_t)ARM_2D_RT_PFB_USER_DRAW);
+        tResult = arm_fsm_rt_cpl;
+        ptScene = disp_adapter0_get_current_scene();
+    }
+
+    arm_2d_helper_dirty_region_update_dirty_regions(&ptScene->tDirtyRegionHelper, 
+                                                    ptTile);
+
+ARM_PT_END()
+
+    return tResult;
+}
+#endif
+
 arm_fsm_rt_t __disp_adapter0_task(void)
 {
+#if __DISP0_CFG_NANO_ONLY__
+    arm_2d_scene_t *ptScene = disp_adapter0_get_current_scene();
+
+
+    return arm_2d_helper_pfb_task(
+                &DISP0_ADAPTER.use_as__arm_2d_helper_pfb_t, 
+                ptScene->ptDirtyRegion);
+#else
     return arm_2d_scene_player_task(&DISP0_ADAPTER);
+#endif
 }
 
-arm_2d_scene_t *disp_adapter0_nano_prepare(void)
+arm_2d_scene_t *__disp_adapter0_nano_prepare(arm_2d_scene_t *ptScene)
 {
+    if (NULL == ptScene) {
+        ptScene = &s_tDefaultScene;
+    }
+
+    ptScene->fnBackground = NULL;
+    ptScene->fnScene = NULL;
+    arm_2d_helper_dirty_region_depose(&ptScene->tDirtyRegionHelper);
+
+#if __DISP0_CFG_NANO_ONLY__
+    s_ptCurrentScene = ptScene;
+
+    ARM_2D_HELPER_PFB_UPDATE_ON_DRAW_HANDLER(   
+                &DISP0_ADAPTER.use_as__arm_2d_helper_pfb_t,
+                __pfb_draw_scene_handler,
+                &DISP0_ADAPTER);
+
+    DISP0_ADAPTER.__bTempflag = arm_2d_helper_pfb_full_frame_refresh_mode(
+                                    &DISP0_ADAPTER.use_as__arm_2d_helper_pfb_t,
+                                    true
+                                );
+            
+    if (ptScene->bUseDirtyRegionHelper) {
+        arm_2d_helper_dirty_region_init(&ptScene->tDirtyRegionHelper,
+                                        &ptScene->ptDirtyRegion);
+    }
+
+    __arm_2d_helper_pfb_enable_drawing_canvas_colour(
+                                                &DISP0_ADAPTER.use_as__arm_2d_helper_pfb_t,
+                                                ptScene->tCanvas);
+#else
     arm_2d_scene_player_flush_fifo(&DISP0_ADAPTER);
-    s_tDefaultScene.fnBackground = NULL;
-    s_tDefaultScene.fnScene = NULL;
-    arm_2d_scene_player_set_switching_mode( &DISP0_ADAPTER, 
-                                            ARM_2D_SCENE_SWITCH_MODE_NONE);
+    arm_2d_scene_player_set_switching_mode( &DISP0_ADAPTER, ARM_2D_SCENE_SWITCH_MODE_NONE);
 
     arm_2d_scene_player_append_scenes(  &DISP0_ADAPTER,
-                                        (arm_2d_scene_t *)&s_tDefaultScene,
+                                        ptScene,
                                         1);
-    return &s_tDefaultScene;
+#endif
+    return ptScene;
 }
 
 __disp_adapter0_draw_t * __disp_adapter0_nano_draw(void)
@@ -999,7 +1097,6 @@ __disp_adapter0_draw_t * __disp_adapter0_nano_draw(void)
         }
     } while(1);   
 }
-
 
 /*----------------------------------------------------------------------------*
  * Virtual Resource Helper                                                    *
@@ -1072,7 +1169,7 @@ bool __disp_adapter0_vres_asset_hint_on_load(uintptr_t pObj,
      * NOTE: When return true, it means user provides buffer and stores
      *       the buffer address in ptVRES->tTile.nAddress. Once you have
      *       return true, you take the responsiblity to manage the buffer,
-     *       and please make sure you return true in 
+     *       and make sure you return true in 
      *       __disp_adapter0_vres_asset_hint_depose also.
      *       
      */
@@ -1091,14 +1188,12 @@ bool __disp_adapter0_vres_asset_hint_depose(uintptr_t pObj,
     /*
      * NOTE: When return true, it means user provides buffer and stores
      *       the buffer address in ptVRES->tTile.nAddress. 
-     * 
      * NOTE: It is YOUR responsibility to manage the buffer (e.g. release) 
      *       and the display adapter service will NOT release the buffer
      *       for you. 
      */
     return false;
 }
-
 
 intptr_t __disp_adapter0_vres_asset_loader (uintptr_t pObj, 
                                             arm_2d_vres_t *ptVRES, 
@@ -1157,6 +1252,7 @@ intptr_t __disp_adapter0_vres_asset_loader (uintptr_t pObj,
     /* default condition */
     tBufferSize = ptRegion->tSize.iHeight * nBytesPerLine;
     
+    
 #if __DISP0_CFG_USE_HEAP_FOR_VIRTUAL_RESOURCE_HELPER__
     pBuffer = __disp_adapter0_aligned_malloc(tBufferSize, nPixelSize);
     assert(NULL != pBuffer);
@@ -1175,7 +1271,6 @@ intptr_t __disp_adapter0_vres_asset_loader (uintptr_t pObj,
     }
     pBuffer = (COLOUR_INT *)((uintptr_t)ptPFB + sizeof(arm_2d_pfb_t));
 #endif
-
     /* load content into the buffer */
     if (nBitsPerPixel < 8) {
         /* A1, A2 and A4 support */
@@ -1218,8 +1313,7 @@ intptr_t __disp_adapter0_vres_asset_loader (uintptr_t pObj,
 }
 
 
-void __disp_adapter0_vres_buffer_deposer (
-                                            uintptr_t pTarget, 
+void __disp_adapter0_vres_buffer_deposer (  uintptr_t pTarget, 
                                             arm_2d_vres_t *ptVRES, 
                                             intptr_t pBuffer )
 {
