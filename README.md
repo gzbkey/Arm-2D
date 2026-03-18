@@ -117,7 +117,7 @@ Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply
     - Supports Colour-Filling with Alpha-Gradient defined in 4-points, 3-points, horizontal and vertical mode.
       - Supports Mask
       - Supports an optional Opacity
-    - **[new]** Supports mirroring
+    - Supports mirroring
   
 - **Image Copy (Blit)** 
   - With or without Colour-Keying
@@ -170,7 +170,7 @@ Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply
   - Supports specifying different scaling ratios for X and Y axes, respectively
   - Supports using floating point numbers (i.e. `float`) to specify the pivot coordinate.
   - Supports using negative scaling ratios for x/y mirroring
-  - **[new]** Supports colour-filling / tile-copy with a transformed mask, optional source mask and target mask.
+  - Supports colour-filling / tile-copy with a transformed mask, optional source mask and target mask.
 - **Filters**
 
   - Generic Anti-alias and Fast IIR-Blur
@@ -402,7 +402,7 @@ There is no public 2D image processing benchmark available for microcontrollers.
 
 ## 7 Feedback
 
-Arm-2D aims to bridge the gap between **low-cost, resource-constrained devices** and **high-performance, feature-rich embedded IoT edge devices** by providing **a unified and user-friendly programming model**. Our goal is to facilitate the seamless and easy migration of GUI applications across Cortex-M, Cortex-R, and Cortex-A platforms. We hope that Arm-2D will inspire more initiatives and engineering practices in this field.
+Arm-2D aims to bridge the gap between **low-cost, resource-constrained devices** and **high-performance, feature-rich embedded IoT edge devices** by providing **a unified and user-friendly programming model**. Our goal is to facilitate the seamless and easy migration of GUI applications across different platforms. We hope that Arm-2D will inspire more initiatives and engineering practices in this field.
 
 Your thoughts and feedback are important to us. If you can spend some time trying out the library, please feel free to share your insights. It would be helpful to cover the following perspectives:
 
