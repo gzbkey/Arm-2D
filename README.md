@@ -37,7 +37,7 @@ Today, for IoT endpoint devices, white goods, handheld devices and wearables, Ar
   - Guidance for the integration of Arm-2D into graphic stacks
 - **Optimisation for ultra-small memory footprint**
   - Enable Deep Embedded microcontrollers to use modernised GUIs.
-  - Helping customers to cost-down
+  - Helping customers to cost down
 
 ## Key Messages for You
 
@@ -70,7 +70,7 @@ Potential users of Arm-2D may have different backgrounds and purposes. Whoever y
 - [Getting Started as a GUI System Developer](./documentation/getting_started_as_a_gui_stack_developer.md)
     - Silicon vendors can provide drivers to further accelerate Arm-2D, enabling their customers to take advantage of the proprietary hardware accelerators. 
     - GUI Stack System engineers can use the Arm-2D APIs to accelerate the low-level operations. 
-    - Homebrew GUI designers can create entirely-new GUI stacks faster and easier with Arm-2D.
+    - Homebrew GUI designers can create entirely new GUI stacks faster and easier with Arm-2D.
     - ...
 
 We are optimistic that anyone can find something interesting in Arm-2D.
@@ -84,7 +84,7 @@ We are optimistic that anyone can find something interesting in Arm-2D.
 - [How to Get Started](#how-to-get-started)
 - [Table of Content](#table-of-content)
 - [Features](#features)
-  - [In this version (v1.2.6)](#in-this-version-v126)
+  - [In this version (v1.2.6)](#in-this-version-v126-a-golden-release)
   - [New Features Planned in the Future](#new-features-planned-in-the-future)
 - [1 Introduction](#1-introduction)
   - [1.1 The Background](#11-the-background)
@@ -104,12 +104,11 @@ We are optimistic that anyone can find something interesting in Arm-2D.
 
 ## Features
 
-### In this version (v1.2.6)
+### In this version (v1.2.6), A Golden Release
 
-Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply optimized in both performance and memory footprint, it has been quickly adopted in many **Deep Embedded Display systems** soon after it debuted in 2020.  Now you can find its [precence](https://www.linkedin.com/search/results/all/?keywords=%23amazingarm2d&origin=HASH_TAG_FROM_FEED) from the [tiniest Cortex-M0](https://www.linkedin.com/posts/gabriel-wang-554523167_amazingarm2d-activity-7239115506102726658-CKhE?utm_source=share&utm_medium=member_desktop&rcm=ACoAACfEJVABu43psSmn3fAYP2dptCi3QU4o0Yg) to the [Raspberry Pi 5 powerhouse](https://www.linkedin.com/posts/gabriel-wang-554523167_embeddedworld-activity-7305214952544391170-WkLP?utm_source=share&utm_medium=member_desktop&rcm=ACoAACfEJVABu43psSmn3fAYP2dptCi3QU4o0Yg).  The supported features include but not limited to:
+Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply optimised for both performance and memory footprint, it has been quickly adopted in many Deep Embedded Display systems since it debuted in 2020.  Now you can find its [presence](https://www.linkedin.com/search/results/all/?keywords=%23amazingarm2d&origin=HASH_TAG_FROM_FEED) from the [tiniest Cortex-M0](https://www.linkedin.com/posts/gabriel-wang-554523167_amazingarm2d-activity-7239115506102726658-CKhE?utm_source=share&utm_medium=member_desktop&rcm=ACoAACfEJVABu43psSmn3fAYP2dptCi3QU4o0Yg) to the [Raspberry Pi 5 powerhouse](https://www.linkedin.com/posts/gabriel-wang-554523167_embeddedworld-activity-7305214952544391170-WkLP?utm_source=share&utm_medium=member_desktop&rcm=ACoAACfEJVABu43psSmn3fAYP2dptCi3QU4o0Yg).  The supported features include, but are not limited to:
 
 - **Alpha-Blending** / **Masks**
-
   - With or without Colour-Keying
   - Filling-Colour with optional mask and opacity
     - For drawing anti-alias icons/texts in a specified colour
@@ -119,7 +118,7 @@ Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply
       - Supports Mask
       - Supports an optional Opacity
     - **[new]** Supports mirroring
-
+  
 - **Image Copy (Blit)** 
   - With or without Colour-Keying
   - Supports four mirroring modes: No-mirroring, X-mirroring, Y-mirroring and XY-mirroring
@@ -197,8 +196,8 @@ Since Arm-2D provides **Low-Level 2D Image Processing Services** that are deeply
       - [QOI images](https://qoiformat.org/) (a Lossless image compression format)
       - TrueType fonts via freetype
       - A generic loader for loading user defined image formats, or drawing shapes/masks directly. 
-      - **[new]** A loader for losslessly compressed RGB565 images (zhRGB565)
-      - **[new]** A loader for losslessly compressed masks (LMSK)
+      - **[new]** A loader for losslessly compressed RGB565 images (**zhRGB565**)
+      - **[new]** A loader for losslessly compressed masks (**LMSK**). **It is the optimal solution for mid- / large masks.** 
   - **Layout Assistant**
     - Alignments, e.g. `arm_2d_align_centre`, `arm_2d_align_bottom_right` etc.
     - Docking, e.g. `arm_2d_dock_top`,`arm_2d_dock_right`, `arm_2d_dock_vertical`, `__item_line_dock_horizontal` etc.
@@ -421,4 +420,4 @@ Thank you for your time.
 
 ***Arm-2D Development Team.***
 
-14 March 2026
+18 March 2026
