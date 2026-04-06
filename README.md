@@ -84,7 +84,7 @@ We are optimistic that anyone can find something interesting in Arm-2D.
 - [How to Get Started](#how-to-get-started)
 - [Table of Content](#table-of-content)
 - [Features](#features)
-  - [In this version (v1.2.6)](#in-this-version-v130-dev-a-golden-release)
+  - [In this version (v1.3.0-dev)](#in-this-version-v130-dev-a-golden-release)
   - [New Features Planned in the Future](#new-features-planned-in-the-future)
 - [1 Introduction](#1-introduction)
   - [1.1 The Background](#11-the-background)
