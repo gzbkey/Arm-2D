@@ -114,6 +114,8 @@ ARM_PRIVATE(
 
     arm_2d_helper_film_t tFilm;
 
+    image_box_t tImage;
+
     
 )
     /* place your public member here */

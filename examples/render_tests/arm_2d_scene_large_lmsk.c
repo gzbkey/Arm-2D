@@ -110,6 +110,7 @@ static void __on_scene_large_lmsk_load(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     arm_lmsk_loader_on_load(&this.tAnimation);
+    image_box_on_load(&this.tImage);
 }
 
 static void __after_scene_large_lmsk_switching(arm_2d_scene_t *ptScene)
@@ -125,6 +126,7 @@ static void __on_scene_large_lmsk_depose(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
     
     arm_lmsk_loader_depose(&this.tAnimation);
+    image_box_depose(&this.tImage);
 
     arm_foreach(int64_t,this.lTimestamp, ptItem) {
         *ptItem = 0;
@@ -212,6 +214,7 @@ static void __on_scene_large_lmsk_frame_start(arm_2d_scene_t *ptScene)
     }
 
     arm_lmsk_loader_on_frame_start(&this.tAnimation);
+    image_box_on_frame_start(&this.tImage);
 }
 
 static void __on_scene_large_lmsk_frame_complete(arm_2d_scene_t *ptScene)
@@ -220,6 +223,7 @@ static void __on_scene_large_lmsk_frame_complete(arm_2d_scene_t *ptScene)
     ARM_2D_UNUSED(ptThis);
 
     arm_lmsk_loader_on_frame_complete(&this.tAnimation);
+    image_box_on_frame_complete(&this.tImage);
 
 }
 
@@ -245,11 +249,11 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
     arm_2d_canvas(ptTile, __top_canvas) {
     /*-----------------------draw the foreground begin-----------------------*/
         
-        arm_2d_size_t tTVBoxSize = this.tFilm.use_as__arm_2d_tile_t.tRegion.tSize;
-        tTVBoxSize.iHeight += 10;
+        //arm_2d_size_t tTVBoxSize = this.tFilm.use_as__arm_2d_tile_t.tRegion.tSize;
+        //tTVBoxSize.iHeight += 10;
 
         arm_2d_align_centre(__top_canvas, 
-                            tTVBoxSize ) {
+                            160, 120 + 10 ) {
             
                 arm_2d_dock_top(__centre_region, 10) {
 
@@ -265,10 +269,14 @@ IMPL_PFB_ON_DRAW(__pfb_draw_scene_large_lmsk_handler)
                     }
                 }
 
+            #if 0
                 arm_2d_fill_colour_with_mask(   ptTile, 
                                         &__centre_region, 
                                         (const arm_2d_tile_t *)&this.tFilm, 
                                         (__arm_2d_color_t){this.tColour});
+            #else
+                image_box_show(&this.tImage, ptTile, &__centre_region, 255, bIsNewFrame);
+            #endif
 
             arm_2d_helper_dirty_region_update_item( 
                             &this.use_as__arm_2d_scene_t.tDirtyRegionHelper.tDefaultItem,
@@ -408,6 +416,15 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
                         20, 
                         3110, 
                         33);
+
+    do {
+        image_box_cfg_t tCFG = {
+            .ptilePhotoMask = &this.tFilm.tTile,
+        };
+
+        image_box_init(&this.tImage, &tCFG);
+
+    } while(0);
 
     /* ------------   initialize members of user_scene_large_lmsk_t end   ---------------*/
 

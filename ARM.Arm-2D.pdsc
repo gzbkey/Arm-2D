@@ -556,7 +556,7 @@
           </Pre_Include_Global_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Controls" Cversion="2.16.2" condition="Arm-2D-Controls">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Extras" Csub="Controls" Cversion="2.16.3" condition="Arm-2D-Controls">
           <description>A set of example controls, e.g. round-corner-box, spinning-wheels etc</description>
           <files>
             <!-- example control source files -->
@@ -1220,11 +1220,11 @@
           </RTE_Components_h>
         </component>
 
-        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Large LMSK" Cversion="1.4.1" condition="Arm-2D-Render-Test">
+        <component Cclass="Acceleration" Cgroup="Arm-2D Render Test" Csub="Large LMSK" Cversion="1.5.0" condition="Arm-2D-Render-Test">
           <description>A demo for the tile filling rendering test.</description>
           <files>
-            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_large_lmsk.c"     attr="config" version="1.4.1" />
-            <file category="header"      name="examples/render_tests/arm_2d_scene_large_lmsk.h"     attr="config" version="1.4.1" />
+            <file category="sourceC"     name="examples/render_tests/arm_2d_scene_large_lmsk.c"     attr="config" version="1.5.0" />
+            <file category="header"      name="examples/render_tests/arm_2d_scene_large_lmsk.h"     attr="config" version="1.5.0" />
 
             <file category="sourceC"     name="examples/render_tests/bad_apple.c"                   attr="config" version="1.1.0" />
           </files>
