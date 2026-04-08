@@ -65,6 +65,10 @@ extern "C" {
 #   define ARM_2D_DEMO_LARGE_LMSK_USE_FILE  0
 #endif
 
+#ifndef ARM_2D_DEMO_LARGE_LMSK_USE_IMAGE_BOX
+#   define ARM_2D_DEMO_LARGE_LMSK_USE_IMAGE_BOX 0
+#endif
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 
 /*!
@@ -114,7 +118,9 @@ ARM_PRIVATE(
 
     arm_2d_helper_film_t tFilm;
 
+#if ARM_2D_DEMO_LARGE_LMSK_USE_IMAGE_BOX
     image_box_t tImage;
+#endif
 
     
 )
