@@ -374,8 +374,8 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
         
     #   if 1
         arm_loader_io_cache_init(   &this.LoaderIO.tCache, 
-                                    (uintptr_t)c_lmskBadApple160x120col20a4, 
-                                    sizeof(c_lmskBadApple160x120col20a4),
+                                    (uintptr_t)c_lmskBadApple100x75col16a4, 
+                                    sizeof(c_lmskBadApple100x75col16a4),
                                     this.tCachelines,
                                     dimof(this.tCachelines));
     #   else
@@ -402,7 +402,7 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
             #endif
             },
         #else
-            .pchLMSKSource = c_lmskBadApple160x120col20a4,
+            .pchLMSKSource = c_lmskBadApple100x75col16a4,
         #endif
         };
 
@@ -411,9 +411,9 @@ user_scene_large_lmsk_t *__arm_2d_scene_large_lmsk_init(   arm_2d_scene_player_t
 
     this.tFilm = (arm_2d_helper_film_t)
                     impl_film(  this.tAnimation, 
-                        160, 
-                        120, 
-                        20, 
+                        100, 
+                        75, 
+                        16, 
                         3110, 
                         33);
 
