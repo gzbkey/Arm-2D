@@ -122,15 +122,11 @@ static bool __lcd_sync_handler(void *pTarget)
     return VT_sdl_vsync();
 }
 
-#include <arm_sve.h>
-
 int main(int argc, char* argv[])
 {
     VT_init();
 
     printf("\r\nArm-2D PC Template\r\n");
-
-    printf("[%zu]\r\n", svlen(svundef_u8()) * 8);
 
     arm_irq_safe {
         arm_2d_init();
